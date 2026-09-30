@@ -18,7 +18,10 @@ import { MockSearchProvider } from "./search/mock";
 import type { SearchProvider } from "./search/types";
 import { MockSocialProvider } from "./social/mock";
 import type { SocialProvider } from "./social/types";
+import { LocalStorageProvider } from "./storage/local";
 import { MockStorageProvider } from "./storage/mock";
+import { S3StorageProvider } from "./storage/s3";
+import { ResendEmailProvider, SmtpEmailProvider } from "./email/providers";
 import type { StorageProvider } from "./storage/types";
 import { INTEGRATION_KINDS, type IntegrationHealth, type IntegrationKind } from "./types";
 
@@ -52,9 +55,22 @@ const factories: { [K in IntegrationKind]: Partial<Record<string, Factory<K>>> }
   analytics: { mock: () => new MockAnalyticsProvider() },
   search: { mock: () => new MockSearchProvider() },
   ai: { mock: () => new MockAIProvider() },
-  email: { mock: () => new MockEmailProvider() },
+  email: {
+    mock: () => new MockEmailProvider(),
+    resend: (env) => new ResendEmailProvider(env.RESEND_API_KEY!, env.EMAIL_FROM),
+    smtp: (env) => new SmtpEmailProvider(env.SMTP_URL!, env.EMAIL_FROM),
+  },
   storage: {
     mock: (env) => new MockStorageProvider(`${env.NEXT_PUBLIC_SITE_URL}/dev/mock-storage`),
+    local: () => new LocalStorageProvider(),
+    s3: (env) =>
+      new S3StorageProvider({
+        endpoint: env.S3_ENDPOINT,
+        region: env.S3_REGION,
+        bucket: env.S3_BUCKET!,
+        accessKeyId: env.S3_ACCESS_KEY_ID!,
+        secretAccessKey: env.S3_SECRET_ACCESS_KEY!,
+      }),
   },
   crm: { mock: () => new MockCRMProvider() },
   social: { mock: () => new MockSocialProvider() },

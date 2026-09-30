@@ -30,7 +30,7 @@ export const envSchema = z
       .default("info"),
 
     NEXT_PUBLIC_SITE_URL: z.url().default("http://localhost:3000"),
-    NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000/app"),
+    NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
 
     DATABASE_URL: optionalString,
 
@@ -53,7 +53,7 @@ export const envSchema = z
     SMTP_URL: optionalString,
     RESEND_API_KEY: optionalString,
 
-    STORAGE_PROVIDER: z.enum(["mock", "s3"]).default("mock"),
+    STORAGE_PROVIDER: z.enum(["mock", "local", "s3"]).default("local"),
     S3_ENDPOINT: optionalString,
     S3_REGION: z.string().default("auto"),
     S3_BUCKET: optionalString,
