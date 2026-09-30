@@ -1,0 +1,34 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# testing
+/coverage
+/playwright-report
+/test-results
+/blob-report
+
+# next.js
+/.next/
+/out/
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+.pnpm-debug.log*
+
+# env files — never commit secrets. .env.example is the documented template.
+.env*
+!.env.example
+
+# deploy
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
