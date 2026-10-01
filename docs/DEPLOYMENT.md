@@ -1,69 +1,92 @@
 # Deployment
 
-**Status:** CI in place (Phase 1). Hosting is provisioned in Phase 22; the provider
-decision is Dylan's (see the recommendation below).
+The app is one Next.js build (`output: "standalone"`) plus PostgreSQL, object storage and a
+scheduler. Two ways to host it:
 
-## Runtime shape
+| Option                               | Pieces                                                                                                                           | Good for                |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| **A. Vercel (recommended to start)** | Vercel project, managed Postgres (e.g. Neon or Supabase), S3-compatible bucket (e.g. Cloudflare R2), Vercel Cron → `/api/cron/*` | Least maintenance       |
+| **B. A server or container**         | Node process (`node .next/standalone/server.js`), `pnpm worker` process, managed Postgres, S3 bucket or local disk with backups  | Full control, long jobs |
 
-| Process    | Command (planned)                                                | Notes                                                              |
-| ---------- | ---------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Web        | `node server.js` (Next.js standalone) or platform-native Next.js | Stateless; scale horizontally.                                     |
-| Worker     | `pnpm worker`                                                    | Long-running pg-boss consumer: jobs, schedules, syncs, agent runs. |
-| Migrations | `pnpm db:migrate`                                                | Runs once per release, before the new web version takes traffic.   |
+Prices for these services are in [COSTS.md](COSTS.md) as estimates.
 
-External services: managed PostgreSQL (with PITR), S3-compatible object storage, a
-transactional email provider, and a log/error sink.
+## 1. Create the services
 
-## Recommended hosting (decision pending)
+1. **Postgres 16** with automated daily backups and point-in-time restore. Copy the
+   connection string (use the pooled one on serverless hosts).
+2. **Storage bucket** (private) and an access key limited to that bucket.
+3. **Email**: a Resend account (or SMTP), with `meacreo.co.za` verified (SPF, DKIM records;
+   add DMARC).
+4. **Payfast** merchant account (start with the sandbox), if taking online payments.
+5. **Anthropic** API key, if enabling AI drafting (budgets cap spend).
 
-Portable by design (`output: "standalone"`, no vendor SDKs outside adapters). A
-low-maintenance setup for a single operator:
+## 2. Configure environment variables
 
-- **Web:** Vercel, for preview deployment per PR, CDN, SSL and custom domains. Or the same
-  container platform as the worker.
-- **Worker:** a container platform that runs long-lived processes (Railway, Render or Fly.io).
-- **Database:** managed Postgres with point-in-time recovery (Neon, Supabase or the same
-  platform's managed Postgres). Choose a region close to both the web and worker regions.
-- **Storage:** Cloudflare R2 (S3-compatible, no egress fees).
+Use the production shape in [ENVIRONMENT.md](ENVIRONMENT.md). Generate secrets with
+`openssl rand -base64 32`. Set `NEXT_PUBLIC_SITE_URL` to the final domain before the first
+build (it's used in emails and payment return URLs).
 
-Any of these can be replaced without code changes.
+## 3. Migrate and create the founder account
 
-## Environments and pipeline
+From a machine with the repository and the production `DATABASE_URL`:
 
-`feature branch` → PR (CI plus preview deployment on staging-like config with mocks) →
-`main` → **staging** (sandbox providers, migrations applied) → manual promotion →
-**production**.
+```bash
+pnpm install
+APP_ENV=production DATABASE_URL=… pnpm db:migrate
+APP_ENV=production DATABASE_URL=… NEXT_PUBLIC_SITE_URL=https://www.meacreo.co.za pnpm admin:create --email dylan@meacreo.co.za --name "Dylan Metcalf"
+```
 
-CI (`.github/workflows/ci.yml`) runs lint, format check, typecheck, unit tests, build and
-Playwright E2E on every PR and on `main`.
+`admin:create` also seeds the base data (Mea Creo organisation, settings, service
+catalogue without prices, internal client). It prints a one-time link to set the password.
+Demo data is never created in production.
 
-## Domains
+Run `pnpm db:migrate` before every release that includes new files in `drizzle/`.
 
-- `www.meacreo.co.za` (apex redirects to `www`): public site
-- `app.meacreo.co.za`: workspace and client portal (same deployment; `proxy.ts` host rewrite)
-- HSTS is sent on every response; enable preload only once all subdomains serve HTTPS.
+## 4a. Vercel
 
-## Backups and recovery
+1. Import the repository; framework Next.js; install `pnpm install`; build `pnpm build`.
+2. Add the environment variables (Production and Preview separately; Preview uses
+   `APP_ENV=staging`, sandbox credentials and a separate database).
+3. Cron (in the project settings or a `vercel.json`): `GET /api/cron/daily` once a day
+   (e.g. 04:00 UTC) and `GET /api/cron/jobs` every 5 minutes, with header
+   `Authorization: Bearer $CRON_SECRET`. Vercel Cron sends this header automatically when
+   `CRON_SECRET` is set. Frequent schedules need a paid plan; without them, jobs still run
+   right after each request.
+4. Deploy, then open `/api/health`.
 
-| What          | How                                                                               | Retention                   |
-| ------------- | --------------------------------------------------------------------------------- | --------------------------- |
-| Database      | Provider PITR plus a nightly `pg_dump` to separate storage in another region      | 30 days PITR, 90 days dumps |
-| Files         | Bucket versioning plus a replication or periodic copy to a second bucket          | 90 days of versions         |
-| Configuration | Env vars kept in the host's secret store and in a password manager (owner access) | n/a                         |
-| Code          | GitHub                                                                            | n/a                         |
+## 4b. Server or container
 
-**Restore procedure:**
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/
+node .next/standalone/server.js     # web (PORT=3000)
+pnpm worker                         # second process: jobs, daily cycle
+```
 
-1. Freeze writes by enabling maintenance mode and pausing all automations.
-2. Restore the database to a new instance at the target time and run `pnpm db:migrate`.
-3. Point `DATABASE_URL` at the new instance and redeploy.
-4. Verify with smoke tests and a spot-check of the latest records.
-5. Resume automations.
+Run both under a process manager (systemd, Docker, PM2) with automatic restarts, behind a
+TLS-terminating proxy that sets `x-forwarded-for`. If `STORAGE_PROVIDER=local`, back up
+`.data/uploads` with the database.
 
-Test the restore quarterly and record the result.
+## 5. Connect the domain
 
-## Monitoring
+See [MIGRATION.md](MIGRATION.md) for the step-by-step DNS change at Domains.co.za, the
+pre-launch checklist and the rollback plan. **Do not change DNS until the new site is
+verified on its temporary URL.**
 
-Structured logs (pino JSON) to a log sink; error tracking on web and worker; uptime check
-on `/api/health`; alerts for failed payments, webhook verification failures, integration
-errors, agent failures, job queue backlog and budget thresholds.
+## 6. After deploying
+
+- Settings → Company: verify every detail, tick "verified".
+- Settings → Billing: VAT status, EFT details, terms.
+- Services & pricing: real prices, then "I've set real prices".
+- Settings → Integrations: everything you configured shows **Connected**.
+- Request a Visibility Report for meacreo.co.za; book a test call; send a test invoice to
+  yourself and pay it in the Payfast sandbox.
+- Set up uptime monitoring on `/api/health` and error alerts from the host's logs.
+
+## Rollback
+
+Every deploy is a build of a commit. Vercel: "Promote" the previous deployment. Server:
+check out the previous commit, build, restart. Migrations are additive, so the previous
+build runs against the newer schema. Restore the database from backup only for data
+problems, never as a routine rollback.

@@ -1,45 +1,40 @@
 # Testing
 
-| Layer           | Tool                                            | Location                      | Command                       |
-| --------------- | ----------------------------------------------- | ----------------------------- | ----------------------------- |
-| Unit            | Vitest                                          | `src/**/*.test.ts`            | `pnpm test`                   |
-| Integration     | Vitest + Postgres (docker compose / CI service) | `tests/integration` (Phase 2) | `pnpm test:integration`       |
-| End-to-end      | Playwright (desktop and mobile Chromium)        | `tests/e2e`                   | `pnpm build && pnpm test:e2e` |
-| All fast checks | none                                            | none                          | `pnpm check`                  |
+| Command             | What runs                                                                               |
+| ------------------- | --------------------------------------------------------------------------------------- |
+| `pnpm lint`         | ESLint, zero warnings allowed                                                           |
+| `pnpm format:check` | Prettier                                                                                |
+| `pnpm typecheck`    | Route types + TypeScript                                                                |
+| `pnpm test`         | Vitest unit and integration tests (in-memory Postgres per file)                         |
+| `pnpm test:e2e`     | Playwright against a production build, desktop and mobile, on its own embedded database |
+| `pnpm check`        | lint + typecheck + test                                                                 |
 
-Unit tests run with `APP_ENV=test` and the mock adapters, never with a developer's `.env`
-and never against live provider APIs.
+Before committing: `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build`.
+CI runs all of the above plus E2E on pull requests.
 
-If Playwright's bundled browser is not downloaded (e.g. sandboxed environments), point it
-at an installed Chromium:
+## What's covered
 
-```bash
-PLAYWRIGHT_CHROMIUM_EXECUTABLE=/path/to/chrome pnpm test:e2e
-```
+- **Engines:** audit engine on fixture sites (explained findings, 3–7 opportunities, no
+  overall score), SSRF address checks, lead qualification, client health, booking
+  availability, Payfast signature encoding, proposal totals, QC guarantee blocking.
+- **Lifecycle (database):** invoice payment and duplicate notifications, overdue → pause
+  without data loss, approval hard locks, cross-tenant approval decisions, Ask Mea Creo
+  isolation, API keys, Sales Scout signature and idempotent import, daily cycle.
+- **Platform:** env validation (production refuses mocks), feature flags, integration
+  registry, mocks, money, errors, logging redaction, markdown sanitising.
+- **E2E:** health, security headers, noindex, 404, home hero, founder workspace pages,
+  client isolation, contact form, unknown proposal links, Wix redirects.
 
-## Current coverage (Phase 1)
+## Writing tests
 
-- Environment validation, including production refusing mocks and missing credentials
-- Feature flags
-- Error model: no leakage of internal messages
-- Money: parsing, arithmetic and currency safety
-- Log redaction
-- Integration registry: mocks, not-connected semantics, production guard, health
-- Mock adapters: webhook signature verification and tamper rejection, subscription state,
-  invoice payment state, calendar busy time, email idempotency, storage path traversal,
-  AI mock labelling, social capability enforcement
-- E2E: health, home, noindex outside production, security headers, 404
+- Database tests: `const { db, close } = await testDb()` from `tests/helpers/db.ts` gives a
+  migrated, base-seeded in-memory Postgres.
+- Use the demo fixtures (`src/db/seed/fixtures.ts`) for anything that fetches websites; tests
+  never hit the network.
+- E2E: set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to use a pre-installed Chromium.
 
-## Required suites (spec §120), by phase
+## Manual checks before a release
 
-Authentication and authorisation (3), **tenant isolation** (2/3, and on every new
-module), documents and file access (9), services and activation (10), lead creation (11),
-audit generation (12), proposal acceptance (13), billing, payment webhooks, suspension
-and restoration (14), Xero mocks (14), Google mocks (16), agent permissions (17),
-workflow engine (20), client portal (8), and the full acceptance run (spec §198) in Phase 21.
-
-## Rules
-
-- Every bug fix comes with a test that fails before the fix.
-- Every new tenant-scoped query gets a cross-tenant test.
-- Integration adapters get contract tests with recorded or mocked HTTP.
+Sign in as each demo role, click through the portal on a phone, request a Visibility Report
+for a real site, accept a proposal and pay with the test checkout, approve an item as a
+client, run Run Growth, and check Settings → Integrations and Email log.

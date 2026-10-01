@@ -497,7 +497,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
               />
               <CheckboxField
                 name="pauseOutboundEmail"
-                label="Pause all outbound email (except password resets)"
+                label="Pause notification and marketing email (receipts, invoices, invitations and password resets still send)"
                 defaultChecked={e.pauseOutboundEmail}
               />
               <CheckboxField

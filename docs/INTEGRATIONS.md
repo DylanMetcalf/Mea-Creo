@@ -1,68 +1,87 @@
 # Integrations
 
-All external systems sit behind the contracts in `src/integrations/<kind>/types.ts`.
-Application code asks the registry for an adapter:
+Every external system sits behind an adapter in `src/integrations/<kind>/`, resolved through
+`src/integrations/registry.ts`. Each kind has a mock for development. Production refuses
+mocks. If an integration isn't configured, the product says **Not connected** and keeps
+working; nothing is faked. Live status: Workspace → Settings → Integrations.
 
-```ts
-import { getIntegration, resolveIntegration } from "@/integrations/registry";
+| Kind       | Provider(s)                 | Status in V1                                        | What it does                                                                       | Configure with                                                                                                     |
+| ---------- | --------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Payments   | Payfast                     | **Built**, REQUIRES CONFIGURATION                   | Once-off checkout, subscriptions, signed ITN webhook with server validation        | `PAYMENT_PROVIDER=payfast`, `PAYFAST_MERCHANT_ID`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE`, `PAYFAST_SANDBOX` |
+| AI         | Anthropic (Claude)          | **Built**, REQUIRES CONFIGURATION                   | Drafting and extraction for agents, with server-side model fallback; costs tracked | `AI_PROVIDER=anthropic`, `ANTHROPIC_API_KEY`, optional `AI_MODEL`                                                  |
+| Email      | Resend or SMTP              | **Built**, REQUIRES CONFIGURATION                   | Transactional and notification email, logged in Settings → Email log               | `EMAIL_PROVIDER=resend` + `RESEND_API_KEY`, or `EMAIL_PROVIDER=smtp` + `SMTP_URL`; `EMAIL_FROM`                    |
+| Storage    | Local disk or S3-compatible | **Built**                                           | Uploads with signed, expiring downloads                                            | `STORAGE_PROVIDER=s3` + `S3_*` for production                                                                      |
+| CRM        | Sales Scout                 | **Built (inbound webhook)**, REQUIRES CONFIGURATION | Signed lead import into the pipeline                                               | `CRM_PROVIDER=sales_scout`, `SALES_SCOUT_WEBHOOK_SECRET`                                                           |
+| Founder OS | Mea Creo API                | **Built**                                           | Read business, clients, pipeline, tasks; create leads                              | Workspace → Settings → API keys                                                                                    |
+| Accounting | Xero                        | Contract + mock; adapter not built                  | Invoice and payment sync                                                           | `ACCOUNTING_PROVIDER=xero`, `XERO_CLIENT_ID`, `XERO_CLIENT_SECRET`                                                 |
+| Calendar   | Google Calendar             | Contract + mock; adapter not built                  | Busy times for booking, events with Meet links                                     | `CALENDAR_PROVIDER=google`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`                                             |
+| Search     | Google Search Console       | Contract + mock; adapter not built                  | Queries, impressions, clicks for reports                                           | `SEARCH_PROVIDER=google` + Google OAuth                                                                            |
+| Analytics  | Google Analytics 4          | Contract + mock; adapter not built                  | Sessions and conversions for reports                                               | `ANALYTICS_PROVIDER=google` + Google OAuth                                                                         |
+| Social     | LinkedIn                    | Not built by design                                 | Assisted only. No automated LinkedIn actions                                       | n/a                                                                                                                |
 
-const payments = getIntegration("payments"); // throws INTEGRATION_NOT_CONNECTED if unavailable
+"Contract + mock" means the interface, the mock, the settings UI and every call site exist;
+until the real adapter is added, the integration reports **Not connected** and the product
+uses its fallback (internal calendar only, reports marked "not yet measured", invoices kept
+in Mea Creo). See [FUTURE_ROADMAP.md](FUTURE_ROADMAP.md).
 
-const search = resolveIntegration("search"); // non-throwing: render "Not connected" + Connect
-if (!search.available) return <NotConnected health={search.health} />;
+## Payfast
+
+- Checkout: `startCheckout` → adapter builds the signed form → browser posts to Payfast.
+- Notifications: `POST /api/webhooks/payments/payfast`. The adapter checks the signature,
+  that the request comes from a Payfast host (from the `x-forwarded-for` client IP, so the
+  host must pass the real client IP), and confirms with Payfast's validate endpoint. The
+  billing handler applies the amount to the invoice: less than the balance is recorded as a
+  partial payment and the invoice stays open. Payments are idempotent on
+  `(provider, provider_payment_id)`.
+- Testing without Payfast: the mock sends you to `/pay/test-checkout`, which posts a signed
+  test notification through the same webhook code path. It is disabled whenever a real
+  provider is configured, and mocks are refused in production.
+- Manual EFT: Workspace → Billing → invoice → Record an EFT payment (same code path).
+
+## Sales Scout
+
+`POST /api/webhooks/sales-scout` with header `x-sales-scout-signature` =
+hex HMAC-SHA256 of the raw body using `SALES_SCOUT_WEBHOOK_SECRET`. Body:
+
+```json
+{
+  "leads": [
+    {
+      "externalId": "ss-123",
+      "company": "Example Ltd",
+      "website": "https://example.com",
+      "industry": "Engineering",
+      "location": "Durban",
+      "employeeRange": "11-50",
+      "contact": { "name": "Jane", "email": "jane@example.com", "role": "MD" },
+      "notes": "…"
+    }
+  ]
+}
 ```
 
-## Status
+Imports are idempotent by `externalId`, qualified on arrival, and carry **no consent**:
+outreach still needs approval and a lawful basis.
 
-| Kind       | Contract             | Mock | Real adapter                       | Phase | Flag                       |
-| ---------- | -------------------- | ---- | ---------------------------------- | ----- | -------------------------- |
-| payments   | `PaymentProvider`    | ✅   | Payfast ⬜ (later Yoco/Stripe)     | 14    | `FEATURE_PAYFAST`          |
-| accounting | `AccountingProvider` | ✅   | Xero ⬜                            | 14    | `FEATURE_XERO`             |
-| calendar   | `CalendarProvider`   | ✅   | Google Calendar ⬜ (later Outlook) | 15    | none                       |
-| analytics  | `AnalyticsProvider`  | ✅   | Google Analytics 4 ⬜              | 16    | `FEATURE_GOOGLE_ANALYTICS` |
-| search     | `SearchProvider`     | ✅   | Google Search Console ⬜           | 16    | `FEATURE_GSC`              |
-| ai         | `AIProvider`         | ✅   | Anthropic ⬜ (OpenAI/Google later) | 17    | `FEATURE_AI_AUTOMATION`    |
-| email      | `EmailProvider`      | ✅   | SMTP ⬜, Resend ⬜                 | 3     | none                       |
-| storage    | `StorageProvider`    | ✅   | S3-compatible ⬜                   | 9     | none                       |
-| crm        | `CRMProvider`        | ✅   | Sales Scout ⬜                     | V2    | `FEATURE_SALES_SCOUT`      |
-| social     | `SocialProvider`     | ✅   | LinkedIn ⬜ (approved APIs only)   | V2    | `FEATURE_LINKEDIN`         |
+## Founder OS API
 
-## Rules
+Create a key in Workspace → Settings → API keys (shown once, stored hashed). Send
+`Authorization: Bearer mc_…`. Rate limit: 120 requests a minute per key.
 
-1. **No fake success.** A provider configured but not implemented reports `NOT_CONNECTED`
-   with an explanation. Mocks never fabricate performance data; mock analytics and search
-   return empty results.
-2. **Mocks are for development and tests only.** Production refuses them twice: in env
-   validation and in the registry.
-3. **Secrets.** App-level credentials live in environment variables. Per-organisation
-   OAuth tokens (Google, Xero) are stored in the `integrations` table, encrypted with
-   `ENCRYPTION_KEY` (AES-256-GCM), and never sent to the browser or logged.
-4. **Webhooks** are verified before any state change: signature, source and amount
-   (Payfast ITN also confirms with Payfast's server). They are idempotent, keyed on the
-   provider event id.
-5. **External ids are references** (`external_id`, `external_provider`), never primary keys.
-6. **Platform terms.** Social providers declare their granted capabilities. Anything not
-   granted, such as LinkedIn personal connection requests, is an assisted workflow: the
-   system prepares the list and message drafts, and a human performs the action.
-7. **Sync jobs** run in the worker with retries and backoff. Failures surface in
-   Integration Health, and the admin can retry.
+| Method | Path               | Scope           | Returns                                                             |
+| ------ | ------------------ | --------------- | ------------------------------------------------------------------- |
+| GET    | `/api/v1/business` | `read:business` | MRR, client counts and health, pipeline, receivables, cash, AI cost |
+| GET    | `/api/v1/clients`  | `read:clients`  | Clients with lifecycle, billing state, health and reasons           |
+| GET    | `/api/v1/pipeline` | `read:pipeline` | Leads with stage, source and fit                                    |
+| GET    | `/api/v1/tasks`    | `read:tasks`    | Open tasks                                                          |
+| POST   | `/api/v1/leads`    | `write:leads`   | Creates a lead; returns its id                                      |
 
-## Adding a real adapter
+Amounts are integer minor units (ZAR cents); AI cost is in micro-USD.
 
-1. Implement the contract in `src/integrations/<kind>/<provider>.ts`, importing the vendor
-   SDK or `fetch` only there.
-2. Register it in `factories` in `registry.ts`.
-3. Add its env variables to `env.ts` (with conditional requirements), `.env.example` and
-   ENVIRONMENT.md.
-4. Add contract tests with recorded or mocked HTTP. CI never calls live APIs.
-5. Update the status table above.
+## Adding a provider
 
-## Future: Sales Scout and Founder OS
-
-Both stay independent applications. Mea Creo exposes a versioned, HMAC-signed
-webhook and API layer (`/api/v1/...`):
-
-- **Sales Scout → Mea Creo:** qualified prospect (company, contact, research, score,
-  source, notes). The prospect is created, an audit is queued, and it lands in the CRM.
-- **Founder OS ↔ Mea Creo:** read high-level status and metrics, receive tasks and
-  notifications, and deep-link into the workspace. No shared database.
+1. Implement the kind's interface in `src/integrations/<kind>/<provider>.ts`.
+2. Register a factory in `registry.ts` and add its env vars to `src/config/env.ts`,
+   `.env.example` and [ENVIRONMENT.md](ENVIRONMENT.md).
+3. Add a health check message that tells the admin exactly what's missing.
+4. Never import the SDK anywhere else.

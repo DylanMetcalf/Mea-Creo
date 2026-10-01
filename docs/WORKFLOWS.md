@@ -1,83 +1,60 @@
-# Workflows, automation and approvals
+# Workflows, approvals and runs
 
-**Status:** design (Phase 1). The engine lands in Phase 20; approvals in Phase 6/8.
+## Approval levels
 
-## Event model
+| Level     | Who decides                   | Typical use                                              |
+| --------- | ----------------------------- | -------------------------------------------------------- |
+| Automatic | Nobody: runs and is logged    | Monitoring, internal checks, organising tasks            |
+| Client    | The client, in the portal     | Content, outreach on their behalf, campaign changes      |
+| Mea Creo  | Staff with `approvals.decide` | Reports before publishing, outreach drafts, agent output |
+| Manual    | A person does the work        | Anything that can't be automated safely                  |
 
-State changes write a row to `domain_events` in the same database transaction (the
-transactional outbox), so events are never lost or emitted for rolled-back changes.
-The worker delivers events to subscribers at least once, so every handler is idempotent.
+The effective level = service default → admin override (Settings → Approvals & workflows)
+→ hard locks. **Payments, refunds, contracts, cancellations and budget changes can never be
+automatic.** Approving runs the attached action (`report.publish`, `content.approve`,
+`outreach.send`, `task.create`); requesting changes or rejecting creates a follow-up task.
+Clients can only decide their own organisation's client-level items.
 
-Initial events: `lead.created`, `audit.completed`, `call.booked`, `call.completed`,
-`proposal.created`, `proposal.accepted`, `payment.completed`, `payment.failed`,
-`client.created`, `document.uploaded`, `approval.requested`, `approval.completed`,
-`invoice.overdue`, `invoice.paid`, `service.activated`, `service.paused`,
-`task.completed`, `report.generated`, `monthly_cycle.started`.
+## Runs (RUN buttons)
 
-## Rules
+| Run                           | Does                                                                                   |
+| ----------------------------- | -------------------------------------------------------------------------------------- |
+| Run Growth                    | Every workflow the client's active services need, then opportunities, health, timeline |
+| Run Visibility Audit          | Fresh Visibility Report of the client's site                                           |
+| Run SEO Analysis              | Search and technical findings → tasks and page-change approvals                        |
+| Run AI Visibility Analysis    | Entity clarity, structured data, answer readiness                                      |
+| Run Competitor Analysis       | Client vs competitors, "consider" points                                               |
+| Run Lead Opportunity Scan     | Qualifies prospects, prepares follow-ups for approval                                  |
+| Run Content Opportunity Scan  | Content ideas and a brief                                                              |
+| Run Website Conversion Audit  | Calls to action, enquiry paths, proof, tracking                                        |
+| Run LinkedIn Opportunity Scan | Assisted networking plan; a person performs every LinkedIn action                      |
+| Run Monthly Client Review     | Drafts the monthly report and next month's plan for approval                           |
 
-```
-WHEN   <event>
-IF     <conditions on the event and the client>
-THEN   <action> [, <action>...]
-REQUIRES <approval level>
-```
+Each run produces items with one outcome: **completed**, **requires approval**,
+**recommended**, **blocked** (with what's missing, e.g. "connect Search Console") or
+**no action**. Runs never invent data: anything that needs an unconnected integration is
+reported as blocked or "not yet measured".
 
-Actions: create or assign task, send email, create draft, notify admin or client, generate
-report, run agent, request approval, update CRM, create proposal, create invoice, sync
-Xero, create payment request, schedule meeting, update, pause or resume service, create
-content brief, run audit, run research.
+## Event workflows (`src/modules/workflows/engine.ts`)
 
-## Execution levels
+| When                    | Then                                                                                    |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| `lead.created`          | Assign an owner, create a follow-up task                                                |
+| `invoice.overdue`       | Notify client and admin, follow-up task, recompute health; pause after the grace period |
+| `payment.completed`     | Restore paused services, recompute health                                               |
+| `approval.completed`    | Recompute health                                                                        |
+| `monthly_cycle.started` | Monthly Client Review run for every active client                                       |
 
-| Level   | Behaviour                                    |
-| ------- | -------------------------------------------- |
-| SUGGEST | Creates a recommendation. A human decides.   |
-| PREPARE | Prepares the artifact and requests approval. |
-| EXECUTE | Runs automatically and is logged.            |
+All rules are listed in Settings → Approvals & workflows.
 
-Defaults begin conservative (spec §141) and move toward EXECUTE only as workflows prove
-themselves. Each workflow also has a **maturity** of manual, assisted or automated, and
-the admin can change it.
+## Daily cycle (`src/modules/scheduler/daily.ts`)
 
-### Default approval matrix
-
-| Action                            | Default                                | Can be lowered?                               |
-| --------------------------------- | -------------------------------------- | --------------------------------------------- |
-| SEO research, SEO recommendations | EXECUTE                                | n/a                                           |
-| Internal reports                  | EXECUTE                                | n/a                                           |
-| Strategy                          | PREPARE                                | yes                                           |
-| Client-facing content             | PREPARE                                | yes                                           |
-| External (client) reports         | PREPARE                                | yes                                           |
-| Major website changes             | PREPARE                                | yes                                           |
-| Google Ads campaign changes       | PREPARE                                | yes                                           |
-| LinkedIn personal outreach        | Assisted: human performs it            | no (unless an approved API capability exists) |
-| **Budget changes**                | Always approval                        | **no**                                        |
-| **Payments and refunds**          | Always approval                        | **no**                                        |
-| **Contracts**                     | Always approval                        | **no**                                        |
-| **Client cancellation**           | Always approval                        | **no**                                        |
-| Outbound email to non-clients     | PREPARE, rate-limited, consent-checked | yes, within limits                            |
-
-The "always approval" set is enforced in code, not settings.
-
-## Run Growth (Phase 18)
-
-Per client: load the Client Brain, then services and configuration, then latest
-performance. Next it detects changes, runs the relevant agents and identifies
-opportunities, and creates recommendations and tasks. It then executes EXECUTE-level
-actions, requests approvals for the rest, and writes the run summary, timeline entries and
-an optional client summary. The outcome of each item is
-`COMPLETED | REQUIRES_APPROVAL | RECOMMENDED | BLOCKED | NO_ACTION`.
-
-## Billing automation
-
-`payment.completed` activates eligible services. `payment.failed` notifies the client and
-admin. When the overdue threshold is reached, `invoice.overdue` pauses the configured
-services while portal access to billing and documents is preserved. A later
-`invoice.paid` resumes them. Data is never deleted by billing state.
+Once a day: billing (issue due monthly invoices, mark overdue, reminders, pause after the
+grace period), briefings for calls in the next 36 hours, and the monthly cycle on the
+configured day (once per month). Run by `pnpm worker` or `/api/cron/daily`.
 
 ## Emergency controls
 
-Pause all automations, one agent, one client, one service, outbound email or payments;
-disable an integration; retry a failed workflow run; roll back workflow state where the
-steps are reversible. Every control change is audit-logged.
+Settings → Emergency: pause all automation,
+notification and marketing email (transactional email such as receipts, invoices, invitations and password resets still sends), or online payments. Runs & agents: pause a single agent. Each client: pause automation for
+that client. Nothing is deleted; switching off resumes normal operation.

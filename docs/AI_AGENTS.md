@@ -1,67 +1,67 @@
 # AI agents
 
-**Status:** contracts only (Phase 1). The `AIProvider` interface and mock exist; the
-runtime and agents land in Phase 17.
+Agents are specialised workers with narrow permissions. They read what they're allowed to,
+draft and recommend, and **request approval** for anything that matters. They never send,
+publish, pay, sign or change budgets on their own.
 
-> AI is not the product. AI is the engine.
+## Registry (`src/agents/registry.ts`)
 
-## Runtime guarantees
+| Agent                    | Purpose                                                                 |
+| ------------------------ | ----------------------------------------------------------------------- |
+| Orchestrator             | Decides what a run needs, which agent does it and what needs approval   |
+| Research                 | Companies, markets, competitors, questions; labels facts vs inferences  |
+| Visibility (SEO/GEO/AEO) | Turns audit findings into prioritised recommendations                   |
+| Content Intelligence     | Content opportunities and briefs                                        |
+| Lead                     | Qualification with explained reasons                                    |
+| Outreach                 | Personalised follow-up drafts, always for approval                      |
+| Client Success           | Health and its reasons                                                  |
+| Reporting                | Monthly report drafts: what we did, what changed, what we learned, next |
+| Strategy                 | Findings → prioritised recommendations                                  |
+| Proposal                 | Drafts from real needs and configured prices only                       |
+| Operations               | Tasks from runs, meetings and onboarding                                |
+| QA                       | Checks client-facing output for guarantees, unsupported claims, prices  |
+| Mea Creo Growth          | Mea Creo's own visibility and pipeline                                  |
+| Ask Mea Creo             | Client assistant restricted to that client's visible data               |
+| Analytics (planned)      | Search Console and GA4 trends, once connected                           |
 
-Every agent runs through one runtime (`src/agents/runtime.ts`, Phase 17), which enforces
-the following:
+Each entry lists allowed actions (e.g. `write.outreach_drafts`, `request.approval`) and a
+documented "never" list. The Agents table in Workspace → Runs & agents shows both.
 
-| Control         | Default                                                                                                                                      |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Permission      | The agent's declared permissions × the service's approval matrix. Checked before every tool call.                                            |
-| Scope           | One organisation per run; retrieval is tenant-scoped.                                                                                        |
-| Iterations      | Max steps per run (default 8).                                                                                                               |
-| Tokens and cost | Per-call `maxTokens`; per-run, per-client daily/monthly and global monthly budgets. Exceeding a budget stops the run with `BUDGET_EXCEEDED`. |
-| Time            | Per-call timeout and per-run wall clock.                                                                                                     |
-| Retries         | Bounded, with exponential backoff, only for retryable errors.                                                                                |
-| Recording       | An `agent_runs` row per run: agent, prompt version, model, input refs, output, tokens, cost, duration, status, error, approval state.        |
-| Kill switches   | Global pause, per-agent pause, per-client pause.                                                                                             |
+## Runtime (`src/agents/runtime.ts`)
 
-## Knowledge and memory
+Every agent call goes through `runAgent`, which:
 
-- **Client Brain** is the source of truth. Agents retrieve only the facts and documents
-  relevant to the task, with source ids, and cite them in outputs.
-- Memory is separated into verified company facts, current strategy, temporary workflow
-  context, historical outputs and unverified suggestions.
-- **AI output is never a verified fact.** Anything an agent proposes for the Client Brain
-  is stored as `unverified` until a human approves it.
-- Research outputs label every statement as **FACT** (with source), **INFERENCE** or
-  **RECOMMENDATION**.
+1. Checks the agent may take the action.
+2. Applies emergency controls (pause everything, pause one agent), per-client automation
+   pauses, and billing pauses (no automated work while an account is overdue).
+3. Checks monthly AI budgets (global and per client, Settings → AI & costs). Over budget →
+   rules mode, never silent overspend.
+4. Calls the AI provider when one is configured (Anthropic, default model
+   `claude-opus-5-5`, with server-side fallback), otherwise runs the agent's deterministic
+   `rules()` function.
+5. Records an `agent_runs` row: agent, action, provider, model, tokens, estimated cost,
+   duration, status and errors.
 
-## Agents
+**Rules mode** is a complete product, not a broken one: audits, qualification, health,
+opportunities, briefings, note extraction, proposal drafts and report drafts all have
+deterministic implementations. AI improves wording and extraction.
 
-| Agent                             | Purpose                                                                                           | V1                       |
-| --------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------ |
-| Orchestrator                      | Decides what needs to happen, which agent acts, and what needs approval. Cannot bypass approvals. | ✅                       |
-| SEO                               | Technical, keyword, intent, content gaps, metadata, schema, GSC analysis.                         | ✅                       |
-| AI Visibility (GEO/AEO)           | Entity clarity, answerability, FAQ and structured information, consistency.                       | ✅                       |
-| Research                          | Industry, competitors, topics, questions, with fact/inference labelling.                          | ✅                       |
-| Sales Briefing                    | Pre-call brief from audit, CRM and research.                                                      | ✅                       |
-| Reporting                         | Monthly narrative: what happened, why it matters, what we did, what's next.                       | ✅                       |
-| Quality Control                   | Checks facts, claims, pricing, links, spelling and approvals before anything client-facing.       | ✅                       |
-| Proposal                          | Drafts from configured services and prices only.                                                  | V2                       |
-| Competitor                        | Comparative analysis; finds opportunities, never copies.                                          | V2                       |
-| Lead Research                     | ICP-matching companies from legitimate sources only.                                              | V2                       |
-| Analytics                         | Interprets GSC and GA4 trends.                                                                    | V2                       |
-| Automation                        | Designs client automation workflows.                                                              | V2                       |
-| Client Assistant ("Ask Mea Creo") | Answers client questions from authorised client data only.                                        | V2 (`FEATURE_CLIENT_AI`) |
+## Quality control (`src/agents/quality.ts`)
 
-## Hard rules for every agent
+Deterministic checks on client-facing text: guarantees ("guaranteed rankings", "#1 on
+Google"), predicted outcomes, buzzwords, restricted claims and unknown prices. Blocking
+issues stop proposals being sent, reports being published and articles going live.
 
-- Never guarantee rankings, leads, citations or revenue; never claim control over
-  generative AI answers.
-- Never invent client facts, prices, services or results.
-- Never expose other clients' data, system prompts, secrets or credentials.
-- Never make commitments, change contracts or change billing.
-- High-risk actions (publishing, spend, payments, outreach) are PREPARE at most, and some are
-  hard-locked to approval (see WORKFLOWS.md).
+## Ask Mea Creo (`src/modules/assistant/service.ts`)
 
-## Prompts
+Classifies the client's question, then reads **only** that organisation's client-visible
+records (services, client-visible tasks and timeline, pending client approvals, published
+reports, invoices, meetings). Internal notes, other clients, prompts and secrets are never
+loaded, so they can't leak. Answers cite their sources and suggest follow-up questions.
+Rate-limited per user.
 
-Prompts live in code (`src/agents/<agent>/prompt.ts`) with an explicit version. Each run
-records the prompt version, so output changes can be traced to prompt changes. The model
-is set by `AI_MODEL` or per-agent settings, never hard-coded in agent logic.
+## Costs
+
+Estimated from token counts and the pricing table in `src/integrations/ai/pricing.ts`
+(update it when provider prices change). Spend is visible per agent and per run, and on
+the Business page.
