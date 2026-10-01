@@ -2,11 +2,16 @@ import type { LeadScore } from "@/db/schema";
 import { Badge } from "@/components/ui/primitives";
 
 const LABELS: [keyof Omit<LeadScore, "scoredAt">, string][] = [
-  ["fit", "Fit"],
+  ["fit", "Overall fit"],
+  ["commercialFit", "Commercial fit"],
+  ["serviceFit", "Service fit"],
   ["visibilityOpportunity", "Visibility opportunity"],
-  ["commercialPotential", "Commercial potential"],
-  ["digitalMaturity", "Digital maturity"],
-  ["serviceMatch", "Service match"],
+  ["budgetLikelihood", "Budget likelihood"],
+  ["decisionMakerAccess", "Decision-maker access"],
+  ["urgency", "Urgency"],
+  ["strategicValue", "Strategic value"],
+  ["recurringValue", "Recurring value"],
+  ["clientProbability", "Likelihood of a good client"],
   ["confidence", "Confidence"],
 ];
 

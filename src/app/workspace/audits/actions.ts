@@ -12,7 +12,7 @@ import { AppError } from "@/lib/errors";
 import { randomToken } from "@/lib/ids";
 import { requireStaff } from "@/modules/auth/context";
 import { normaliseWebsiteUrl } from "@/modules/audits/fetcher";
-import { qualifyLead } from "@/modules/leads/qualify";
+import { rescoreLead } from "@/modules/leads/scoring";
 
 const adHocSchema = z.object({
   url: z.string().trim().min(4, "Enter a website address.").max(300),
@@ -67,7 +67,6 @@ export async function saveAuditAsLeadAction(formData: FormData): Promise<void> {
     throw new AppError("CONFLICT", { userMessage: "This report belongs to a client." });
   const origin = new URL(audit.url).origin;
   const company = audit.companyName ?? new URL(audit.url).hostname.replace(/^www\./, "");
-  const q = qualifyLead({ audit: audit.result ?? null });
   const [lead] = await db
     .insert(leads)
     .values({
@@ -76,13 +75,12 @@ export async function saveAuditAsLeadAction(formData: FormData): Promise<void> {
       source: "manual",
       stage: audit.result ? "audit_generated" : "new",
       ownerId: ctx.user.id,
-      score: q.score,
-      recommendedServices: q.recommendedServices,
       opportunitySummary: audit.result?.headline ?? null,
       lastActivityAt: new Date(),
     })
     .returning({ id: leads.id });
   await db.update(audits).set({ leadId: lead.id }).where(eq(audits.id, audit.id));
+  await rescoreLead(db, lead.id);
   await db.insert(leadActivities).values({
     leadId: lead.id,
     type: "note",

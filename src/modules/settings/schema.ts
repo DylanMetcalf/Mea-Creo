@@ -96,6 +96,20 @@ export const settingsSchemas = {
     /** How many clients Dylan can personally serve before delegating. */
     clientCapacity: z.number().int().nullable().default(null),
   }),
+  /** Ideal-client rules used to qualify prospects (handoff §8, §24). */
+  qualification: z.object({
+    targetIndustries: z.array(z.string()),
+    poorFitSignals: z.array(z.string()),
+    idealEmployeeRanges: z.array(z.string()),
+    decisionMakerRoles: z.array(z.string()),
+  }),
+  /** Outreach safety limits (handoff §25). */
+  outreach: z.object({
+    /** Maximum outbound messages sent per day, all channels. No mass messaging. */
+    maxPerDay: z.number().int().min(1).max(100),
+    senderName: z.string(),
+    senderTitle: z.string(),
+  }),
   setup: z.object({ completedSteps: z.array(z.string()) }),
 } as const;
 
@@ -178,5 +192,52 @@ export const settingsDefaults: { [K in SettingsKey]: Settings<K> } = {
     targetNewClientsPerMonth: 3, // 2–3
     clientCapacity: 10, // 8–10
   },
+  qualification: {
+    targetIndustries: [
+      "mining",
+      "electrical",
+      "engineering",
+      "construction",
+      "industrial",
+      "manufacturing",
+      "corporate",
+      "professional services",
+      "business services",
+      "sales",
+      "product",
+      "technical",
+      "specialist",
+      "b2b",
+      "logistics",
+      "legal",
+      "accounting",
+      "consulting",
+      "technology",
+      "software",
+      "financial services",
+      "fire protection",
+      "security",
+      "architecture",
+    ],
+    poorFitSignals: ["cheap", "free work", "lowest price", "no budget", "just a quick", "for free"],
+    idealEmployeeRanges: ["11-50", "51-200", "201-1000", "10-50", "50-200"],
+    decisionMakerRoles: [
+      "owner",
+      "founder",
+      "director",
+      "managing director",
+      "ceo",
+      "chief executive",
+      "general manager",
+      "gm",
+      "head of marketing",
+      "marketing manager",
+      "marketing director",
+      "sales director",
+      "business development",
+      "partner",
+    ],
+  },
+  outreach: { maxPerDay: 15, senderName: "Dylan Metcalf", senderTitle: "Founder, Mea Creo" },
   setup: { completedSteps: [] },
 };

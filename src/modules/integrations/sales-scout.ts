@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { DbOrTx } from "@/db";
 import { leadActivities, leads } from "@/db/schema";
 import { hmacSha256, safeEqual } from "@/lib/crypto";
-import { qualifyLead } from "@/modules/leads/qualify";
+import { rescoreLead } from "@/modules/leads/scoring";
 import { emitEvent } from "@/modules/notifications/service";
 
 export const SALES_SCOUT_SIGNATURE_HEADER = "x-sales-scout-signature";
@@ -68,12 +68,9 @@ export async function importSalesScoutLeads(
       contactRole: l.contact?.role || null,
       email: l.contact?.email?.toLowerCase() || null,
     };
-    const q = qualifyLead({ industry: values.industry, employeeRange: values.employeeRange });
     if (existing) {
-      await db
-        .update(leads)
-        .set({ ...values, score: q.score, recommendedServices: q.recommendedServices })
-        .where(eq(leads.id, existing.id));
+      await db.update(leads).set(values).where(eq(leads.id, existing.id));
+      await rescoreLead(db, existing.id);
       updated++;
     } else {
       const [row] = await db
@@ -83,11 +80,10 @@ export async function importSalesScoutLeads(
           source: "sales_scout",
           externalId: l.externalId,
           message: l.notes || null,
-          score: q.score,
-          recommendedServices: q.recommendedServices,
           lastActivityAt: new Date(),
         })
         .returning({ id: leads.id });
+      await rescoreLead(db, row.id);
       await db
         .insert(leadActivities)
         .values({ leadId: row.id, type: "note", summary: "Imported from Sales Scout." });

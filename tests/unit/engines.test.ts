@@ -53,9 +53,24 @@ describe("Lead qualification", () => {
       employeeRange: "11-50",
       goal: "More enquiries",
     });
-    for (const dim of [good.score.fit, good.score.commercialPotential, good.score.confidence])
+    for (const dim of [good.score.fit, good.score.commercialFit, good.score.confidence])
       expect(dim.reasons.length).toBeGreaterThan(0);
     expect(good.score.fit.level).toBe("high");
+    expect(good.recommendedPackage.ongoing).toBe("package-growth");
+  });
+
+  it("treats mining as a target sector and flags poor-fit signals", () => {
+    expect(qualifyLead({ industry: "Mining services" }).score.commercialFit.level).toBe("high");
+    const cheap = qualifyLead({ industry: "Mining", message: "Looking for the lowest price" });
+    expect(cheap.score.commercialFit.level).toBe("low");
+    expect(cheap.score.fit.level).toBe("low");
+  });
+
+  it("compares estimated value with the internal floor", () => {
+    const low = qualifyLead({ estimatedMonthlyMinor: 300_000 });
+    expect(low.score.recurringValue.level).toBe("low");
+    const high = qualifyLead({ estimatedMonthlyMinor: 1_250_000 });
+    expect(high.score.recurringValue.level).toBe("high");
   });
 });
 

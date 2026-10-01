@@ -6,3 +6,4 @@ export * from "./billing";
 export * from "./work";
 export * from "./platform";
 export * from "./website";
+export * from "./outreach";

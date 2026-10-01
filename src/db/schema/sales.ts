@@ -43,6 +43,11 @@ export const LEAD_SOURCES = [
   "sales_scout",
   "linkedin",
   "outreach",
+  "existing_client",
+  "google_business",
+  "campaign",
+  "email",
+  "other",
 ] as const;
 
 export type DimensionLevel = "high" | "medium" | "low" | "unknown";
@@ -50,16 +55,92 @@ export interface ScoreDimension {
   level: DimensionLevel;
   reasons: string[];
 }
-/** Prospect qualification as explained dimensions, never one opaque number. */
+/**
+ * Prospect qualification as explained dimensions, never one opaque number.
+ * `fit` is the overall summary; every dimension lists the reasons behind it.
+ */
 export interface LeadScore {
   fit: ScoreDimension;
+  commercialFit: ScoreDimension;
+  serviceFit: ScoreDimension & { services: string[] };
   visibilityOpportunity: ScoreDimension;
-  commercialPotential: ScoreDimension;
-  digitalMaturity: ScoreDimension;
-  serviceMatch: ScoreDimension & { services: string[] };
+  budgetLikelihood: ScoreDimension;
+  decisionMakerAccess: ScoreDimension;
+  urgency: ScoreDimension;
+  strategicValue: ScoreDimension;
+  recurringValue: ScoreDimension;
+  clientProbability: ScoreDimension;
   confidence: ScoreDimension;
   scoredAt: string;
 }
+
+/** A person identified as a possible decision maker, with where we found them. */
+export interface DecisionMaker {
+  name: string;
+  role?: string;
+  email?: string;
+  linkedinUrl?: string;
+  /** e.g. "website: /about", "entered by Dylan", "Sales Scout". */
+  source: string;
+}
+
+/** Public information gathered about a prospect (company research agent). */
+export interface ProspectResearch {
+  researchedAt: string;
+  pagesRead: string[];
+  description?: string;
+  services: string[];
+  locations: string[];
+  emails: string[];
+  phones: string[];
+  social: {
+    linkedin?: string;
+    facebook?: string;
+    instagram?: string;
+    youtube?: string;
+    x?: string;
+  };
+  decisionMakers: DecisionMaker[];
+  signals: {
+    hasBooking: boolean;
+    hasContactForm: boolean;
+    hasClearCta: boolean;
+    hasCaseStudies: boolean;
+    hasBlog: boolean;
+    approxPages?: number;
+    multipleLocations: boolean;
+    ecommerce: boolean;
+  };
+  notes: string[];
+}
+
+/** Structured internal brief for a qualified prospect (handoff §23). */
+export interface ProspectBrief {
+  generatedAt: string;
+  company: string;
+  industry?: string;
+  size?: string;
+  location?: string;
+  website?: string;
+  decisionMakers: string[];
+  currentVisibility: string;
+  seoOpportunities: string[];
+  geoOpportunities: string[];
+  aeoOpportunities: string[];
+  contentOpportunities: string[];
+  leadGenerationOpportunities: string[];
+  automationOpportunities: string[];
+  competitorObservations: string[];
+  likelyBusinessProblem: string;
+  whyContact: string;
+  likelyPackage: { entry?: string; ongoing?: string; reason: string };
+  estimatedMonthlyMinor: number | null;
+  confidence: string;
+  sources: string[];
+}
+
+export const CONSENT_STATUSES = ["unknown", "given", "withheld", "withdrawn"] as const;
+export type ConsentStatus = (typeof CONSENT_STATUSES)[number];
 
 /** Leads and prospects. Always Mea Creo-internal data (never visible in a client portal). */
 export const leads = pgTable(
@@ -86,6 +167,16 @@ export const leads = pgTable(
     consentAt: timestamp("consent_at", { withTimezone: true }),
     consentText: text("consent_text"),
     marketingOptIn: boolean("marketing_opt_in").notNull().default(false),
+    /** Direct-marketing consent (POPIA s69). Opt-outs also go on the suppression list. */
+    consentStatus: text("consent_status", { enum: CONSENT_STATUSES }).notNull().default("unknown"),
+    optedOutAt: timestamp("opted_out_at", { withTimezone: true }),
+    decisionMakers: jsonb("decision_makers").$type<DecisionMaker[]>().notNull().default([]),
+    research: jsonb("research").$type<ProspectResearch>(),
+    brief: jsonb("brief").$type<ProspectBrief>(),
+    recommendedPackage: text("recommended_package"),
+    /** First-touch attribution captured on the website (referrer, landing page, UTM). */
+    attribution: jsonb("attribution").$type<Record<string, string>>().notNull().default({}),
+    campaignId: uuid("campaign_id"),
     stage: text("stage", { enum: LEAD_STAGES }).notNull().default("new"),
     ownerId: uuid("owner_id").references(() => users.id, { onDelete: "set null" }),
     estimatedMonthlyMinor: moneyMinor("estimated_monthly_minor"),
@@ -114,6 +205,9 @@ export const LEAD_ACTIVITY_TYPES = [
   "stage_change",
   "audit",
   "proposal",
+  "research",
+  "outreach",
+  "response",
   "system",
 ] as const;
 

@@ -68,7 +68,8 @@ export async function generateMeetingBriefing(
         items: [
           `Fit: ${lead.score.fit.level}. ${lead.score.fit.reasons.join(" ")}`,
           `Visibility opportunity: ${lead.score.visibilityOpportunity.level}`,
-          `Digital maturity: ${lead.score.digitalMaturity.level}. ${lead.score.digitalMaturity.reasons[1] ?? ""}`,
+          `Budget likelihood: ${lead.score.budgetLikelihood.level}. ${lead.score.budgetLikelihood.reasons.join(" ")}`,
+          `Decision-maker access: ${lead.score.decisionMakerAccess.level}`,
           `Confidence: ${lead.score.confidence.level}`,
         ],
       });
@@ -108,7 +109,7 @@ export async function generateMeetingBriefing(
         "Who decides on marketing spend, and what's the budget range?",
         "Have you worked with an agency before? What worked, and what didn't?",
         "What would make the next 6 months a success?",
-        ...(lead.score?.digitalMaturity.level === "high"
+        ...(lead.score?.budgetLikelihood.level === "high"
           ? ["Who handles marketing internally today?"]
           : []),
       ],

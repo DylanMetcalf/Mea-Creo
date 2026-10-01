@@ -10,7 +10,7 @@ import { absoluteUrl } from "@/lib/urls";
 import { logActivity, SYSTEM } from "@/modules/activity/log";
 import { sendEmail } from "@/modules/email/service";
 import { emailTemplates } from "@/modules/email/templates";
-import { qualifyLead } from "@/modules/leads/qualify";
+import { rescoreLead } from "@/modules/leads/scoring";
 import { emitEvent, notifyStaff } from "@/modules/notifications/service";
 import { analyse, toCompetitorComparison } from "./analyse";
 import { collectSignals, type Fetcher } from "./collect";
@@ -214,31 +214,21 @@ async function afterLeadAudit(
 ): Promise<void> {
   const [lead] = await db.select().from(leads).where(eq(leads.id, leadId)).limit(1);
   if (!lead) return;
-  const qualification = qualifyLead({
-    industry: lead.industry,
-    employeeRange: lead.employeeRange,
-    goal: lead.goal,
-    audit: result,
-    website: lead.website,
-  });
   await db
     .update(leads)
     .set({
       stage: lead.stage === "new" ? "audit_generated" : lead.stage,
-      score: qualification.score,
-      recommendedServices: qualification.recommendedServices,
-      opportunitySummary: qualification.opportunitySummary,
-      outreachAngle: qualification.outreachAngle,
       lastActivityAt: new Date(),
     })
     .where(eq(leads.id, leadId));
+  const qualification = await rescoreLead(db, leadId);
   await db
     .insert(leadActivities)
     .values({ leadId, type: "audit", summary: `Visibility Report generated: ${result.headline}` });
   await notifyStaff(db, {
     kind: "lead.audit",
     title: `New Visibility Report: ${lead.company}`,
-    body: `${result.counts.critical + result.counts.improvements} opportunities found. Fit: ${qualification.score.fit.level}.`,
+    body: `${result.counts.critical + result.counts.improvements} opportunities found. Fit: ${qualification?.score.fit.level ?? "unknown"}.`,
     link: `/workspace/leads/${leadId}`,
   });
   if (lead.email) {

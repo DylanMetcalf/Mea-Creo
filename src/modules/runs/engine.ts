@@ -33,7 +33,7 @@ import type { AuditFinding, AuditResult } from "@/modules/audits/types";
 import { requestApproval } from "@/modules/approvals/service";
 import { recomputeHealth } from "@/modules/clients/health";
 import { refreshClientOpportunities } from "@/modules/growth/opportunities";
-import { qualifyLead } from "@/modules/leads/qualify";
+import { rescoreLead } from "@/modules/leads/scoring";
 import { emitEvent } from "@/modules/notifications/service";
 import { isRunKind, RUN_KINDS, type RunKind } from "./kinds";
 
@@ -547,21 +547,7 @@ async function stepLeads(ctx: RunContext) {
       .orderBy(desc(audits.completedAt))
       .limit(1);
     if (!lead.score) {
-      const q = qualifyLead({
-        industry: lead.industry,
-        employeeRange: lead.employeeRange,
-        goal: lead.goal,
-        audit: audit?.result ?? null,
-      });
-      await ctx.db
-        .update(leads)
-        .set({
-          score: q.score,
-          recommendedServices: q.recommendedServices,
-          opportunitySummary: q.opportunitySummary,
-          outreachAngle: q.outreachAngle,
-        })
-        .where(eq(leads.id, lead.id));
+      await rescoreLead(ctx.db, lead.id);
     }
     const fit = lead.score?.fit.level;
     if (!lead.email || !lead.consentAt || fit === "low") continue;

@@ -1,6 +1,6 @@
 "use server";
 
-import { and, desc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -15,7 +15,7 @@ import { fromMajor } from "@/lib/money";
 import { logActivity, userActor } from "@/modules/activity/log";
 import { requireStaff } from "@/modules/auth/context";
 import { normaliseWebsiteUrl } from "@/modules/audits/fetcher";
-import { qualifyLead } from "@/modules/leads/qualify";
+import { rescoreLead } from "@/modules/leads/scoring";
 import { emitEvent } from "@/modules/notifications/service";
 import { createClientOrganisation } from "@/modules/onboarding/service";
 import { createProposalFromLead } from "@/modules/proposals/service";
@@ -77,11 +77,7 @@ export async function createLeadAction(
       })
       .returning({ id: leads.id });
     id = lead.id;
-    const q = qualifyLead({ industry: d.industry, employeeRange: d.employeeRange, goal: d.goal });
-    await db
-      .update(leads)
-      .set({ score: q.score, recommendedServices: q.recommendedServices })
-      .where(eq(leads.id, lead.id));
+    await rescoreLead(db, lead.id);
     await db.insert(leadActivities).values({
       leadId: lead.id,
       type: "note",
@@ -223,18 +219,6 @@ export async function updateLeadAction(
     const d = parsed.data;
     const db = await getDb();
     const leadId = str(formData, "leadId");
-    const [audit] = await db
-      .select({ result: audits.result })
-      .from(audits)
-      .where(and(eq(audits.leadId, leadId), eq(audits.status, "complete")))
-      .orderBy(desc(audits.completedAt))
-      .limit(1);
-    const q = qualifyLead({
-      industry: d.industry,
-      employeeRange: d.employeeRange,
-      goal: d.goal,
-      audit: audit?.result ?? null,
-    });
     await db
       .update(leads)
       .set({
@@ -252,10 +236,9 @@ export async function updateLeadAction(
         estimatedMonthlyMinor: d.estimatedMonthly
           ? fromMajor(d.estimatedMonthly.replace(/[^\d.]/g, "") || "0").amountMinor
           : null,
-        score: q.score,
-        recommendedServices: q.recommendedServices,
       })
       .where(eq(leads.id, leadId));
+    await rescoreLead(db, leadId);
     refresh();
     return { ok: true, message: "Saved and re-qualified." };
   }, formData);

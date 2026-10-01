@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { leadActivities, leads } from "@/db/schema";
 import { requireApiKey } from "@/modules/api-keys/guard";
-import { qualifyLead } from "@/modules/leads/qualify";
+import { rescoreLead } from "@/modules/leads/scoring";
 import { emitEvent } from "@/modules/notifications/service";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +28,6 @@ export async function POST(request: Request) {
       { status: 422 },
     );
   const d = parsed.data;
-  const q = qualifyLead({ industry: d.industry, employeeRange: d.employeeRange });
   const [lead] = await auth.db
     .insert(leads)
     .values({
@@ -40,11 +39,10 @@ export async function POST(request: Request) {
       employeeRange: d.employeeRange || null,
       message: d.notes || null,
       source: "manual",
-      score: q.score,
-      recommendedServices: q.recommendedServices,
       lastActivityAt: new Date(),
     })
     .returning({ id: leads.id });
+  await rescoreLead(auth.db, lead.id);
   await auth.db
     .insert(leadActivities)
     .values({ leadId: lead.id, type: "note", summary: `Created via API key "${auth.key.name}".` });
