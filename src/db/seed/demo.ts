@@ -1137,7 +1137,7 @@ export async function seedDemo(db: Db): Promise<void> {
         stage: "new",
         isDemo: true,
         ownerId: null,
-        createdAt: at(0, 7),
+        createdAt: new Date(Date.now() - 2 * 3600_000),
         message: "We'd like to automate client reporting and understand AI options.",
       },
     ])

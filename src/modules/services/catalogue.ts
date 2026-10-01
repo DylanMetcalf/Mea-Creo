@@ -513,3 +513,10 @@ export const CATEGORY_LABELS: Record<ServiceCategory, string> = {
   creative: "Creative",
   website: "Website",
 };
+
+const NAME_BY_SLUG = new Map(SERVICE_CATALOGUE.map((s) => [s.slug, s.name]));
+
+/** Display name for a catalogue slug (falls back to a humanised slug). */
+export function serviceName(slug: string): string {
+  return NAME_BY_SLUG.get(slug) ?? slug.replace(/[-_]/g, " ").replace(/^./, (c) => c.toUpperCase());
+}
