@@ -77,6 +77,8 @@ export const envSchema = z
     SOCIAL_PROVIDER: z.enum(["none", "mock", "linkedin"]).default("none"),
 
     SALES_SCOUT_WEBHOOK_SECRET: optionalString,
+    /** Bearer secret for /api/cron/* (hosts without a long-running worker, e.g. Vercel Cron). */
+    CRON_SECRET: optionalString,
 
     FEATURE_XERO: bool,
     FEATURE_PAYFAST: bool,

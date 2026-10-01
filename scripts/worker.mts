@@ -1,5 +1,6 @@
 /**
- * Background worker: processes queued jobs and runs scheduled work.
+ * Background worker: processes queued jobs and runs scheduled work (daily cycle: billing,
+ * call briefings and the monthly client review; domain events every 30 seconds).
  *   pnpm worker
  * Run one (or more) alongside the web process in production.
  */
@@ -21,7 +22,7 @@ let lastEvents = 0;
 while (!stopping) {
   const today = new Date().toISOString().slice(0, 10);
   if (today !== lastDaily) {
-    await enqueue(db, "billing.daily", {});
+    await enqueue(db, "daily.cycle", {}, { maxAttempts: 2 });
     lastDaily = today;
   }
   if (Date.now() - lastEvents > 30_000) {
