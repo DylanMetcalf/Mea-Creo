@@ -81,7 +81,7 @@ export const emailTemplates = {
           : "We'll send the meeting link before the call.",
         "We'll review your website before we speak so the time is useful.",
       ],
-      { label: "View booking", url: p.manageUrl },
+      { label: "Need to change the time? Contact us", url: p.manageUrl },
     ),
   proposalSent: (p: { name: string; company: string; url: string }) =>
     build(

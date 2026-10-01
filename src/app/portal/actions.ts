@@ -76,16 +76,14 @@ export async function portalMessageAction(_p: ActionState, fd: FormData): Promis
     if (!parsed.success) return parsed.state;
     const db = await getDb();
     await enforceRateLimit(db, `portal-msg:${ctx.user.id}`, 30, 3600);
-    await db
-      .insert(messages)
-      .values({
-        organisationId: ctx.organisationId,
-        authorId: ctx.user.id,
-        fromClient: true,
-        kind: parsed.data.kind,
-        subject: parsed.data.subject || null,
-        body: parsed.data.body,
-      });
+    await db.insert(messages).values({
+      organisationId: ctx.organisationId,
+      authorId: ctx.user.id,
+      fromClient: true,
+      kind: parsed.data.kind,
+      subject: parsed.data.subject || null,
+      body: parsed.data.body,
+    });
     await notifyStaff(db, {
       kind: "message.received",
       title: `${ctx.organisationName}: new ${parsed.data.kind === "support" ? "support request" : "message"}`,
@@ -185,14 +183,12 @@ export async function portalRequestServiceAction(
       .from(services)
       .where(and(eq(services.id, serviceId), eq(services.status, "active")));
     if (!service) throw new AppError("NOT_FOUND");
-    await db
-      .insert(serviceRequests)
-      .values({
-        organisationId: ctx.organisationId,
-        serviceId,
-        requestedById: ctx.user.id,
-        note: String(fd.get("note") ?? "").slice(0, 1000) || null,
-      });
+    await db.insert(serviceRequests).values({
+      organisationId: ctx.organisationId,
+      serviceId,
+      requestedById: ctx.user.id,
+      note: String(fd.get("note") ?? "").slice(0, 1000) || null,
+    });
     await notifyStaff(db, {
       kind: "service.requested",
       title: `${ctx.organisationName} asked about ${service.name}`,

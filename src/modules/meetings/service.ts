@@ -217,7 +217,7 @@ export async function bookPublicCall(db: Db, input: BookingInput): Promise<{ mee
       when,
       type: "visibility review",
       meetingUrl: meeting?.meetingUrl ?? undefined,
-      manageUrl: absoluteUrl(`/book/confirmed/${result.meetingId}`),
+      manageUrl: absoluteUrl("/contact"),
     }),
     idempotencyKey: `booking:${result.meetingId}`,
   });
