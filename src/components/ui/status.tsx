@@ -174,6 +174,8 @@ export function HealthLabel({
 
 export function DueLabel({ due, done }: { due: Date | null; done?: boolean }) {
   if (!due) return <span className="text-subtle text-sm">No due date</span>;
+  // Rendered on the server per request, so reading the clock here is intentional.
+  // eslint-disable-next-line react-hooks/purity
   const overdue = !done && due.getTime() < Date.now();
   return (
     <span

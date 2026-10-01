@@ -127,14 +127,12 @@ export async function uploadDocument(
     byClient: input.byClient,
   });
   if (input.byClient) {
-    await db
-      .insert(timelineEntries)
-      .values({
-        organisationId: input.organisationId,
-        kind: "work",
-        title: `File shared: ${input.file.name}`,
-        visibility: "client",
-      });
+    await db.insert(timelineEntries).values({
+      organisationId: input.organisationId,
+      kind: "work",
+      title: `File shared: ${input.file.name}`,
+      visibility: "client",
+    });
   }
   return id;
 }

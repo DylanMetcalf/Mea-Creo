@@ -98,15 +98,13 @@ export async function createClientAction(
       .insert(clientAssignments)
       .values({ organisationId: id, userId: ctx.user.id, responsibility: "account_manager" });
     if (d.contactName)
-      await db
-        .insert(contacts)
-        .values({
-          organisationId: id,
-          name: d.contactName,
-          email: d.contactEmail || null,
-          role: d.contactRole,
-          isPrimary: true,
-        });
+      await db.insert(contacts).values({
+        organisationId: id,
+        name: d.contactName,
+        email: d.contactEmail || null,
+        role: d.contactRole,
+        isPrimary: true,
+      });
     await logActivity(db, userActor(ctx.user), {
       organisationId: id,
       action: "client.created",
@@ -189,15 +187,13 @@ export async function addFactAction(_prev: ActionState, formData: FormData): Pro
     );
     if (!parsed.success) return parsed.state;
     const db = await getDb();
-    await db
-      .insert(clientBrainFacts)
-      .values({
-        organisationId,
-        ...parsed.data,
-        sourceType: "human",
-        verification: "verified",
-        createdById: ctx.user.id,
-      });
+    await db.insert(clientBrainFacts).values({
+      organisationId,
+      ...parsed.data,
+      sourceType: "human",
+      verification: "verified",
+      createdById: ctx.user.id,
+    });
     await logActivity(db, userActor(ctx.user), {
       organisationId,
       action: "brain.fact_added",
@@ -333,18 +329,14 @@ export async function addContactAction(
       formData,
     );
     if (!parsed.success) return parsed.state;
-    await (
-      await getDb()
-    )
-      .insert(contacts)
-      .values({
-        organisationId,
-        name: parsed.data.name,
-        email: parsed.data.email || null,
-        phone: parsed.data.phone,
-        role: parsed.data.role,
-        isDecisionMaker: parsed.data.isDecisionMaker === "on",
-      });
+    await (await getDb()).insert(contacts).values({
+      organisationId,
+      name: parsed.data.name,
+      email: parsed.data.email || null,
+      phone: parsed.data.phone,
+      role: parsed.data.role,
+      isDecisionMaker: parsed.data.isDecisionMaker === "on",
+    });
     refresh();
     return { ok: true, message: "Contact added." };
   }, formData);
@@ -572,18 +564,14 @@ export async function addNoteAction(_prev: ActionState, formData: FormData): Pro
     const ctx = await staffFor(organisationId, "clients.read.assigned");
     const body = str(formData, "body").trim();
     if (body.length < 2) return { ok: false, fieldErrors: { body: ["Write a note first."] } };
-    await (
-      await getDb()
-    )
-      .insert(notes)
-      .values({
-        organisationId,
-        entityType: "client",
-        entityId: organisationId,
-        body: body.slice(0, 5000),
-        authorId: ctx.user.id,
-        visibility: "internal",
-      });
+    await (await getDb()).insert(notes).values({
+      organisationId,
+      entityType: "client",
+      entityId: organisationId,
+      body: body.slice(0, 5000),
+      authorId: ctx.user.id,
+      visibility: "internal",
+    });
     refresh();
     return { ok: true };
   }, formData);
@@ -625,15 +613,13 @@ export async function sendMessageAction(
     const body = str(formData, "body").trim();
     if (!body) return { ok: false, fieldErrors: { body: ["Write a message first."] } };
     const db = await getDb();
-    await db
-      .insert(messages)
-      .values({
-        organisationId,
-        authorId: ctx.user.id,
-        fromClient: false,
-        body: body.slice(0, 5000),
-        readByStaffAt: new Date(),
-      });
+    await db.insert(messages).values({
+      organisationId,
+      authorId: ctx.user.id,
+      fromClient: false,
+      body: body.slice(0, 5000),
+      readByStaffAt: new Date(),
+    });
     await db
       .update(messages)
       .set({ readByStaffAt: new Date() })

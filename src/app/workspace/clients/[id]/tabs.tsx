@@ -1238,7 +1238,7 @@ export function BillingTab({ data }: Props) {
         <CardBody>
           {data.subscriptions.length === 0 ? (
             <p className="text-muted text-sm">
-              No recurring billing set up. It's created when a monthly service is activated.
+              No recurring billing set up. It&apos;s created when a monthly service is activated.
             </p>
           ) : (
             data.subscriptions.map((s) => (

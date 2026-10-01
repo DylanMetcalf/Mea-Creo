@@ -52,7 +52,6 @@ export default async function ClientPage({
   if (!data) notFound();
   const { client } = data;
   const activeServices = data.services.filter((s) => s.cs.status === "active");
-  const pendingApprovals = data.approvals.filter((a) => a.status === "pending").length;
   const openTasks = data.tasks.filter(
     (t) => !["complete", "cancelled"].includes(t.task.status),
   ).length;
