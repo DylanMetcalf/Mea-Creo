@@ -175,7 +175,13 @@ async function billingContacts(db: DbOrTx, organisationId: string) {
 /** Starts a hosted checkout for an open invoice. The organisation must own the invoice. */
 export async function startCheckout(
   db: DbOrTx,
-  input: { organisationId: string; invoiceId: string; customer: { email: string; name: string } },
+  input: {
+    organisationId: string;
+    invoiceId: string;
+    customer: { email: string; name: string };
+    /** Where to send the payer afterwards (defaults to the portal billing page). */
+    returnPath?: string;
+  },
 ): Promise<CheckoutRedirect> {
   const emergency = await getPlatformSetting(db, "emergency");
   if (emergency.pausePayments)
@@ -203,8 +209,12 @@ export async function startCheckout(
     amount: money(invoice.totalMinor - invoice.amountPaidMinor, currency),
     description: `Mea Creo invoice ${invoice.number}`,
     customer: input.customer,
-    returnUrl: absoluteUrl(`/portal/billing?payment=return&invoice=${invoice.id}`),
-    cancelUrl: absoluteUrl(`/portal/billing?payment=cancelled&invoice=${invoice.id}`),
+    returnUrl: absoluteUrl(
+      `${input.returnPath ?? "/portal/billing"}?payment=return&invoice=${invoice.id}`,
+    ),
+    cancelUrl: absoluteUrl(
+      `${input.returnPath ?? "/portal/billing"}?payment=cancelled&invoice=${invoice.id}`,
+    ),
     notifyUrl: absoluteUrl(`/api/webhooks/payments/${payments.adapter.provider}`),
   });
 }

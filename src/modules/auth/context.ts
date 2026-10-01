@@ -125,7 +125,7 @@ export async function requireClient(permission?: Permission): Promise<ClientCont
  */
 export const staffClientScope = cache(async (ctx: StaffContext): Promise<"all" | string[]> => {
   if (ctx.can("clients.read.all")) return "all";
-  if (!ctx.can("clients.read.assigned")) return [];
+  if (!ctx.can("clients.read.assigned")) return [ctx.platformOrganisationId];
   const db = await getDb();
   const [assigned, managed] = await Promise.all([
     db
@@ -137,7 +137,8 @@ export const staffClientScope = cache(async (ctx: StaffContext): Promise<"all" |
       .from(clients)
       .where(or(eq(clients.accountManagerId, ctx.user.id))),
   ]);
-  return [...new Set([...assigned, ...managed].map((r) => r.id))];
+  // Internal Mea Creo work (platform organisation) is visible to all staff.
+  return [...new Set([ctx.platformOrganisationId, ...[...assigned, ...managed].map((r) => r.id)])];
 });
 
 export async function assertStaffClientAccess(

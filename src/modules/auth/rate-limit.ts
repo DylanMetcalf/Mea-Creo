@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { DbOrTx } from "@/db";
 import { rateLimits } from "@/db/schema";
 import { AppError } from "@/lib/errors";
@@ -37,4 +37,9 @@ export async function enforceRateLimit(
 ): Promise<void> {
   const { limited } = await hitRateLimit(db, key, limit, windowSeconds);
   if (limited) throw new AppError("RATE_LIMITED");
+}
+
+/** Clears a limiter key (e.g. after a successful sign-in, so only failures accumulate). */
+export async function clearRateLimit(db: DbOrTx, key: string): Promise<void> {
+  await db.delete(rateLimits).where(eq(rateLimits.key, key));
 }

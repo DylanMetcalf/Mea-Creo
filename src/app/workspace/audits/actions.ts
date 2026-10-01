@@ -83,14 +83,12 @@ export async function saveAuditAsLeadAction(formData: FormData): Promise<void> {
     })
     .returning({ id: leads.id });
   await db.update(audits).set({ leadId: lead.id }).where(eq(audits.id, audit.id));
-  await db
-    .insert(leadActivities)
-    .values({
-      leadId: lead.id,
-      type: "note",
-      summary: "Lead created from a Visibility Report.",
-      actorId: ctx.user.id,
-    });
+  await db.insert(leadActivities).values({
+    leadId: lead.id,
+    type: "note",
+    summary: "Lead created from a Visibility Report.",
+    actorId: ctx.user.id,
+  });
   redirect(`/workspace/leads/${lead.id}`);
 }
 

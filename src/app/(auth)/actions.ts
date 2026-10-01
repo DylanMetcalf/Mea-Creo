@@ -11,7 +11,7 @@ import { absoluteUrl } from "@/lib/urls";
 import { logActivity } from "@/modules/activity/log";
 import { getSession, requestMeta } from "@/modules/auth/context";
 import { hashPassword, validatePasswordStrength, verifyPassword } from "@/modules/auth/password";
-import { hitRateLimit } from "@/modules/auth/rate-limit";
+import { clearRateLimit, hitRateLimit } from "@/modules/auth/rate-limit";
 import {
   createSession,
   deleteSession,
@@ -54,7 +54,8 @@ export async function loginAction(_prev: ActionState, formData: FormData): Promi
     const db = await getDb();
     const meta = await requestMeta();
     const email = parsed.data.email.toLowerCase();
-    const limit = await hitRateLimit(db, `login:${meta.ipAddress ?? "?"}:${email}`, 8, 15 * 60);
+    const limitKey = `login:${meta.ipAddress ?? "?"}:${email}`;
+    const limit = await hitRateLimit(db, limitKey, 8, 15 * 60);
     if (limit.limited)
       return {
         ok: false,
@@ -72,6 +73,7 @@ export async function loginAction(_prev: ActionState, formData: FormData): Promi
         values: { email },
       };
     }
+    await clearRateLimit(db, limitKey);
     const { token, expiresAt } = await createSession(db, user.id, meta);
     await setSessionCookie(token, expiresAt);
     await logActivity(
