@@ -6,7 +6,6 @@ import {
   type ApprovalType,
   approvals,
   contentItems,
-  leadActivities,
   leads,
   reports,
   tasks,
@@ -310,34 +309,43 @@ export async function executeApprovalAction(
       break;
     }
     case "outreach.send": {
-      const [lead] = await db
-        .select()
-        .from(leads)
-        .where(eq(leads.id, String(p.leadId)))
-        .limit(1);
-      if (lead?.email) {
-        const body = String(p.body ?? "");
-        await sendEmail(db, {
-          to: { email: lead.email, name: lead.contactName ?? undefined },
-          template: "outreach",
-          category: "outbound",
-          email: {
-            subject: String(p.subject ?? "Your Visibility Report"),
-            text: body,
-            html: `<div style="font-family:Helvetica,Arial,sans-serif;white-space:pre-wrap;line-height:1.6">${body.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c]!)}</div>`,
-          },
-          idempotencyKey: `outreach:${lead.id}:${String(p.sequence ?? 1)}`,
-        });
-        await db.insert(leadActivities).values({
-          leadId: lead.id,
-          type: "email",
-          summary: `Approved outreach sent: ${String(p.subject ?? "")}`,
-        });
-        if (["new", "audit_generated", "qualified"].includes(lead.stage))
-          await db
-            .update(leads)
-            .set({ stage: "contacted", lastActivityAt: new Date() })
-            .where(eq(leads.id, lead.id));
+      const { sendApprovedCommunication } = await import("@/modules/outreach/service");
+      let communicationId = p.communicationId ? String(p.communicationId) : null;
+      if (!communicationId && p.leadId) {
+        // Approvals created before the outreach module: record the message first so it
+        // goes through the same compliance checks and history.
+        const { communications } = await import("@/db/schema");
+        const [lead] = await db
+          .select()
+          .from(leads)
+          .where(eq(leads.id, String(p.leadId)))
+          .limit(1);
+        if (!lead) break;
+        const [comm] = await db
+          .insert(communications)
+          .values({
+            leadId: lead.id,
+            direction: "outbound",
+            channel: "email",
+            purpose: "follow_up",
+            status: "approved",
+            toName: lead.contactName,
+            toAddress: lead.email,
+            subject: String(p.subject ?? lead.company),
+            body: String(p.body ?? ""),
+          })
+          .returning({ id: communications.id });
+        communicationId = comm.id;
+      }
+      if (communicationId) {
+        const result = await sendApprovedCommunication(db, communicationId);
+        if (result.status === "blocked" || result.status === "failed")
+          await notifyStaff(db, {
+            kind: "outreach.blocked",
+            title: `Message not sent: ${result.reason ?? result.status}`,
+            link: p.leadId ? `/workspace/leads/${String(p.leadId)}` : "/workspace/outreach",
+            organisationId,
+          });
       }
       break;
     }

@@ -20,6 +20,9 @@ export interface SendEmailInput {
   category: EmailCategory;
   organisationId?: string | null;
   idempotencyKey?: string;
+  /** One-click opt-out link (List-Unsubscribe). Required for outbound prospecting email. */
+  unsubscribeUrl?: string;
+  replyTo?: string;
 }
 
 /** Sends through the configured provider and records every message in the email log. */
@@ -77,6 +80,8 @@ export async function sendEmail(
       text: input.email.text,
       html: input.email.html,
       idempotencyKey: input.idempotencyKey,
+      unsubscribeUrl: input.unsubscribeUrl,
+      replyTo: input.replyTo,
       tags: { template: input.template },
     });
     await db.insert(emailLog).values({

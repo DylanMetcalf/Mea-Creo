@@ -14,6 +14,7 @@ import {
   type LucideIcon,
   Newspaper,
   Search,
+  Send,
   Settings,
   Target,
   Users,
@@ -46,6 +47,7 @@ export const WORKSPACE_NAV: { title: string; items: NavItem[] }[] = [
     title: "Growth",
     items: [
       { href: "/workspace/leads", label: "Leads & pipeline", icon: Target },
+      { href: "/workspace/outreach", label: "Outreach", icon: Send },
       { href: "/workspace/audits", label: "Visibility reports", icon: Search },
       { href: "/workspace/proposals", label: "Proposals", icon: FileText },
     ],

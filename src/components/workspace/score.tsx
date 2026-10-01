@@ -21,6 +21,7 @@ export function ScoreDimensions({ score }: { score: LeadScore }) {
     <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {LABELS.map(([key, label]) => {
         const dim = score[key];
+        if (!dim) return null;
         return (
           <div key={key} className="border-border rounded-lg border p-3">
             <dt className="flex items-center justify-between gap-2 text-sm font-medium">

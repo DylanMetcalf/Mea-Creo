@@ -7,8 +7,8 @@ import {
   clients,
   clientServices,
   competitors,
+  communications,
   contentItems,
-  leadActivities,
   leads,
   type ReportContent,
   reports,
@@ -35,6 +35,7 @@ import { recomputeHealth } from "@/modules/clients/health";
 import { refreshClientOpportunities } from "@/modules/growth/opportunities";
 import { rescoreLead } from "@/modules/leads/scoring";
 import { emitEvent } from "@/modules/notifications/service";
+import { getPlatformSetting } from "@/modules/settings/service";
 import { isRunKind, RUN_KINDS, type RunKind } from "./kinds";
 
 interface RunContext {
@@ -539,78 +540,41 @@ async function stepLeads(ctx: RunContext) {
     .from(leads)
     .where(inArray(leads.stage, ["new", "audit_generated", "qualified"]));
   let drafted = 0;
+  let blocked = 0;
+  const { checkOutreach, draftOutreach } = await import("@/modules/outreach/service");
+  const { maxPerDay } = await getPlatformSetting(ctx.db, "outreach");
   for (const lead of open) {
-    const [audit] = await ctx.db
-      .select({ result: audits.result })
-      .from(audits)
-      .where(and(eq(audits.leadId, lead.id), eq(audits.status, "complete")))
-      .orderBy(desc(audits.completedAt))
-      .limit(1);
-    if (!lead.score) {
-      await rescoreLead(ctx.db, lead.id);
-    }
-    const fit = lead.score?.fit.level;
-    if (!lead.email || !lead.consentAt || fit === "low") continue;
+    if (drafted >= maxPerDay) break;
+    if (!lead.score) await rescoreLead(ctx.db, lead.id);
+    if (lead.score?.fit.level === "low" || !lead.email) continue;
     const [recent] = await ctx.db
-      .select({ id: leadActivities.id })
-      .from(leadActivities)
+      .select({ id: communications.id })
+      .from(communications)
       .where(
         and(
-          eq(leadActivities.leadId, lead.id),
-          inArray(leadActivities.type, ["email", "call"]),
-          gte(leadActivities.createdAt, new Date(Date.now() - 3 * 86400_000)),
+          eq(communications.leadId, lead.id),
+          gte(communications.createdAt, new Date(Date.now() - 7 * 86400_000)),
         ),
       )
       .limit(1);
     if (recent) continue;
-    const top = audit?.result?.opportunities[0];
-    const first = (lead.contactName ?? "there").split(" ")[0];
-    const draft = await runAgent(ctx.db, {
-      agent: "outreach",
-      action: "write.outreach_drafts",
-      organisationId: ctx.organisationId,
-      runId: ctx.runId,
-      input: { leadId: lead.id },
-      prompt: {
-        system:
-          "You write short, personal follow-up emails from Dylan at Mea Creo to people who requested a Visibility Report. Under 120 words. Reference one specific finding. Offer a 20-minute call. No guarantees, no hype, no buzzwords. Plain text only.",
-        user: `Name: ${lead.contactName}\nCompany: ${lead.company}\nTop finding: ${top?.title ?? "n/a"}\nWhy: ${top?.description ?? ""}`,
-        maxTokens: 500,
-      },
-      rules: () =>
-        `Hi ${first},\n\nThanks for requesting a Visibility Report for ${lead.company}. ${top ? `The biggest opportunity we saw: ${top.title.toLowerCase()}` : "There are a few quick wins in there."}\n\nWould a 20-minute call next week be useful to walk through what we'd do first? No obligation.\n\nKind regards,\nDylan\nMea Creo`,
-    });
-    if (draft.status !== "succeeded") continue;
-    const qc = checkQuality(draft.text);
-    await requestApproval(ctx.db, {
-      organisationId: ctx.organisationId,
-      level: "internal",
-      type: "outreach",
-      title: `Send follow-up email to ${lead.company}`,
-      description: `${draft.source === "ai" ? "AI-drafted" : "Template"} follow-up. Nothing is sent without approval.${qc.passed ? "" : ` QC flags: ${qc.issues.map((i) => i.rule).join(", ")}`}`,
-      preview: draft.text,
-      requestedAction: "Approve & send",
-      requestedByAgent: "outreach",
-      runId: ctx.runId,
-      entityType: "lead",
-      entityId: lead.id,
-      action: {
-        type: "outreach.send",
-        payload: {
-          leadId: lead.id,
-          subject: `Your Visibility Report for ${lead.company}`,
-          body: draft.text,
-          sequence: 1,
-        },
-      },
-    });
-    drafted++;
+    const check = await checkOutreach(ctx.db, lead, "email");
+    if (check.blocked) {
+      blocked++;
+      continue;
+    }
+    try {
+      await draftOutreach(ctx.db, lead.id, { channel: "email", useAi: true, runId: ctx.runId });
+      drafted++;
+    } catch {
+      blocked++;
+    }
   }
   add(
     ctx,
     drafted ? "requires_approval" : "no_action",
-    drafted ? `${drafted} follow-up email(s) awaiting approval` : "No follow-ups due",
-    `${open.length} open prospect(s) reviewed.`,
+    drafted ? `${drafted} outreach message(s) awaiting approval` : "No outreach due",
+    `${open.length} open prospect(s) reviewed${blocked ? `; ${blocked} skipped by the compliance check (opt-out, no consent or already contacted)` : ""}.`,
     { agent: "outreach", link: "/workspace/approvals" },
   );
 }

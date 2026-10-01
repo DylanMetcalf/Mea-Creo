@@ -1,7 +1,8 @@
 import "server-only";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import type { DbOrTx } from "@/db";
 import { audits, leads } from "@/db/schema";
+import { buildProspectBrief } from "@/modules/prospects/brief";
 import { getPlatformSetting } from "@/modules/settings/service";
 import { qualifyLead, type QualificationConfig, type Qualification } from "./qualify";
 
@@ -12,6 +13,17 @@ const ENGAGED_STAGES = [
   "proposal_sent",
   "negotiation",
 ];
+
+/** Re-qualifies leads whose saved score predates the current model. Returns how many. */
+export async function upgradeOutdatedScores(db: DbOrTx, limit = 200): Promise<number> {
+  const outdated = await db
+    .select({ id: leads.id })
+    .from(leads)
+    .where(and(isNotNull(leads.score), sql`${leads.score}->'commercialFit' is null`))
+    .limit(limit);
+  for (const l of outdated) await rescoreLead(db, l.id);
+  return outdated.length;
+}
 
 /** Qualification rules as configured in Settings → Qualification and Targets. */
 export async function loadQualificationConfig(db: DbOrTx): Promise<QualificationConfig> {
@@ -28,7 +40,8 @@ export async function loadQualificationConfig(db: DbOrTx): Promise<Qualification
 
 /**
  * Re-qualifies a lead from everything on record (details, latest Visibility Report,
- * research, decision makers) and saves the explained score and package recommendation.
+ * research, decision makers) and saves the explained score, package recommendation and
+ * prospect intelligence brief.
  */
 export async function rescoreLead(db: DbOrTx, leadId: string): Promise<Qualification | null> {
   const [lead] = await db.select().from(leads).where(eq(leads.id, leadId)).limit(1);
@@ -70,6 +83,7 @@ export async function rescoreLead(db: DbOrTx, leadId: string): Promise<Qualifica
       recommendedPackage: q.recommendedPackage.ongoing ?? q.recommendedPackage.entry ?? null,
       opportunitySummary: q.opportunitySummary,
       outreachAngle: q.outreachAngle,
+      brief: buildProspectBrief(lead, q, audit?.result),
     })
     .where(eq(leads.id, leadId));
   return q;

@@ -25,7 +25,8 @@ export const metadata: Metadata = { title: "Approval" };
 const ACTION_LABELS: Record<string, string> = {
   "report.publish": "Publishes the report to the client portal.",
   "content.approve": "Marks the content as approved and ready to schedule.",
-  "outreach.send": "Marks the outreach as approved for sending by a person.",
+  "outreach.send":
+    "Re-checks opt-outs and the daily limit, then sends the email with an unsubscribe link. LinkedIn, phone and WhatsApp messages become a task for you to send yourself.",
   "task.create": "Creates a task for the team.",
 };
 

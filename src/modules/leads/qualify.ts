@@ -71,6 +71,11 @@ const rand = (minor: number) =>
     .toLocaleString("en-ZA")
     .replace(/\s/g, ",")}`;
 
+/** Scores saved before the nine-dimension model lack these fields and are re-qualified. */
+export function isCurrentScore(score: LeadScore | null | undefined): boolean {
+  return Boolean(score && "commercialFit" in score && "clientProbability" in score);
+}
+
 /** Approved monthly package prices from the catalogue (the live DB can override via `prices`). */
 export function packageMonthlyMinor(slug: string): number | null {
   const p = SERVICE_CATALOGUE.find((s) => s.slug === slug)?.prices?.ZAR;

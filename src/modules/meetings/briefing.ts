@@ -62,7 +62,7 @@ export async function generateMeetingBriefing(
         lead.goal ? `Stated goal: "${lead.goal}"` : "No goal stated",
       ],
     });
-    if (lead.score) {
+    if (lead.score?.budgetLikelihood) {
       sections.push({
         heading: "Qualification",
         items: [
@@ -109,7 +109,7 @@ export async function generateMeetingBriefing(
         "Who decides on marketing spend, and what's the budget range?",
         "Have you worked with an agency before? What worked, and what didn't?",
         "What would make the next 6 months a success?",
-        ...(lead.score?.budgetLikelihood.level === "high"
+        ...(lead.score?.budgetLikelihood?.level === "high"
           ? ["Who handles marketing internally today?"]
           : []),
       ],

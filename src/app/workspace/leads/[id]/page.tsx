@@ -16,6 +16,8 @@ import {
   EmptyState,
 } from "@/components/ui/primitives";
 import { StatusBadge, statusLabel } from "@/components/ui/status";
+import { ConsentControls, OutreachPanel } from "@/components/workspace/outreach-panel";
+import { ProspectBriefView } from "@/components/workspace/prospect-brief";
 import { ScoreDimensions } from "@/components/workspace/score";
 import { getDb } from "@/db";
 import {
@@ -29,6 +31,10 @@ import {
 } from "@/db/schema";
 import { fmtDateTime, fmtMoney, fmtRelative, humanize } from "@/lib/format";
 import { requireStaff } from "@/modules/auth/context";
+import { isCurrentScore } from "@/modules/leads/qualify";
+import { rescoreLead } from "@/modules/leads/scoring";
+import { checkOutreach, communicationHistory } from "@/modules/outreach/service";
+import { packageName } from "@/modules/prospects/brief";
 import { serviceName } from "@/modules/services/catalogue";
 import {
   convertLeadAction,
@@ -38,6 +44,7 @@ import {
   updateLeadAction,
   updateLeadStageAction,
 } from "../actions";
+import { researchLeadAction } from "../outreach-actions";
 
 export const metadata: Metadata = { title: "Lead" };
 
@@ -45,12 +52,16 @@ export default async function LeadPage({ params }: PageProps<"/workspace/leads/[
   const ctx = await requireStaff("leads.read");
   const { id } = await params;
   const db = await getDb();
-  const [lead] = await db.select().from(leads).where(eq(leads.id, id)).limit(1);
+  let [lead] = await db.select().from(leads).where(eq(leads.id, id)).limit(1);
   if (!lead) notFound();
+  if (lead.score && !isCurrentScore(lead.score)) {
+    await rescoreLead(db, id);
+    [lead] = await db.select().from(leads).where(eq(leads.id, id)).limit(1);
+  }
   const [owner] = lead.ownerId
     ? await db.select({ name: users.name }).from(users).where(eq(users.id, lead.ownerId))
     : [];
-  const [activity, auditRows, meetingRows, proposalRows] = await Promise.all([
+  const [activity, auditRows, meetingRows, proposalRows, history, check] = await Promise.all([
     db
       .select({ a: leadActivities, actor: users.name })
       .from(leadActivities)
@@ -60,6 +71,8 @@ export default async function LeadPage({ params }: PageProps<"/workspace/leads/[
     db.select().from(audits).where(eq(audits.leadId, id)).orderBy(desc(audits.createdAt)),
     db.select().from(meetings).where(eq(meetings.leadId, id)).orderBy(desc(meetings.startsAt)),
     db.select().from(proposals).where(eq(proposals.leadId, id)).orderBy(desc(proposals.createdAt)),
+    communicationHistory(db, id),
+    checkOutreach(db, lead, lead.email ? "email" : lead.linkedinUrl ? "linkedin" : "phone"),
   ]);
   const audit = auditRows.find((a) => a.status === "complete");
   const canWrite = ctx.can("leads.write");
@@ -91,12 +104,20 @@ export default async function LeadPage({ params }: PageProps<"/workspace/leads/[
           </p>
           <p className="text-subtle mt-1 text-xs">
             Source: {statusLabel(lead.source)} · added {fmtRelative(lead.createdAt)} · owner{" "}
-            {owner?.name ?? "unassigned"} · consent{" "}
-            {lead.consentAt ? `recorded ${fmtRelative(lead.consentAt)}` : "not recorded"}
+            {owner?.name ?? "unassigned"} · consent {humanize(lead.consentStatus)}
+            {lead.recommendedPackage && <> · likely {packageName(lead.recommendedPackage)}</>}
           </p>
         </div>
         {canWrite && (
           <div className="flex flex-wrap gap-2">
+            {lead.website && (
+              <ActionForm action={researchLeadAction}>
+                <input type="hidden" name="leadId" value={id} />
+                <SubmitButton variant="secondary" pendingLabel="Reading their website…">
+                  Research website
+                </SubmitButton>
+              </ActionForm>
+            )}
             {lead.website && (
               <form action={runLeadAuditAction}>
                 <input type="hidden" name="leadId" value={id} />
@@ -138,6 +159,30 @@ export default async function LeadPage({ params }: PageProps<"/workspace/leads/[
               )}
             </Callout>
           )}
+          <Card>
+            <CardHeader
+              title="Prospect intelligence"
+              description="Who they are, what they need and why we'd contact them."
+            />
+            <CardBody>
+              {lead.brief ? (
+                <ProspectBriefView brief={lead.brief} />
+              ) : (
+                <p className="text-muted text-sm">
+                  No brief yet. Research their website or run a Visibility Report.
+                </p>
+              )}
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader
+              title="Outreach"
+              description="Permission-based and approved by you, one person at a time."
+            />
+            <CardBody>
+              <OutreachPanel leadId={id} check={check} history={history} canWrite={canWrite} />
+            </CardBody>
+          </Card>
           <Card>
             <CardHeader
               title="Qualification"
@@ -289,6 +334,19 @@ export default async function LeadPage({ params }: PageProps<"/workspace/leads/[
                     Open client
                   </LinkButton>
                 )}
+              </CardBody>
+            </Card>
+          )}
+          {canWrite && (
+            <Card>
+              <CardHeader title="Contact permission" />
+              <CardBody>
+                <ConsentControls
+                  leadId={id}
+                  consentStatus={lead.consentStatus}
+                  consentText={lead.consentText}
+                  optedOutAt={lead.optedOutAt}
+                />
               </CardBody>
             </Card>
           )}

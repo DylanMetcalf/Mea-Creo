@@ -71,6 +71,7 @@ export async function createLeadAction(
           ? fromMajor(d.estimatedMonthly.replace(/[^\d.]/g, "") || "0").amountMinor
           : null,
         consentAt: d.consent === "on" ? new Date() : null,
+        consentStatus: d.consent === "on" ? "given" : "unknown",
         consentText:
           d.consent === "on" ? "Recorded by Mea Creo staff: contact agreed to be contacted." : null,
         lastActivityAt: new Date(),

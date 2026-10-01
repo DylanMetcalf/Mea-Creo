@@ -5,6 +5,7 @@ import { logger } from "@/lib/logger";
 import { runDailyBilling } from "@/modules/billing/service";
 import { generateMeetingBriefing } from "@/modules/meetings/briefing";
 import { emitEvent } from "@/modules/notifications/service";
+import { upgradeOutdatedScores } from "@/modules/leads/scoring";
 import { getPlatformSetting } from "@/modules/settings/service";
 
 /**
@@ -45,6 +46,9 @@ export async function runDailyCycle(
       }
     }
   }
+
+  // Leads scored before the current qualification model.
+  await upgradeOutdatedScores(db);
 
   // Monthly client cycle on the configured day (South African date), once per month.
   const saDay = Number(

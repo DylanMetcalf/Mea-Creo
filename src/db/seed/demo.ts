@@ -37,6 +37,7 @@ import { randomToken, uuidv7 } from "@/lib/ids";
 import { generatePdf } from "@/lib/pdf";
 import { hashPassword } from "@/modules/auth/password";
 import { processAudit } from "@/modules/audits/service";
+import { rescoreLead } from "@/modules/leads/scoring";
 import { getPlatformOrganisation, getSetting, setSetting } from "@/modules/settings/service";
 import { audits } from "@/db/schema";
 import { fixtureFetcher } from "./fixtures";
@@ -1188,6 +1189,7 @@ export async function seedDemo(db: Db): Promise<void> {
   await db.update(leads).set({ stage: "call_booked" }).where(eq(leads.id, blueCrane.id));
   await db.update(leads).set({ stage: "proposal_sent" }).where(eq(leads.id, summit.id));
   await db.update(leads).set({ stage: "nurture" }).where(eq(leads.id, kloof.id));
+  for (const l of await db.select({ id: leads.id }).from(leads)) await rescoreLead(db, l.id);
 
   // Client audits (with competitors) through the same engine.
   const [clientAudit] = await db

@@ -25,6 +25,10 @@ export const JOB_HANDLERS: Record<string, JobHandler> = {
     const { runDailyCycle } = await import("@/modules/scheduler/daily");
     await runDailyCycle(db);
   },
+  "lead.research": async (payload, db) => {
+    const { researchLead } = await import("@/modules/prospects/research");
+    await researchLead(db, String(payload.leadId));
+  },
   "meeting.briefing": async (payload, db) => {
     const { generateMeetingBriefing } = await import("@/modules/meetings/briefing");
     await generateMeetingBriefing(db, String(payload.meetingId));
