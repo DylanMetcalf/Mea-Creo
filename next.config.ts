@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   // Portable build: runs on Vercel, a container, or any Node host.
   output: "standalone",
   poweredByHeader: false,
-  experimental: { authInterrupts: true },
+  experimental: { authInterrupts: true, serverActions: { bodySizeLimit: "26mb" } },
   serverExternalPackages: ["@electric-sql/pglite"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
