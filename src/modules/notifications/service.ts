@@ -23,15 +23,13 @@ export async function notifyStaff(
     .innerJoin(organisations, eq(organisations.id, memberships.organisationId))
     .where(and(eq(organisations.kind, "platform"), inArray(memberships.role, roles)));
   if (staff.length === 0) return;
-  await db
-    .insert(notifications)
-    .values(
-      staff.map((s) => ({
-        userId: s.userId,
-        ...input,
-        organisationId: input.organisationId ?? null,
-      })),
-    );
+  await db.insert(notifications).values(
+    staff.map((s) => ({
+      userId: s.userId,
+      ...input,
+      organisationId: input.organisationId ?? null,
+    })),
+  );
 }
 
 export async function notifyUser(

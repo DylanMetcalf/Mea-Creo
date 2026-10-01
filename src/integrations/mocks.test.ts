@@ -51,7 +51,7 @@ describe("MockPaymentProvider", () => {
       cancelUrl: "http://x/cancel",
       notifyUrl: "http://x/notify",
     });
-    expect(redirect.method).toBe("POST");
+    expect(redirect.method).toBe("GET");
     expect(Object.keys(redirect.fields).join()).not.toMatch(/card|cvv/i);
   });
 

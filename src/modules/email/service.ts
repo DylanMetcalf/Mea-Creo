@@ -49,28 +49,24 @@ export async function sendEmail(
   if (input.category !== "transactional") {
     const emergency = await getPlatformSetting(db, "emergency");
     if (emergency.pauseOutboundEmail) {
-      await db
-        .insert(emailLog)
-        .values({
-          ...record,
-          provider: "none",
-          status: "suppressed",
-          error: "Outbound email is paused (emergency control).",
-        });
+      await db.insert(emailLog).values({
+        ...record,
+        provider: "none",
+        status: "suppressed",
+        error: "Outbound email is paused (emergency control).",
+      });
       return { status: "suppressed" };
     }
   }
 
   const resolution = resolveIntegration("email");
   if (!resolution.available) {
-    await db
-      .insert(emailLog)
-      .values({
-        ...record,
-        provider: resolution.health.provider,
-        status: "failed",
-        error: resolution.health.message,
-      });
+    await db.insert(emailLog).values({
+      ...record,
+      provider: resolution.health.provider,
+      status: "failed",
+      error: resolution.health.message,
+    });
     return { status: "failed" };
   }
 
@@ -83,26 +79,22 @@ export async function sendEmail(
       idempotencyKey: input.idempotencyKey,
       tags: { template: input.template },
     });
-    await db
-      .insert(emailLog)
-      .values({
-        ...record,
-        provider: resolution.adapter.provider,
-        status: "sent",
-        providerMessageId: messageId,
-      });
+    await db.insert(emailLog).values({
+      ...record,
+      provider: resolution.adapter.provider,
+      status: "sent",
+      providerMessageId: messageId,
+    });
     return { status: "sent" };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     logger.error({ template: input.template, err: message }, "email send failed");
-    await db
-      .insert(emailLog)
-      .values({
-        ...record,
-        provider: resolution.adapter.provider,
-        status: "failed",
-        error: message.slice(0, 1000),
-      });
+    await db.insert(emailLog).values({
+      ...record,
+      provider: resolution.adapter.provider,
+      status: "failed",
+      error: message.slice(0, 1000),
+    });
     return { status: "failed" };
   }
 }

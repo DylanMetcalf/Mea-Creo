@@ -2,6 +2,7 @@ import { getEnv, type Env } from "@/config/env";
 import { AppError } from "@/lib/errors";
 import { MockAccountingProvider } from "./accounting/mock";
 import type { AccountingProvider } from "./accounting/types";
+import { AnthropicAIProvider } from "./ai/anthropic";
 import { MockAIProvider } from "./ai/mock";
 import type { AIProvider } from "./ai/types";
 import { MockAnalyticsProvider } from "./analytics/mock";
@@ -13,6 +14,7 @@ import type { CRMProvider } from "./crm/types";
 import { MockEmailProvider } from "./email/mock";
 import type { EmailProvider } from "./email/types";
 import { MockPaymentProvider } from "./payments/mock";
+import { PayfastPaymentProvider } from "./payments/payfast";
 import type { PaymentProvider } from "./payments/types";
 import { MockSearchProvider } from "./search/mock";
 import type { SearchProvider } from "./search/types";
@@ -48,13 +50,23 @@ type Factory<K extends IntegrationKind> = (env: Env) => AdapterMap[K];
  */
 const factories: { [K in IntegrationKind]: Partial<Record<string, Factory<K>>> } = {
   payments: {
-    mock: (env) => new MockPaymentProvider(`${env.NEXT_PUBLIC_SITE_URL}/dev/mock-checkout`),
+    mock: (env) => new MockPaymentProvider(`${env.NEXT_PUBLIC_SITE_URL}/pay/test-checkout`),
+    payfast: (env) =>
+      new PayfastPaymentProvider({
+        merchantId: env.PAYFAST_MERCHANT_ID!,
+        merchantKey: env.PAYFAST_MERCHANT_KEY!,
+        passphrase: env.PAYFAST_PASSPHRASE!,
+        sandbox: env.PAYFAST_SANDBOX,
+      }),
   },
   accounting: { mock: () => new MockAccountingProvider() },
   calendar: { mock: () => new MockCalendarProvider() },
   analytics: { mock: () => new MockAnalyticsProvider() },
   search: { mock: () => new MockSearchProvider() },
-  ai: { mock: () => new MockAIProvider() },
+  ai: {
+    mock: () => new MockAIProvider(),
+    anthropic: (env) => new AnthropicAIProvider(env.ANTHROPIC_API_KEY!, env.AI_MODEL),
+  },
   email: {
     mock: () => new MockEmailProvider(),
     resend: (env) => new ResendEmailProvider(env.RESEND_API_KEY!, env.EMAIL_FROM),

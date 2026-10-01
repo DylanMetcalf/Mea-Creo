@@ -72,13 +72,11 @@ export async function requestVisibilityReport(
         publicToken: token,
       })
       .returning({ id: audits.id });
-    await tx
-      .insert(leadActivities)
-      .values({
-        leadId: lead.id,
-        type: "audit",
-        summary: `Requested a Visibility Report for ${url.hostname}.`,
-      });
+    await tx.insert(leadActivities).values({
+      leadId: lead.id,
+      type: "audit",
+      summary: `Requested a Visibility Report for ${url.hostname}.`,
+    });
     await emitEvent(tx, "lead.created", null, { leadId: lead.id, source: "visibility_report" });
     await enqueue(tx, "audit.run", { auditId: audit.id });
     return { token, auditId: audit.id, leadId: lead.id };

@@ -454,16 +454,14 @@ export async function seedDemo(db: Db): Promise<void> {
   await db
     .insert(clientAssignments)
     .values({ organisationId: orgB.id, userId: founder.id, responsibility: "account_manager" });
-  await db
-    .insert(contacts)
-    .values({
-      organisationId: orgB.id,
-      name: DEMO_ACCOUNTS.clientB.name,
-      email: DEMO_ACCOUNTS.clientB.email,
-      role: "Sales Director",
-      isPrimary: true,
-      isDecisionMaker: true,
-    });
+  await db.insert(contacts).values({
+    organisationId: orgB.id,
+    name: DEMO_ACCOUNTS.clientB.name,
+    email: DEMO_ACCOUNTS.clientB.email,
+    role: "Sales Director",
+    isPrimary: true,
+    isDecisionMaker: true,
+  });
   for (const slug of bServices) {
     const automated = slug !== "google-ads";
     await db.insert(clientServices).values({
@@ -541,29 +539,25 @@ export async function seedDemo(db: Db): Promise<void> {
         periodStart: isoDate(opts.issued),
       })
       .returning();
-    await db
-      .insert(invoiceLines)
-      .values(
-        opts.lines.map(([description, amount]) => ({
-          invoiceId: inv.id,
-          description,
-          quantity: 1,
-          unitMinor: amount,
-          amountMinor: amount,
-        })),
-      );
+    await db.insert(invoiceLines).values(
+      opts.lines.map(([description, amount]) => ({
+        invoiceId: inv.id,
+        description,
+        quantity: 1,
+        unitMinor: amount,
+        amountMinor: amount,
+      })),
+    );
     if (opts.status === "paid") {
-      await db
-        .insert(payments)
-        .values({
-          organisationId: orgId,
-          invoiceId: inv.id,
-          provider: "mock",
-          providerPaymentId: `demo-${inv.number}`,
-          status: "succeeded",
-          amountMinor: total,
-          receivedAt: opts.paidAt ?? opts.due,
-        });
+      await db.insert(payments).values({
+        organisationId: orgId,
+        invoiceId: inv.id,
+        provider: "mock",
+        providerPaymentId: `demo-${inv.number}`,
+        status: "succeeded",
+        amountMinor: total,
+        receivedAt: opts.paidAt ?? opts.due,
+      });
     }
     return inv;
   }
@@ -595,16 +589,14 @@ export async function seedDemo(db: Db): Promise<void> {
     due: at(5),
     status: "open",
   });
-  await db
-    .insert(subscriptions)
-    .values({
-      organisationId: orgA.id,
-      status: "active",
-      provider: "mock",
-      providerToken: "demo-sub-harbourline",
-      amountMinor: aMonthly,
-      nextBillingDate: isoDate(at(28)),
-    });
+  await db.insert(subscriptions).values({
+    organisationId: orgA.id,
+    status: "active",
+    provider: "mock",
+    providerToken: "demo-sub-harbourline",
+    amountMinor: aMonthly,
+    nextBillingDate: isoDate(at(28)),
+  });
 
   const bLines = bServices.map(
     (s) => [svc.get(s)!.name, price(s)?.monthlyMinor ?? 0] as [string, number],
@@ -644,106 +636,104 @@ export async function seedDemo(db: Db): Promise<void> {
     assigneeId: founder.id,
     ...o,
   });
-  await db
-    .insert(tasks)
-    .values([
-      task(orgA.id, "Write October article: planned maintenance vs breakdown costs", {
-        status: "in_progress",
-        priority: "high",
-        dueAt: at(2, 17),
-        clientServiceId: clientServiceIds["content-creation"],
-        visibility: "client",
-      }),
-      task(orgA.id, "Optimise 'fabrication' service page title and headings", {
-        status: "ready",
-        dueAt: at(0, 16),
-        clientServiceId: clientServiceIds.seo,
-        visibility: "client",
-      }),
-      task(orgA.id, "Add Service structured data to 6 service pages", {
-        status: "ready",
-        dueAt: at(4, 16),
-        clientServiceId: clientServiceIds.geo,
-        visibility: "client",
-      }),
-      task(orgA.id, "Confirm list of 20 port operators for outreach", {
-        status: "waiting_client",
-        dueAt: at(-2, 12),
-        clientServiceId: clientServiceIds["lead-generation"],
-        visibility: "client",
-        description: "Waiting for Thandi to confirm which existing customers to exclude.",
-      }),
-      task(orgA.id, "Upload new workshop photos for service pages", {
-        status: "waiting_client",
-        dueAt: at(6, 12),
-        visibility: "client",
-        assigneeId: null,
-      }),
-      task(orgA.id, "Review September monthly report before publishing", {
-        status: "waiting_approval",
-        priority: "high",
-        dueAt: at(0, 12),
-        source: "run",
-        visibility: "internal",
-      }),
-      task(orgA.id, "Fix 4 images without alt text on the About page", {
-        status: "complete",
-        completedAt: at(-6),
-        completedById: founder.id,
-        clientServiceId: clientServiceIds.seo,
-        visibility: "client",
-      }),
-      task(orgA.id, "Publish FAQ section with 12 buyer questions", {
-        status: "complete",
-        completedAt: at(-12),
-        completedById: founder.id,
-        clientServiceId: clientServiceIds.aeo,
-        visibility: "client",
-      }),
-      task(orgB.id, "Follow up on overdue invoice MC-2026-0008", {
-        status: "ready",
-        priority: "urgent",
-        dueAt: at(-1, 10),
-        visibility: "internal",
-      }),
-      task(orgB.id, "Pause conversion test until billing is resolved", {
-        status: "complete",
-        completedAt: at(-4),
-        completedById: founder.id,
-        visibility: "internal",
-        source: "workflow",
-      }),
-      task(orgB.id, "Prepare Google Ads search term review", {
-        status: "blocked",
-        dueAt: at(3),
-        description: "Blocked: automated optimisation paused while the account is overdue.",
-        visibility: "client",
-      }),
-      task(platform.id, "Verify company details before launch (VAT, registration, address)", {
-        status: "ready",
-        priority: "high",
-        dueAt: at(1),
-      }),
-      task(platform.id, "Replace demo prices with real pricing", {
-        status: "ready",
-        priority: "high",
-        dueAt: at(2),
-      }),
-      task(platform.id, "Approve starter Insights articles for publishing", {
-        status: "ready",
-        dueAt: at(3),
-      }),
-      task(platform.id, "Collect permissioned testimonials from two past clients", {
-        status: "backlog",
-        dueAt: at(10),
-      }),
-      task(platform.id, "Prepare for Blue Crane discovery call", {
-        status: "ready",
-        priority: "high",
-        dueAt: at(1, 9),
-        source: "meeting",
-      }),
-    ]);
+  await db.insert(tasks).values([
+    task(orgA.id, "Write October article: planned maintenance vs breakdown costs", {
+      status: "in_progress",
+      priority: "high",
+      dueAt: at(2, 17),
+      clientServiceId: clientServiceIds["content-creation"],
+      visibility: "client",
+    }),
+    task(orgA.id, "Optimise 'fabrication' service page title and headings", {
+      status: "ready",
+      dueAt: at(0, 16),
+      clientServiceId: clientServiceIds.seo,
+      visibility: "client",
+    }),
+    task(orgA.id, "Add Service structured data to 6 service pages", {
+      status: "ready",
+      dueAt: at(4, 16),
+      clientServiceId: clientServiceIds.geo,
+      visibility: "client",
+    }),
+    task(orgA.id, "Confirm list of 20 port operators for outreach", {
+      status: "waiting_client",
+      dueAt: at(-2, 12),
+      clientServiceId: clientServiceIds["lead-generation"],
+      visibility: "client",
+      description: "Waiting for Thandi to confirm which existing customers to exclude.",
+    }),
+    task(orgA.id, "Upload new workshop photos for service pages", {
+      status: "waiting_client",
+      dueAt: at(6, 12),
+      visibility: "client",
+      assigneeId: null,
+    }),
+    task(orgA.id, "Review September monthly report before publishing", {
+      status: "waiting_approval",
+      priority: "high",
+      dueAt: at(0, 12),
+      source: "run",
+      visibility: "internal",
+    }),
+    task(orgA.id, "Fix 4 images without alt text on the About page", {
+      status: "complete",
+      completedAt: at(-6),
+      completedById: founder.id,
+      clientServiceId: clientServiceIds.seo,
+      visibility: "client",
+    }),
+    task(orgA.id, "Publish FAQ section with 12 buyer questions", {
+      status: "complete",
+      completedAt: at(-12),
+      completedById: founder.id,
+      clientServiceId: clientServiceIds.aeo,
+      visibility: "client",
+    }),
+    task(orgB.id, "Follow up on overdue invoice MC-2026-0008", {
+      status: "ready",
+      priority: "urgent",
+      dueAt: at(-1, 10),
+      visibility: "internal",
+    }),
+    task(orgB.id, "Pause conversion test until billing is resolved", {
+      status: "complete",
+      completedAt: at(-4),
+      completedById: founder.id,
+      visibility: "internal",
+      source: "workflow",
+    }),
+    task(orgB.id, "Prepare Google Ads search term review", {
+      status: "blocked",
+      dueAt: at(3),
+      description: "Blocked: automated optimisation paused while the account is overdue.",
+      visibility: "client",
+    }),
+    task(platform.id, "Verify company details before launch (VAT, registration, address)", {
+      status: "ready",
+      priority: "high",
+      dueAt: at(1),
+    }),
+    task(platform.id, "Replace demo prices with real pricing", {
+      status: "ready",
+      priority: "high",
+      dueAt: at(2),
+    }),
+    task(platform.id, "Approve starter Insights articles for publishing", {
+      status: "ready",
+      dueAt: at(3),
+    }),
+    task(platform.id, "Collect permissioned testimonials from two past clients", {
+      status: "backlog",
+      dueAt: at(10),
+    }),
+    task(platform.id, "Prepare for Blue Crane discovery call", {
+      status: "ready",
+      priority: "high",
+      dueAt: at(1, 9),
+      source: "meeting",
+    }),
+  ]);
 
   // ---------------------------------------------------------------- Approvals
   await db.insert(approvals).values([
@@ -781,18 +771,6 @@ export async function seedDemo(db: Db): Promise<void> {
       description: "Drafted by the Reporting agent from the monthly review run. QC checks passed.",
       requestedAction: "Approve & publish",
       requestedByAgent: "reporting",
-    },
-    {
-      organisationId: platform.id,
-      level: "internal",
-      type: "outreach",
-      title: "Send follow-up email to Acacia Legal Advisory",
-      description:
-        "Follow-up on their Visibility Report. Drafted by the Outreach agent; nothing is sent without approval.",
-      preview:
-        "Hi Naledi,\n\nThanks for requesting a Visibility Report for Acacia Legal. The biggest opportunity we saw is that your homepage title and heading don't say what the firm does, so Google only shows you for your name.\n\nWould a 20-minute call next week be useful to walk through the three quickest fixes?\n\nKind regards,\nDylan",
-      requestedAction: "Approve & send",
-      requestedByAgent: "outreach",
     },
     {
       organisationId: orgB.id,
@@ -1031,20 +1009,18 @@ export async function seedDemo(db: Db): Promise<void> {
     const stored = await storeDemoPdf(orgId, name, name.replace(/\.pdf$/, ""), lines);
     if (!stored) continue;
     const id = uuidv7();
-    await db
-      .insert(documents)
-      .values({
-        id,
-        groupId: id,
-        organisationId: orgId,
-        name,
-        category,
-        storageKey: stored.key,
-        contentType: "application/pdf",
-        sizeBytes: stored.size,
-        uploadedById: founder.id,
-        visibility: vis,
-      });
+    await db.insert(documents).values({
+      id,
+      groupId: id,
+      organisationId: orgId,
+      name,
+      category,
+      storageKey: stored.key,
+      contentType: "application/pdf",
+      sizeBytes: stored.size,
+      uploadedById: founder.id,
+      visibility: vis,
+    });
   }
 
   // ---------------------------------------------------------------- Messages
@@ -1355,18 +1331,56 @@ export async function seedDemo(db: Db): Promise<void> {
       sortOrder: i,
     })),
   );
-  await db
-    .insert(proposalItems)
-    .values({
-      proposalId: proposal.id,
-      serviceId: svc.get("geo")!.id,
-      name: svc.get("geo")!.name,
-      description: svc.get("geo")!.summary,
-      monthlyMinor: price("geo")?.monthlyMinor ?? 0,
-      optional: true,
-      sortOrder: 9,
-    });
+  await db.insert(proposalItems).values({
+    proposalId: proposal.id,
+    serviceId: svc.get("geo")!.id,
+    name: svc.get("geo")!.name,
+    description: svc.get("geo")!.summary,
+    monthlyMinor: price("geo")?.monthlyMinor ?? 0,
+    optional: true,
+    sortOrder: 9,
+  });
 
   // Demo site shows the starter articles as published.
   await db.update(insights).set({ status: "published", publishedAt: at(-20) });
+
+  // Run the real engines over the demo data so every screen shows genuine output.
+  const { createRun, executeRun } = await import("@/modules/runs/engine");
+  const { recomputeHealth } = await import("@/modules/clients/health");
+  const { refreshClientOpportunities } = await import("@/modules/growth/opportunities");
+  const { generateMeetingBriefing } = await import("@/modules/meetings/briefing");
+  const { processDomainEvents } = await import("@/modules/workflows/engine");
+  const { jobs, meetings: meetingsTable } = await import("@/db/schema");
+
+  const growthRun = await createRun(db, {
+    organisationId: orgA.id,
+    kind: "client_growth_review",
+    triggeredById: founder.id,
+  });
+  await executeRun(db, growthRun, { fetcher: fixtureFetcher });
+  const internal = await db
+    .select()
+    .from(organisations)
+    .where(eq(organisations.slug, "mea-creo-growth"));
+  if (internal[0]) {
+    const leadRun = await createRun(db, {
+      organisationId: internal[0].id,
+      kind: "lead_opportunity_scan",
+      triggeredById: founder.id,
+    });
+    await executeRun(db, leadRun);
+  }
+  for (const orgId of [orgA.id, orgB.id]) {
+    await refreshClientOpportunities(db, orgId, "demo-seed");
+    await recomputeHealth(db, orgId);
+  }
+  for (const m of await db
+    .select({ id: meetingsTable.id })
+    .from(meetingsTable)
+    .where(eq(meetingsTable.status, "scheduled"))) {
+    await generateMeetingBriefing(db, m.id);
+  }
+  await processDomainEvents(db);
+  // Jobs queued during seeding (e.g. briefings) were executed inline above.
+  await db.delete(jobs);
 }

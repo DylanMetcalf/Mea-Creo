@@ -100,7 +100,7 @@ export class MockPaymentProvider implements PaymentProvider {
   ): CheckoutRedirect {
     return {
       url: this.checkoutBaseUrl,
-      method: "POST",
+      method: "GET",
       fields: {
         reference: request.reference,
         amount_minor: String(request.amount.amountMinor),

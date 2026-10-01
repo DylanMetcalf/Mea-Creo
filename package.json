@@ -24,6 +24,7 @@
     "admin:create": "tsx scripts/create-admin.mts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.130.0",
     "@electric-sql/pglite": "^0.5.8",
     "aws4fetch": "^1.0.20",
     "drizzle-orm": "0.45.3",

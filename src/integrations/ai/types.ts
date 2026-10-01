@@ -17,6 +17,8 @@ export interface AIGenerateRequest {
   maxTokens: number;
   model?: string;
   temperature?: number;
+  /** Reasoning effort; lower is cheaper and faster. Default: low. */
+  effort?: "low" | "medium" | "high" | "xhigh" | "max";
   /** Abort after this many milliseconds. */
   timeoutMs?: number;
 }

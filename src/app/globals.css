@@ -1,44 +1,156 @@
 @import "tailwindcss";
 
 /*
- * Preliminary design tokens (Phase 1). The full design system — typography scale,
- * components, charts and status indicators — is built in Phase 4.
- * Palette cues are taken from the previous site (near-black ink, warm paper, deep blue).
+ * Mea Creo design tokens.
+ * Built from the existing identity: the hand-drawn monogram, sage green (#6B8971),
+ * near-black ink and warm off-white paper. Deepened for accessible contrast.
+ * See docs/DESIGN_SYSTEM.md.
  */
 :root {
-  --color-ink: #191717;
-  --color-paper: #f7f5f1;
-  --color-surface: #ffffff;
-  --color-muted: #5f5a55;
-  --color-border: #e4dfd8;
-  --color-primary: #2b5672;
-  --color-primary-contrast: #ffffff;
-  --color-success: #1f7a4d;
-  --color-warning: #a15c00;
-  --color-danger: #b42318;
+  --ink: #191717;
+  --ink-soft: #3a3633;
+  --muted: #6b6560;
+  --subtle: #8f8881;
+  --paper: #f6f3ee;
+  --surface: #ffffff;
+  --surface-2: #faf8f5;
+  --border: #e6e0d7;
+  --border-strong: #d4ccc0;
+
+  --brand-950: #16241c;
+  --brand-900: #1f3328;
+  --brand-800: #2c4637;
+  --brand-700: #3b5a48;
+  --brand-600: #4a6b58;
+  --brand-500: #6b8971;
+  --brand-300: #a9bfae;
+  --brand-100: #e4ece5;
+  --brand-50: #f1f5f1;
+
+  --clay-600: #a55a36;
+  --clay-100: #f6e7df;
+
+  --success-700: #1f6b45;
+  --success-100: #e2f1e8;
+  --warning-700: #8a5000;
+  --warning-100: #fbefd9;
+  --danger-700: #a1261b;
+  --danger-100: #fbe4e1;
+  --info-700: #2b5672;
+  --info-100: #e3edf4;
+
+  --radius: 10px;
+  --shadow-sm: 0 1px 2px rgb(25 23 23 / 0.05);
+  --shadow-md: 0 4px 16px -4px rgb(25 23 23 / 0.1), 0 1px 3px rgb(25 23 23 / 0.06);
 }
 
 @theme inline {
-  --color-ink: var(--color-ink);
-  --color-paper: var(--color-paper);
-  --color-surface: var(--color-surface);
-  --color-muted: var(--color-muted);
-  --color-border: var(--color-border);
-  --color-primary: var(--color-primary);
-  --color-primary-contrast: var(--color-primary-contrast);
-  --color-success: var(--color-success);
-  --color-warning: var(--color-warning);
-  --color-danger: var(--color-danger);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-brand-950: var(--brand-950);
+  --color-brand-900: var(--brand-900);
+  --color-brand-800: var(--brand-800);
+  --color-brand-700: var(--brand-700);
+  --color-brand-600: var(--brand-600);
+  --color-brand-500: var(--brand-500);
+  --color-brand-300: var(--brand-300);
+  --color-brand-100: var(--brand-100);
+  --color-brand-50: var(--brand-50);
+  --color-clay-600: var(--clay-600);
+  --color-clay-100: var(--clay-100);
+  --color-success-700: var(--success-700);
+  --color-success-100: var(--success-100);
+  --color-warning-700: var(--warning-700);
+  --color-warning-100: var(--warning-100);
+  --color-danger-700: var(--danger-700);
+  --color-danger-100: var(--danger-100);
+  --color-info-700: var(--info-700);
+  --color-info-100: var(--info-100);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-newsreader);
+  --radius-card: var(--radius);
+  --shadow-card: var(--shadow-sm);
+  --shadow-raised: var(--shadow-md);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--color-paper);
-  color: var(--color-ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-feature-settings: "ss01", "cv11";
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--brand-600);
   outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--brand-100);
+  color: var(--brand-950);
+}
+
+/* Readable long-form content (insights, reports, proposals). */
+.prose-mc {
+  color: var(--ink-soft);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+.prose-mc h2 {
+  color: var(--ink);
+  font-family: var(--font-newsreader), serif;
+  font-size: 1.75rem;
+  line-height: 1.25;
+  margin: 2.5rem 0 0.75rem;
+}
+.prose-mc h3 {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin: 2rem 0 0.5rem;
+}
+.prose-mc p,
+.prose-mc ul,
+.prose-mc ol {
+  margin: 0 0 1.1rem;
+}
+.prose-mc ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.prose-mc ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+.prose-mc li {
+  margin: 0.3rem 0;
+}
+.prose-mc strong {
+  color: var(--ink);
+}
+.prose-mc a {
+  color: var(--brand-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
