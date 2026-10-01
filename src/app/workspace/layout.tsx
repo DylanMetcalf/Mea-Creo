@@ -91,7 +91,7 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
               .filter(Boolean)
               .join(", ")}
             .{" "}
-            <Link href="/workspace/settings/emergency" className="underline">
+            <Link href="/workspace/settings?tab=emergency" className="underline">
               Manage
             </Link>
           </div>

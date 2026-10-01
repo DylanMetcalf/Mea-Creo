@@ -1,0 +1,315 @@
+"use server";
+
+import { and, eq } from "drizzle-orm";
+import { refresh } from "next/cache";
+import { z } from "zod";
+import { getDb } from "@/db";
+import { APPROVAL_LEVELS, memberships, users } from "@/db/schema";
+import { type ActionState, checkbox, optionalText, parseForm, runAction } from "@/lib/actions";
+import { AppError } from "@/lib/errors";
+import { fromMajor } from "@/lib/money";
+import { absoluteUrl } from "@/lib/urls";
+import { logActivity, userActor } from "@/modules/activity/log";
+import { API_SCOPES, type ApiScope, createApiKey, revokeApiKey } from "@/modules/api-keys/service";
+import { requireStaff } from "@/modules/auth/context";
+import { STAFF_ROLES } from "@/modules/auth/permissions";
+import { sendEmail } from "@/modules/email/service";
+import { emailTemplates } from "@/modules/email/templates";
+import { inviteClientUser } from "@/modules/onboarding/service";
+import {
+  getPlatformOrganisation,
+  getPlatformSetting,
+  setSetting,
+} from "@/modules/settings/service";
+import type { Settings, SettingsKey } from "@/modules/settings/schema";
+
+async function save<K extends SettingsKey>(
+  key: K,
+  value: Settings<K>,
+  permission: "settings.manage" | "emergency.controls" | "billing.manage" = "settings.manage",
+) {
+  const ctx = await requireStaff(permission);
+  const db = await getDb();
+  const platform = await getPlatformOrganisation(db);
+  const before = await getPlatformSetting(db, key);
+  await setSetting(db, platform.id, key, value, ctx.user.id);
+  await logActivity(db, userActor(ctx.user), {
+    action: `settings.${key}`,
+    summary: `Updated ${key} settings`,
+    before: before as Record<string, unknown>,
+    after: value as Record<string, unknown>,
+  });
+  refresh();
+}
+
+const minorOrNull = (v?: string) =>
+  v ? fromMajor(v.replace(/[^\d.]/g, "") || "0").amountMinor : null;
+
+export async function saveCompanyAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const parsed = parseForm(
+      z.object({
+        legalName: z.string().trim().min(2).max(160),
+        tradingName: z.string().trim().min(2).max(120),
+        email: z.email(),
+        phone: z.string().trim().max(40),
+        locality: z.string().trim().max(80),
+        region: z.string().trim().max(80),
+        country: z.string().trim().max(80),
+        registrationNumber: optionalText(40),
+        vatNumber: optionalText(40),
+        linkedinUrl: optionalText(300),
+        instagramUrl: optionalText(300),
+        facebookUrl: optionalText(300),
+        detailsVerified: checkbox,
+      }),
+      fd,
+    );
+    if (!parsed.success) return parsed.state;
+    await save("company", parsed.data);
+    return { ok: true, message: "Company details saved." };
+  }, fd);
+}
+
+export async function saveBillingAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const db = await getDb();
+    const current = await getPlatformSetting(db, "billing");
+    const parsed = parseForm(
+      z.object({
+        defaultCurrency: z.string().length(3),
+        vatRegistered: checkbox,
+        taxRatePercent: z.coerce.number().min(0).max(50),
+        paymentTermsDays: z.coerce.number().int().min(0).max(90),
+        pauseAfterOverdueDays: z.coerce.number().int().min(0).max(120),
+        reminderDaysAfterDue: z.string().max(40),
+        invoicePrefix: z.string().trim().min(1).max(8),
+        proposalPrefix: z.string().trim().min(1).max(8),
+        eftDetails: optionalText(1000),
+      }),
+      fd,
+    );
+    if (!parsed.success) return parsed.state;
+    const d = parsed.data;
+    if (d.vatRegistered && d.taxRatePercent === 0)
+      return {
+        ok: false,
+        fieldErrors: { taxRatePercent: ["Enter the VAT rate (15% in South Africa)."] },
+      };
+    await save(
+      "billing",
+      {
+        ...current,
+        ...d,
+        taxRatePercent: d.vatRegistered ? d.taxRatePercent : 0,
+        reminderDaysAfterDue: d.reminderDaysAfterDue
+          .split(/[,\s]+/)
+          .map(Number)
+          .filter((n) => Number.isInteger(n) && n >= 0)
+          .slice(0, 5),
+      },
+      "billing.manage",
+    );
+    return { ok: true, message: "Billing settings saved. They apply to new invoices." };
+  }, fd);
+}
+
+export async function saveBookingAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const db = await getDb();
+    const current = await getPlatformSetting(db, "booking");
+    const n = (k: string) => Number(fd.get(k));
+    const next = {
+      ...current,
+      workingDays: fd.getAll("workingDays").map(Number),
+      startHour: n("startHour"),
+      endHour: n("endHour"),
+      bufferMinutes: n("bufferMinutes"),
+      minNoticeHours: n("minNoticeHours"),
+      horizonDays: n("horizonDays"),
+      durations: {
+        ...current.durations,
+        discovery: n("duration.discovery") || current.durations.discovery,
+        client: n("duration.client") || current.durations.client,
+      },
+    };
+    if (next.endHour <= next.startHour)
+      return { ok: false, message: "The day must end after it starts." };
+    await save("booking", next);
+    return { ok: true, message: "Availability saved." };
+  }, fd);
+}
+
+export async function saveAiAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const parsed = parseForm(
+      z.object({
+        monthlyBudgetUsd: z.coerce.number().min(0).max(100_000),
+        perClientMonthlyBudgetUsd: z.coerce.number().min(0).max(10_000),
+        maxStepsPerRun: z.coerce.number().int().min(1).max(50),
+        approvalThresholdUsd: z.coerce.number().min(0).max(1000),
+      }),
+      fd,
+    );
+    if (!parsed.success) return parsed.state;
+    await save("ai", parsed.data);
+    return { ok: true, message: "AI limits saved." };
+  }, fd);
+}
+
+/** Approval matrix: overrides per action type. Hard-locked actions are enforced in the engine regardless. */
+export async function saveAutomationAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const db = await getDb();
+    const current = await getPlatformSetting(db, "automation");
+    const overrides: Record<string, (typeof APPROVAL_LEVELS)[number]> = {};
+    for (const [k, v] of fd.entries()) {
+      if (!k.startsWith("level.") || typeof v !== "string" || v === "default") continue;
+      overrides[k.slice(6)] = z.enum(APPROVAL_LEVELS).parse(v);
+    }
+    await save("automation", {
+      ...current,
+      approvalOverrides: overrides,
+      monthlyCycleDay: Math.min(28, Math.max(1, Number(fd.get("monthlyCycleDay")) || 1)),
+      autoGenerateBriefings: fd.get("autoGenerateBriefings") === "on",
+    });
+    return { ok: true, message: "Approval rules saved." };
+  }, fd);
+}
+
+export async function saveEmergencyAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const db = await getDb();
+    const current = await getPlatformSetting(db, "emergency");
+    await save(
+      "emergency",
+      {
+        ...current,
+        pauseAllAutomation: fd.get("pauseAllAutomation") === "on",
+        pauseOutboundEmail: fd.get("pauseOutboundEmail") === "on",
+        pausePayments: fd.get("pausePayments") === "on",
+      },
+      "emergency.controls",
+    );
+    return { ok: true, message: "Emergency controls updated." };
+  }, fd);
+}
+
+export async function saveTargetsAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const s = (k: string) => String(fd.get(k) ?? "").trim() || undefined;
+    await save("targets", {
+      targetMonthlyRevenueMinor: minorOrNull(s("targetMonthlyRevenue")),
+      targetMrrMinor: minorOrNull(s("targetMrr")),
+      monthlyOperatingCostsMinor: minorOrNull(s("monthlyOperatingCosts")),
+      desiredMarginPercent: s("desiredMarginPercent") ? Number(s("desiredMarginPercent")) : null,
+    });
+    return { ok: true, message: "Targets saved." };
+  }, fd);
+}
+
+export async function inviteStaffAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const ctx = await requireStaff("users.manage");
+    const parsed = parseForm(
+      z.object({
+        name: z.string().trim().min(2).max(120),
+        email: z.email(),
+        role: z.enum(STAFF_ROLES),
+      }),
+      fd,
+    );
+    if (!parsed.success) return parsed.state;
+    if (parsed.data.role === "founder" && ctx.role !== "founder")
+      throw new AppError("FORBIDDEN", { userMessage: "Only a founder can add another founder." });
+    const db = await getDb();
+    const { setupUrl } = await inviteClientUser(db, {
+      organisationId: ctx.platformOrganisationId,
+      ...parsed.data,
+      invitedById: ctx.user.id,
+    });
+    await sendEmail(db, {
+      to: { email: parsed.data.email, name: parsed.data.name },
+      template: "invitation",
+      category: "transactional",
+      email: emailTemplates.invitation({
+        name: parsed.data.name,
+        inviter: ctx.user.name,
+        organisation: "Mea Creo",
+        url: setupUrl ?? absoluteUrl("/login"),
+      }),
+    });
+    await logActivity(db, userActor(ctx.user), {
+      action: "user.invited",
+      summary: `Invited ${parsed.data.email} as ${parsed.data.role}`,
+    });
+    refresh();
+    return { ok: true, message: `Invitation sent to ${parsed.data.email}.` };
+  }, fd);
+}
+
+export async function updateStaffAction(userId: string, fd: FormData): Promise<void> {
+  const ctx = await requireStaff("users.manage");
+  if (userId === ctx.user.id)
+    throw new AppError("VALIDATION", { userMessage: "You can't change your own access." });
+  const db = await getDb();
+  const op = String(fd.get("op"));
+  if (op === "disable" || op === "enable") {
+    await db
+      .update(users)
+      .set({ disabledAt: op === "disable" ? new Date() : null })
+      .where(eq(users.id, userId));
+  } else {
+    const role = z.enum(STAFF_ROLES).parse(fd.get("role"));
+    if (role === "founder" && ctx.role !== "founder") throw new AppError("FORBIDDEN");
+    await db
+      .update(memberships)
+      .set({ role })
+      .where(
+        and(
+          eq(memberships.userId, userId),
+          eq(memberships.organisationId, ctx.platformOrganisationId),
+        ),
+      );
+  }
+  await logActivity(db, userActor(ctx.user), {
+    action: `user.${op}`,
+    summary: `${op} for user ${userId}`,
+    entityType: "user",
+    entityId: userId,
+  });
+  refresh();
+}
+
+export async function createApiKeyAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const ctx = await requireStaff("integrations.manage");
+    const name = String(fd.get("name") ?? "").trim();
+    if (name.length < 2)
+      return { ok: false, fieldErrors: { name: ["Name the key after what will use it."] } };
+    const scopes = fd
+      .getAll("scopes")
+      .map(String)
+      .filter((s): s is ApiScope => (API_SCOPES as readonly string[]).includes(s));
+    if (!scopes.length) return { ok: false, message: "Choose at least one permission." };
+    const db = await getDb();
+    const { key } = await createApiKey(db, { name, scopes, createdById: ctx.user.id });
+    await logActivity(db, userActor(ctx.user), {
+      action: "api_key.created",
+      summary: `Created API key "${name}" (${scopes.join(", ")})`,
+    });
+    refresh();
+    return { ok: true, message: `Copy this key now. It won't be shown again: ${key}` };
+  }, fd);
+}
+
+export async function revokeApiKeyAction(id: string): Promise<void> {
+  const ctx = await requireStaff("integrations.manage");
+  const db = await getDb();
+  await revokeApiKey(db, id);
+  await logActivity(db, userActor(ctx.user), {
+    action: "api_key.revoked",
+    summary: `Revoked API key ${id}`,
+  });
+  refresh();
+}

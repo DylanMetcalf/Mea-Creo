@@ -1,3 +1,4 @@
+import type { Role } from "@/modules/auth/permissions";
 import { eq } from "drizzle-orm";
 import type { DbOrTx } from "@/db";
 import {
@@ -117,7 +118,7 @@ export async function inviteClientUser(
     organisationId: string;
     email: string;
     name: string;
-    role: "client_admin" | "client_member";
+    role: Role;
     invitedById?: string;
   },
 ): Promise<{ userId: string; setupUrl: string | null }> {
