@@ -44,16 +44,14 @@ export const WORKFLOW_RULES: WorkflowRule[] = [
         .limit(1);
       if (!founder) return;
       await db.update(leads).set({ ownerId: founder.userId }).where(eq(leads.id, leadId));
-      await db
-        .insert(tasks)
-        .values({
-          organisationId: platform.id,
-          title: `Follow up with ${lead.company}`,
-          assigneeId: founder.userId,
-          dueAt: new Date(Date.now() + 2 * 86400_000),
-          source: "workflow",
-          sourceRef: `lead:${leadId}`,
-        });
+      await db.insert(tasks).values({
+        organisationId: platform.id,
+        title: `Follow up with ${lead.company}`,
+        assigneeId: founder.userId,
+        dueAt: new Date(Date.now() + 2 * 86400_000),
+        source: "workflow",
+        sourceRef: `lead:${leadId}`,
+      });
     },
   },
   {
@@ -77,17 +75,15 @@ export const WORKFLOW_RULES: WorkflowRule[] = [
         .from(clients)
         .where(eq(clients.organisationId, event.organisationId))
         .limit(1);
-      await db
-        .insert(tasks)
-        .values({
-          organisationId: event.organisationId,
-          title: "Follow up on overdue invoice",
-          priority: "urgent",
-          assigneeId: client?.accountManagerId ?? null,
-          dueAt: new Date(Date.now() + 86400_000),
-          source: "workflow",
-          sourceRef: `event:${event.id}`,
-        });
+      await db.insert(tasks).values({
+        organisationId: event.organisationId,
+        title: "Follow up on overdue invoice",
+        priority: "urgent",
+        assigneeId: client?.accountManagerId ?? null,
+        dueAt: new Date(Date.now() + 86400_000),
+        source: "workflow",
+        sourceRef: `event:${event.id}`,
+      });
       await recomputeHealth(db, event.organisationId);
     },
   },
@@ -174,15 +170,13 @@ export async function processDomainEvents(db: Db, limit = 100): Promise<number> 
           if (maturity === "automated") await rule.handler(db, event);
           else if (maturity === "assisted") {
             const platform = await getPlatformOrganisation(db);
-            await db
-              .insert(tasks)
-              .values({
-                organisationId: event.organisationId ?? platform.id,
-                title: `Workflow "${rule.name}": review and run`,
-                description: rule.then.join(" → "),
-                source: "workflow",
-                sourceRef: `event:${event.id}`,
-              });
+            await db.insert(tasks).values({
+              organisationId: event.organisationId ?? platform.id,
+              title: `Workflow "${rule.name}": review and run`,
+              description: rule.then.join(" → "),
+              source: "workflow",
+              sourceRef: `event:${event.id}`,
+            });
           }
           await logActivity(db, SYSTEM, {
             organisationId: event.organisationId,

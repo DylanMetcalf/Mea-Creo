@@ -30,16 +30,11 @@ describe("integration registry", () => {
   });
 
   it("does not pretend a configured provider works before its adapter exists", () => {
-    const env = parseEnv({
-      PAYMENT_PROVIDER: "payfast",
-      PAYFAST_MERCHANT_ID: "1",
-      PAYFAST_MERCHANT_KEY: "k",
-      PAYFAST_PASSPHRASE: "p",
-    });
-    const resolution = resolveIntegration("payments", env);
+    const env = parseEnv({ SOCIAL_PROVIDER: "linkedin" });
+    const resolution = resolveIntegration("social", env);
     expect(resolution.available).toBe(false);
     if (!resolution.available) {
-      expect(resolution.health).toMatchObject({ status: "NOT_CONNECTED", provider: "payfast" });
+      expect(resolution.health).toMatchObject({ status: "NOT_CONNECTED", provider: "linkedin" });
     }
   });
 

@@ -190,15 +190,13 @@ async function stepVisibilityAudit(ctx: RunContext) {
   if (!result) return;
   for (const o of result.opportunities.slice(0, 5))
     add(ctx, "recommended", o.title, o.description, { agent: "visibility" });
-  await ctx.db
-    .insert(timelineEntries)
-    .values({
-      organisationId: ctx.organisationId,
-      kind: "work",
-      title: "Visibility audit completed",
-      description: result.headline,
-      visibility: "client",
-    });
+  await ctx.db.insert(timelineEntries).values({
+    organisationId: ctx.organisationId,
+    kind: "work",
+    title: "Visibility audit completed",
+    description: result.headline,
+    visibility: "client",
+  });
 }
 
 async function stepSeo(ctx: RunContext) {
@@ -438,15 +436,13 @@ async function stepContent(ctx: RunContext) {
   let added = 0;
   for (const idea of ideas) {
     if (existing.has(idea.title.toLowerCase())) continue;
-    await ctx.db
-      .insert(contentItems)
-      .values({
-        organisationId: ctx.organisationId,
-        title: idea.title,
-        stage: "idea",
-        rationale: idea.rationale,
-        targetKeyword: idea.keyword,
-      });
+    await ctx.db.insert(contentItems).values({
+      organisationId: ctx.organisationId,
+      title: idea.title,
+      stage: "idea",
+      rationale: idea.rationale,
+      targetKeyword: idea.keyword,
+    });
     added++;
   }
   if (added)
@@ -1005,15 +1001,13 @@ export async function executeRun(
       })
       .where(eq(runs.id, runId));
     if (kind === "client_growth_review" && counts.blocked !== ctx.items.length) {
-      await db
-        .insert(timelineEntries)
-        .values({
-          organisationId: run.organisationId,
-          kind: "work",
-          title: "Growth review completed",
-          description: `${counts.completed} actions completed, ${counts.recommended} recommendations, ${counts.requires_approval} awaiting approval.`,
-          visibility: "client",
-        });
+      await db.insert(timelineEntries).values({
+        organisationId: run.organisationId,
+        kind: "work",
+        title: "Growth review completed",
+        description: `${counts.completed} actions completed, ${counts.recommended} recommendations, ${counts.requires_approval} awaiting approval.`,
+        visibility: "client",
+      });
     }
     await logActivity(
       db,

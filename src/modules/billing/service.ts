@@ -100,18 +100,16 @@ export async function createInvoice(
       periodStart: new Date().toISOString().slice(0, 10),
     })
     .returning();
-  await db
-    .insert(invoiceLines)
-    .values(
-      input.lines.map((l) => ({
-        invoiceId: invoice.id,
-        description: l.description,
-        quantity: l.quantity ?? 1,
-        unitMinor: l.unitMinor,
-        amountMinor: l.unitMinor * (l.quantity ?? 1),
-        clientServiceId: l.clientServiceId,
-      })),
-    );
+  await db.insert(invoiceLines).values(
+    input.lines.map((l) => ({
+      invoiceId: invoice.id,
+      description: l.description,
+      quantity: l.quantity ?? 1,
+      unitMinor: l.unitMinor,
+      amountMinor: l.unitMinor * (l.quantity ?? 1),
+      clientServiceId: l.clientServiceId,
+    })),
+  );
   if (issued) await syncInvoiceToAccounting(db, invoice.id);
   return invoice;
 }
@@ -328,14 +326,12 @@ export async function applyPaymentEvent(
       entityId: invoice.id,
     },
   );
-  await db
-    .insert(timelineEntries)
-    .values({
-      organisationId: invoice.organisationId,
-      kind: "billing",
-      title: `Payment received: ${invoice.number}`,
-      visibility: "client",
-    });
+  await db.insert(timelineEntries).values({
+    organisationId: invoice.organisationId,
+    kind: "billing",
+    title: `Payment received: ${invoice.number}`,
+    visibility: "client",
+  });
   await emitEvent(db, "payment.completed", invoice.organisationId, {
     invoiceId: invoice.id,
     kind: invoice.kind,
@@ -404,15 +400,13 @@ export async function afterInvoicePaid(
           paused.map((p) => p.id),
         ),
       );
-    await db
-      .insert(timelineEntries)
-      .values({
-        organisationId,
-        kind: "billing",
-        title: "Services resumed",
-        description: "Payment confirmed; paused work has resumed.",
-        visibility: "client",
-      });
+    await db.insert(timelineEntries).values({
+      organisationId,
+      kind: "billing",
+      title: "Services resumed",
+      description: "Payment confirmed; paused work has resumed.",
+      visibility: "client",
+    });
     for (const c of await billingContacts(db, organisationId)) {
       await sendEmail(db, {
         to: c,
@@ -567,16 +561,14 @@ export async function pauseForBilling(db: DbOrTx, organisationId: string): Promi
     .update(clientServices)
     .set({ status: "paused", pausedAt: new Date(), pauseReason: "billing" })
     .where(inArray(clientServices.id, toPause));
-  await db
-    .insert(timelineEntries)
-    .values({
-      organisationId,
-      kind: "billing",
-      title: "Automated work paused",
-      description:
-        "An invoice is overdue. Reports, documents and billing remain available, and work resumes when payment is received.",
-      visibility: "client",
-    });
+  await db.insert(timelineEntries).values({
+    organisationId,
+    kind: "billing",
+    title: "Automated work paused",
+    description:
+      "An invoice is overdue. Reports, documents and billing remain available, and work resumes when payment is received.",
+    visibility: "client",
+  });
   await emitEvent(db, "service.paused", organisationId, {
     reason: "billing",
     count: toPause.length,

@@ -281,16 +281,14 @@ export async function processMeetingNotes(
   const platform = await getPlatformOrganisation(db);
   const orgForTasks = meeting.organisationId ?? platform.id;
   for (const step of outcome.nextSteps.slice(0, 6)) {
-    await db
-      .insert(tasks)
-      .values({
-        organisationId: orgForTasks,
-        title: step.slice(0, 180),
-        source: "meeting",
-        sourceRef: meetingId,
-        assigneeId: actor.id,
-        dueAt: new Date(Date.now() + 3 * 86400_000),
-      });
+    await db.insert(tasks).values({
+      organisationId: orgForTasks,
+      title: step.slice(0, 180),
+      source: "meeting",
+      sourceRef: meetingId,
+      assigneeId: actor.id,
+      dueAt: new Date(Date.now() + 3 * 86400_000),
+    });
   }
   if (lead) {
     await db
@@ -301,14 +299,12 @@ export async function processMeetingNotes(
         goal: lead.goal ?? outcome.goals[0] ?? null,
       })
       .where(eq(leads.id, lead.id));
-    await db
-      .insert(leadActivities)
-      .values({
-        leadId: lead.id,
-        type: "meeting",
-        summary: `Call completed: ${outcome.summary.slice(0, 200)}`,
-        actorId: actor.id,
-      });
+    await db.insert(leadActivities).values({
+      leadId: lead.id,
+      type: "meeting",
+      summary: `Call completed: ${outcome.summary.slice(0, 200)}`,
+      actorId: actor.id,
+    });
     if (lead.email) {
       await requestApproval(db, {
         organisationId: platform.id,
@@ -335,17 +331,15 @@ export async function processMeetingNotes(
   }
   if (meeting.organisationId) {
     for (const goal of outcome.goals.slice(0, 3)) {
-      await db
-        .insert(clientBrainFacts)
-        .values({
-          organisationId: meeting.organisationId,
-          category: "strategy",
-          label: "Goal from meeting",
-          value: goal,
-          sourceType: "agent",
-          sourceRef: `meeting:${meetingId}`,
-          verification: "unverified",
-        });
+      await db.insert(clientBrainFacts).values({
+        organisationId: meeting.organisationId,
+        category: "strategy",
+        label: "Goal from meeting",
+        value: goal,
+        sourceType: "agent",
+        sourceRef: `meeting:${meetingId}`,
+        verification: "unverified",
+      });
     }
   }
   await emitEvent(db, "call.completed", meeting.organisationId, { meetingId });

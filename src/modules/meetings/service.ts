@@ -181,13 +181,11 @@ export async function bookPublicCall(db: Db, input: BookingInput): Promise<{ mee
         agenda: input.notes || null,
       })
       .returning({ id: meetings.id });
-    await tx
-      .insert(leadActivities)
-      .values({
-        leadId,
-        type: "meeting",
-        summary: `Booked a visibility review for ${start.toISOString()}.`,
-      });
+    await tx.insert(leadActivities).values({
+      leadId,
+      type: "meeting",
+      summary: `Booked a visibility review for ${start.toISOString()}.`,
+    });
     await emitEvent(tx, "call.booked", null, { meetingId: meeting.id, leadId });
     await enqueue(tx, "meeting.briefing", { meetingId: meeting.id });
     return { meetingId: meeting.id, leadId };

@@ -354,13 +354,11 @@ export async function sendProposal(db: DbOrTx, id: string, actor: Actor): Promis
       .update(leads)
       .set({ stage: "proposal_sent", lastActivityAt: new Date() })
       .where(eq(leads.id, proposal.leadId));
-    await db
-      .insert(leadActivities)
-      .values({
-        leadId: proposal.leadId,
-        type: "proposal",
-        summary: `Proposal ${proposal.number} sent.`,
-      });
+    await db.insert(leadActivities).values({
+      leadId: proposal.leadId,
+      type: "proposal",
+      summary: `Proposal ${proposal.number} sent.`,
+    });
   }
   await logActivity(db, actor, {
     action: "proposal.sent",

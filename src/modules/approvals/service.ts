@@ -273,15 +273,13 @@ export async function executeApprovalAction(
         .from(reports)
         .where(eq(reports.id, String(p.reportId)));
       if (report) {
-        await db
-          .insert(timelineEntries)
-          .values({
-            organisationId,
-            kind: "report",
-            title: `${report.title} published`,
-            link: `/portal/reports/${report.id}`,
-            visibility: "client",
-          });
+        await db.insert(timelineEntries).values({
+          organisationId,
+          kind: "report",
+          title: `${report.title} published`,
+          link: `/portal/reports/${report.id}`,
+          visibility: "client",
+        });
         await notifyClient(db, organisationId, {
           kind: "report.ready",
           title: "New report available",
@@ -302,15 +300,13 @@ export async function executeApprovalAction(
             eq(contentItems.organisationId, organisationId),
           ),
         );
-      await db
-        .insert(tasks)
-        .values({
-          organisationId,
-          title: `Publish approved content: ${String(p.title ?? "")}`,
-          status: "ready",
-          source: "workflow",
-          visibility: "client",
-        });
+      await db.insert(tasks).values({
+        organisationId,
+        title: `Publish approved content: ${String(p.title ?? "")}`,
+        status: "ready",
+        source: "workflow",
+        visibility: "client",
+      });
       break;
     }
     case "outreach.send": {
@@ -332,13 +328,11 @@ export async function executeApprovalAction(
           },
           idempotencyKey: `outreach:${lead.id}:${String(p.sequence ?? 1)}`,
         });
-        await db
-          .insert(leadActivities)
-          .values({
-            leadId: lead.id,
-            type: "email",
-            summary: `Approved outreach sent: ${String(p.subject ?? "")}`,
-          });
+        await db.insert(leadActivities).values({
+          leadId: lead.id,
+          type: "email",
+          summary: `Approved outreach sent: ${String(p.subject ?? "")}`,
+        });
         if (["new", "audit_generated", "qualified"].includes(lead.stage))
           await db
             .update(leads)
@@ -348,32 +342,28 @@ export async function executeApprovalAction(
       break;
     }
     case "task.create": {
-      await db
-        .insert(tasks)
-        .values({
-          organisationId,
-          title: String(p.title),
-          description: p.description ? String(p.description) : null,
-          status: "ready",
-          source: "workflow",
-          visibility: (p.visibility as "client" | "internal") ?? "internal",
-        });
+      await db.insert(tasks).values({
+        organisationId,
+        title: String(p.title),
+        description: p.description ? String(p.description) : null,
+        status: "ready",
+        source: "workflow",
+        visibility: (p.visibility as "client" | "internal") ?? "internal",
+      });
       break;
     }
     default: {
       // Actions without an automated executor (e.g. website changes, ad budget changes)
       // become a task for a person to carry out.
-      await db
-        .insert(tasks)
-        .values({
-          organisationId,
-          title: `Carry out approved change: ${String(p.title ?? action.type)}`,
-          description: p.description ? String(p.description) : null,
-          status: "ready",
-          priority: "high",
-          source: "workflow",
-          visibility: "client",
-        });
+      await db.insert(tasks).values({
+        organisationId,
+        title: `Carry out approved change: ${String(p.title ?? action.type)}`,
+        description: p.description ? String(p.description) : null,
+        status: "ready",
+        priority: "high",
+        source: "workflow",
+        visibility: "client",
+      });
     }
   }
   await logActivity(db, actor, {

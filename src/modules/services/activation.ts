@@ -90,38 +90,32 @@ export async function activateClientService(
       status: "ready" as const,
       visibility: "internal" as const,
     })),
-    ...service.includedActivities
-      .slice(0, 4)
-      .map((activity) => ({
-        title: `${service.name}: ${activity}`,
-        status: "ready" as const,
-        visibility: "client" as const,
-      })),
+    ...service.includedActivities.slice(0, 4).map((activity) => ({
+      title: `${service.name}: ${activity}`,
+      status: "ready" as const,
+      visibility: "client" as const,
+    })),
   ];
   if (setupTasks.length) {
-    await db
-      .insert(tasks)
-      .values(
-        setupTasks.map((t, i) => ({
-          organisationId: cs.organisationId,
-          clientServiceId: cs.id,
-          title: t.title,
-          status: t.status,
-          visibility: t.visibility,
-          source: "onboarding" as const,
-          dueAt: new Date(Date.now() + (7 + i * 2) * 86400_000),
-        })),
-      );
+    await db.insert(tasks).values(
+      setupTasks.map((t, i) => ({
+        organisationId: cs.organisationId,
+        clientServiceId: cs.id,
+        title: t.title,
+        status: t.status,
+        visibility: t.visibility,
+        source: "onboarding" as const,
+        dueAt: new Date(Date.now() + (7 + i * 2) * 86400_000),
+      })),
+    );
   }
-  await db
-    .insert(timelineEntries)
-    .values({
-      organisationId: cs.organisationId,
-      kind: "milestone",
-      title: `${service.name} started`,
-      description: service.summary,
-      visibility: "client",
-    });
+  await db.insert(timelineEntries).values({
+    organisationId: cs.organisationId,
+    kind: "milestone",
+    title: `${service.name} started`,
+    description: service.summary,
+    visibility: "client",
+  });
 
   if (cs.monthlyMinor > 0) {
     const [existing] = await db
@@ -138,16 +132,14 @@ export async function activateClientService(
     const next = new Date();
     next.setUTCMonth(next.getUTCMonth() + 1);
     if (!existing) {
-      await db
-        .insert(subscriptions)
-        .values({
-          organisationId: cs.organisationId,
-          status: "active",
-          provider: payments.available ? payments.adapter.provider : "manual",
-          amountMinor: cs.monthlyMinor,
-          currency: cs.currency,
-          nextBillingDate: next.toISOString().slice(0, 10),
-        });
+      await db.insert(subscriptions).values({
+        organisationId: cs.organisationId,
+        status: "active",
+        provider: payments.available ? payments.adapter.provider : "manual",
+        amountMinor: cs.monthlyMinor,
+        currency: cs.currency,
+        nextBillingDate: next.toISOString().slice(0, 10),
+      });
     } else {
       await db
         .update(subscriptions)
@@ -201,15 +193,13 @@ export async function deactivateClientService(
       .where(eq(subscriptions.organisationId, cs.organisationId));
   }
   await refreshMonthlyValue(db, cs.organisationId);
-  await db
-    .insert(timelineEntries)
-    .values({
-      organisationId: cs.organisationId,
-      kind: "milestone",
-      title: `${service?.name ?? "Service"} ended`,
-      description: reason,
-      visibility: "client",
-    });
+  await db.insert(timelineEntries).values({
+    organisationId: cs.organisationId,
+    kind: "milestone",
+    title: `${service?.name ?? "Service"} ended`,
+    description: reason,
+    visibility: "client",
+  });
   await emitEvent(db, "service.deactivated", cs.organisationId, { clientServiceId: cs.id });
   await logActivity(db, actor, {
     organisationId: cs.organisationId,

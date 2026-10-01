@@ -185,16 +185,14 @@ export async function onboardFromProposal(
     })
     .where(eq(clients.organisationId, organisationId));
   await db.update(proposals).set({ organisationId }).where(eq(proposals.id, proposalId));
-  await db
-    .insert(contacts)
-    .values({
-      organisationId,
-      name: signer.name,
-      email: signer.email,
-      role: signer.role,
-      isPrimary: true,
-      isDecisionMaker: true,
-    });
+  await db.insert(contacts).values({
+    organisationId,
+    name: signer.name,
+    email: signer.email,
+    role: signer.role,
+    isPrimary: true,
+    isDecisionMaker: true,
+  });
 
   // Service plan (pending until the setup invoice is paid).
   const core = items.filter((i) => !i.optional && i.serviceId);
@@ -212,26 +210,22 @@ export async function onboardFromProposal(
 
   // Client Brain and goals from what was agreed.
   if (lead?.industry)
-    await db
-      .insert(clientBrainFacts)
-      .values({
-        organisationId,
-        category: "company",
-        label: "Industry",
-        value: lead.industry,
-        sourceType: "human",
-      });
+    await db.insert(clientBrainFacts).values({
+      organisationId,
+      category: "company",
+      label: "Industry",
+      value: lead.industry,
+      sourceType: "human",
+    });
   for (const problem of proposal.problems)
-    await db
-      .insert(clientBrainFacts)
-      .values({
-        organisationId,
-        category: "strategy",
-        label: "Problem to solve",
-        value: problem,
-        sourceType: "human",
-        sourceRef: `proposal:${proposal.number}`,
-      });
+    await db.insert(clientBrainFacts).values({
+      organisationId,
+      category: "strategy",
+      label: "Problem to solve",
+      value: problem,
+      sourceType: "human",
+      sourceRef: `proposal:${proposal.number}`,
+    });
   for (const goal of proposal.goals)
     await db.insert(clientGoals).values({ organisationId, title: goal });
 
@@ -356,15 +350,13 @@ export async function onboardFromProposal(
         lastActivityAt: new Date(),
       })
       .where(eq(leads.id, lead.id));
-  await db
-    .insert(timelineEntries)
-    .values({
-      organisationId,
-      kind: "onboarding",
-      title: "Welcome to Mea Creo",
-      description: `Proposal ${proposal.number} accepted by ${signer.name}.`,
-      visibility: "client",
-    });
+  await db.insert(timelineEntries).values({
+    organisationId,
+    kind: "onboarding",
+    title: "Welcome to Mea Creo",
+    description: `Proposal ${proposal.number} accepted by ${signer.name}.`,
+    visibility: "client",
+  });
   return { organisationId, invoiceId };
 }
 
@@ -390,13 +382,11 @@ export async function setChecklistItem(
     })
     .where(eq(clients.organisationId, organisationId));
   if (complete && client.lifecycle === "onboarding") {
-    await db
-      .insert(timelineEntries)
-      .values({
-        organisationId,
-        kind: "milestone",
-        title: "Onboarding complete",
-        visibility: "client",
-      });
+    await db.insert(timelineEntries).values({
+      organisationId,
+      kind: "milestone",
+      title: "Onboarding complete",
+      visibility: "client",
+    });
   }
 }

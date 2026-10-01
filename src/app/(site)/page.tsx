@@ -12,14 +12,7 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  CtaBand,
-  Container,
-  DisplayHeading,
-  Eyebrow,
-  Section,
-  SectionIntro,
-} from "@/components/site/marketing";
+import { CtaBand, Container, Eyebrow, Section, SectionIntro } from "@/components/site/marketing";
 import { ReportPreview } from "@/components/site/report-preview";
 import { LinkButton } from "@/components/ui/button";
 import { HOW_IT_WORKS } from "@/content/pillars";
