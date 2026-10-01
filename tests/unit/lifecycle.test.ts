@@ -68,15 +68,13 @@ describe("Billing lifecycle", () => {
 
   it("marks overdue, then pauses automated services after the grace period without deleting anything", async () => {
     const [svc] = await db.select().from(services).limit(1);
-    await db
-      .insert(clientServices)
-      .values({
-        organisationId: orgB,
-        serviceId: svc.id,
-        status: "active",
-        currency: "ZAR",
-        monthlyMinor: 100_000,
-      });
+    await db.insert(clientServices).values({
+      organisationId: orgB,
+      serviceId: svc.id,
+      status: "active",
+      currency: "ZAR",
+      monthlyMinor: 100_000,
+    });
     const inv = await createInvoice(db, {
       organisationId: orgB,
       kind: "monthly",
@@ -123,44 +121,40 @@ describe("Approval engine", () => {
 
 describe("Ask Mea Creo isolation", () => {
   it("never answers with another organisation's data or unpublished reports", async () => {
-    await db
-      .insert(reports)
-      .values({
-        organisationId: orgB,
-        title: "Beta secret plan",
-        status: "published",
-        content: {
-          headline: "BETA-ONLY-HEADLINE",
-          whatWeDid: [],
-          whatChanged: [],
-          whatWeLearned: [],
-          opportunities: [],
-          whatHappensNext: [],
-          needsFromYou: [],
-          activityMetrics: [],
-          outcomeMetrics: [],
-          dataNotes: [],
-        },
-      });
-    await db
-      .insert(reports)
-      .values({
-        organisationId: orgA,
-        title: "Alpha draft",
-        status: "draft",
-        content: {
-          headline: "ALPHA-DRAFT-HEADLINE",
-          whatWeDid: [],
-          whatChanged: [],
-          whatWeLearned: [],
-          opportunities: [],
-          whatHappensNext: [],
-          needsFromYou: [],
-          activityMetrics: [],
-          outcomeMetrics: [],
-          dataNotes: [],
-        },
-      });
+    await db.insert(reports).values({
+      organisationId: orgB,
+      title: "Beta secret plan",
+      status: "published",
+      content: {
+        headline: "BETA-ONLY-HEADLINE",
+        whatWeDid: [],
+        whatChanged: [],
+        whatWeLearned: [],
+        opportunities: [],
+        whatHappensNext: [],
+        needsFromYou: [],
+        activityMetrics: [],
+        outcomeMetrics: [],
+        dataNotes: [],
+      },
+    });
+    await db.insert(reports).values({
+      organisationId: orgA,
+      title: "Alpha draft",
+      status: "draft",
+      content: {
+        headline: "ALPHA-DRAFT-HEADLINE",
+        whatWeDid: [],
+        whatChanged: [],
+        whatWeLearned: [],
+        opportunities: [],
+        whatHappensNext: [],
+        needsFromYou: [],
+        activityMetrics: [],
+        outcomeMetrics: [],
+        dataNotes: [],
+      },
+    });
     for (const q of [
       "What does my latest report mean?",
       "What happened this month?",

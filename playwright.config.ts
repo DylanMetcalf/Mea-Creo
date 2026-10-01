@@ -24,6 +24,8 @@ export default defineConfig({
     command: `pnpm start --port ${PORT}`,
     url: `http://localhost:${PORT}/api/health`,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 180_000,
+    // Its own embedded database, so E2E never shares files with a running dev server.
+    env: { PGLITE_DIR: ".data/e2e-pglite", NEXT_PUBLIC_SITE_URL: `http://localhost:${PORT}` },
   },
 });

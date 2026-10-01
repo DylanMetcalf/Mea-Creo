@@ -8,7 +8,10 @@ test("health endpoint responds", async ({ request }) => {
 
 test("home page renders the positioning statement", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Get found");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Become easier to find");
+  await expect(
+    page.getByRole("link", { name: /Get your free Visibility Report/i }).first(),
+  ).toBeVisible();
 });
 
 test("non-production builds are not indexable", async ({ page }) => {

@@ -41,7 +41,7 @@ export const envSchema = z
     GOOGLE_CLIENT_ID: optionalString,
     GOOGLE_CLIENT_SECRET: optionalString,
 
-    AI_PROVIDER: z.enum(["mock", "anthropic", "openai", "google"]).default("mock"),
+    AI_PROVIDER: z.enum(["none", "mock", "anthropic", "openai", "google"]).default("mock"),
     AI_MODEL: optionalString,
     ANTHROPIC_API_KEY: optionalString,
     OPENAI_API_KEY: optionalString,

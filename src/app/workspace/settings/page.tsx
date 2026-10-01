@@ -88,7 +88,7 @@ const ACTION_ROWS = [
 const INTEGRATION_LABELS: Record<string, { name: string; env: string }> = {
   payments: {
     name: "Payments (Payfast)",
-    env: "PAYMENTS_PROVIDER=payfast, PAYFAST_MERCHANT_ID, PAYFAST_MERCHANT_KEY, PAYFAST_PASSPHRASE",
+    env: "PAYMENT_PROVIDER=payfast, PAYFAST_MERCHANT_ID, PAYFAST_MERCHANT_KEY, PAYFAST_PASSPHRASE, PAYFAST_SANDBOX",
   },
   accounting: {
     name: "Accounting (Xero)",
@@ -108,7 +108,7 @@ const INTEGRATION_LABELS: Record<string, { name: string; env: string }> = {
   search: { name: "Search Console", env: "SEARCH_PROVIDER=google + Google OAuth" },
   crm: {
     name: "Sales Scout / CRM",
-    env: "CRM_PROVIDER=sales_scout, SALES_SCOUT_URL, SALES_SCOUT_WEBHOOK_SECRET",
+    env: "CRM_PROVIDER=sales_scout, SALES_SCOUT_WEBHOOK_SECRET (POST signed leads to /api/webhooks/sales-scout)",
   },
   social: {
     name: "Social (LinkedIn)",
