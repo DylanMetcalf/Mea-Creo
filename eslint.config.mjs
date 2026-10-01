@@ -22,6 +22,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     ".data/**",
     "drizzle/**",
+    "*.tmp.mjs",
+    "test-results/**",
+    "playwright-report/**",
   ]),
 ]);
 
