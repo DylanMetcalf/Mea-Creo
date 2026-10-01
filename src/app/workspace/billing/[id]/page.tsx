@@ -80,7 +80,7 @@ export default async function InvoicePage({ params }: PageProps<"/workspace/bill
           )}
         </div>
       </header>
-      <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_340px]">
         <div className="space-y-6">
           <Card>
             <div className="overflow-x-auto">

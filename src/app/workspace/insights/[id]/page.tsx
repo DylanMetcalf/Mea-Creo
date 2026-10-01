@@ -43,7 +43,10 @@ export default async function InsightEditorPage({ params }: PageProps<"/workspac
           </LinkButton>
         )}
       </div>
-      <ActionForm action={saveInsightAction} className="grid gap-6 xl:grid-cols-[1fr_340px]">
+      <ActionForm
+        action={saveInsightAction}
+        className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_340px]"
+      >
         <input type="hidden" name="insightId" value={a?.id ?? ""} />
         <Card>
           <CardBody className="space-y-4">

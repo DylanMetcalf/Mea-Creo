@@ -246,7 +246,7 @@ export default async function PublicProposalPage({
             Please contact us for an updated proposal.
           </Callout>
         ) : p.status !== "draft" ? (
-          <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-[1.4fr_1fr]">
             <Card>
               <CardHeader
                 title="Accept this proposal"

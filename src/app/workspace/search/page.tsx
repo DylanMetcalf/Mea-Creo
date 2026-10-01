@@ -167,7 +167,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/workspace
           description="Try a company name, a contact, an email address or an invoice number."
         />
       )}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {found.map((g) => (
           <Card key={g.title}>
             <CardHeader title={g.title} />

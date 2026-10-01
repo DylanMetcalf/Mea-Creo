@@ -137,7 +137,7 @@ export default async function BusinessPage() {
           </Callout>
         </div>
       )}
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat
           label="Monthly recurring revenue"
           value={fmtMoney(mrr)}
@@ -161,7 +161,7 @@ export default async function BusinessPage() {
           href="/workspace/billing?tab=open"
         />
       </div>
-      <div className="grid gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader
             title="Monthly revenue by service"

@@ -119,7 +119,7 @@ export default async function ReportPage({
                 defaultValue={r.content.headline}
                 rows={3}
               />
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {FIELDS.map(([key, label]) => (
                   <TextArea
                     key={key}

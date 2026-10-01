@@ -120,7 +120,7 @@ export default async function LeadPage({ params }: PageProps<"/workspace/leads/[
         )}
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
           {lead.opportunitySummary && (
             <Callout tone="brand" title="Opportunity">

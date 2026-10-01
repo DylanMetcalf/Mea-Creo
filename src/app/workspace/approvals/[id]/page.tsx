@@ -74,7 +74,7 @@ export default async function ApprovalPage({ params }: PageProps<"/workspace/app
           {a.requestedByAgent ? `the ${a.requestedByAgent} agent` : (requester?.name ?? "the team")}
         </p>
       </header>
-      <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
         <div className="space-y-6">
           {a.description && <p className="text-ink-soft max-w-3xl">{a.description}</p>}
           <Card>

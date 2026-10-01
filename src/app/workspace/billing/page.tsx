@@ -96,7 +96,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/workspac
           </Callout>
         )}
       </div>
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Stat label="Outstanding (ZAR)" value={fmtMoney(Number(totals?.outstanding ?? 0))} />
         <Stat
           label="Overdue (ZAR)"
@@ -117,7 +117,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/workspac
           })),
         ]}
       />
-      <div className="grid gap-6 xl:grid-cols-[1fr_300px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_300px]">
         <Card>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

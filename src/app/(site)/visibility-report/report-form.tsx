@@ -37,7 +37,7 @@ export function ReportForm({ utm }: { utm: Record<string, string> }) {
         autoComplete="url"
         inputMode="url"
       />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <TextField name="name" label="Your name" required autoComplete="name" />
         <TextField name="company" label="Company" required autoComplete="organization" />
       </div>
@@ -49,7 +49,7 @@ export function ReportForm({ utm }: { utm: Record<string, string> }) {
         autoComplete="email"
         hint="We'll email you a link to your report."
       />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <TextField name="industry" label="Industry" placeholder="e.g. Engineering" />
         <TextField name="location" label="Location" placeholder="e.g. Pretoria" />
       </div>

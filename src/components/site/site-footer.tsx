@@ -53,7 +53,7 @@ export function SiteFooter({
   };
   return (
     <footer className="border-border bg-surface mt-auto border-t">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div className="space-y-4">
           <Logo />
           <p className="text-muted max-w-xs text-sm">

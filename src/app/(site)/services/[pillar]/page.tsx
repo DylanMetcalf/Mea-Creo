@@ -75,7 +75,7 @@ export default async function PillarPage({ params }: PageProps<"/services/[pilla
         ]}
       />
       <section className="pt-12 pb-14 sm:pt-20 sm:pb-20">
-        <Container className="grid gap-12 lg:grid-cols-[1.4fr_1fr]">
+        <Container className="grid grid-cols-1 gap-12 lg:grid-cols-[1.4fr_1fr]">
           <div>
             <nav aria-label="Breadcrumb" className="text-muted text-sm">
               <Link href="/services" className="hover:text-ink">
@@ -115,7 +115,7 @@ export default async function PillarPage({ params }: PageProps<"/services/[pilla
           {pillar.services.map((service) => (
             <article
               key={service.name}
-              className="border-border grid gap-6 border-t pt-8 first:border-0 first:pt-0 md:grid-cols-[1fr_1.2fr]"
+              className="border-border grid grid-cols-1 gap-6 border-t pt-8 first:border-0 first:pt-0 md:grid-cols-[1fr_1.2fr]"
             >
               <div>
                 <h2 className="font-display text-2xl sm:text-3xl">{service.name}</h2>
@@ -133,7 +133,7 @@ export default async function PillarPage({ params }: PageProps<"/services/[pilla
       </Section>
 
       <Section>
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.5fr]">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.5fr]">
           <DisplayHeading>Questions we get asked</DisplayHeading>
           <FaqList items={pillar.faq} />
         </div>
@@ -141,7 +141,7 @@ export default async function PillarPage({ params }: PageProps<"/services/[pilla
 
       <Section tone="surface">
         <p className="text-muted text-sm font-semibold">Other services</p>
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
           {others.map((p) => (
             <Link
               key={p.slug}

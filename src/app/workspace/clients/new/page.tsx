@@ -18,7 +18,7 @@ export default async function NewClientPage() {
       <Card className="p-6">
         <ActionForm action={createClientAction} className="space-y-5">
           <TextField name="name" label="Company name" required />
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <TextField name="website" label="Website" placeholder="company.co.za" />
             <TextField name="industry" label="Industry" />
             <TextField name="location" label="Location" placeholder="City, province" />
@@ -55,7 +55,7 @@ export default async function NewClientPage() {
           <TextArea name="description" label="What they do" rows={3} />
           <fieldset className="rounded-card border-border space-y-4 border p-4">
             <legend className="px-1 text-sm font-medium">Primary contact (optional)</legend>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <TextField name="contactName" label="Name" />
               <TextField name="contactEmail" type="email" label="Email" />
               <TextField name="contactRole" label="Role" />

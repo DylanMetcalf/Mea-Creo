@@ -62,7 +62,7 @@ export function ReportBody({ content }: { content: ReportContent }) {
   return (
     <div className="space-y-6">
       <p className="font-display text-ink max-w-3xl text-xl leading-relaxed">{content.headline}</p>
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Section title="What we did" items={content.whatWeDid}>
           <Metrics items={content.activityMetrics} />
         </Section>

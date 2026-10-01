@@ -43,7 +43,7 @@ export default async function ReportsPage() {
         title="Reports"
         description="Monthly reports separate what we did from what changed, and name the source of every number. Clients see them only once published."
       />
-      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
         {rows.length === 0 ? (
           <EmptyState
             icon={<BarChart3 className="size-6" />}

@@ -153,7 +153,10 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
                 </Callout>
               </div>
             )}
-            <ActionForm action={saveCompanyAction} className="grid gap-4 md:grid-cols-2">
+            <ActionForm
+              action={saveCompanyAction}
+              className="grid grid-cols-1 gap-4 md:grid-cols-2"
+            >
               <TextField name="legalName" label="Legal name" defaultValue={c.legalName} />
               <TextField name="tradingName" label="Trading name" defaultValue={c.tradingName} />
               <TextField name="email" label="Email" defaultValue={c.email} />
@@ -197,7 +200,10 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
             description="Applies to new invoices. Existing invoices keep the tax they were issued with."
           />
           <CardBody>
-            <ActionForm action={saveBillingAction} className="grid gap-4 md:grid-cols-2">
+            <ActionForm
+              action={saveBillingAction}
+              className="grid grid-cols-1 gap-4 md:grid-cols-2"
+            >
               <SelectField
                 name="defaultCurrency"
                 label="Default currency"
@@ -290,7 +296,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
                   ))}
                 </div>
               </fieldset>
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <TextField
                   name="startHour"
                   type="number"
@@ -394,7 +400,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
                     </tbody>
                   </table>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <TextField
                     name="monthlyCycleDay"
                     type="number"
@@ -442,7 +448,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
             description="Hard limits on AI spend. When a budget is reached, agents switch to rules mode instead of spending more."
           />
           <CardBody>
-            <ActionForm action={saveAiAction} className="grid gap-4 md:grid-cols-2">
+            <ActionForm action={saveAiAction} className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <TextField
                 name="monthlyBudgetUsd"
                 type="number"
@@ -521,7 +527,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
         .where(eq(memberships.organisationId, ctx.platformOrganisationId));
       const manage = ctx.can("users.manage");
       body = (
-        <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_340px]">
           <Card>
             <CardHeader
               title="Team"
@@ -665,7 +671,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
         .where(isNull(apiKeys.revokedAt))
         .orderBy(desc(apiKeys.createdAt));
       body = (
-        <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_340px]">
           <Card>
             <CardHeader
               title="API keys"
@@ -808,7 +814,10 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
             description="Your own numbers, used on the Business page. Leave blank if you'd rather not set one."
           />
           <CardBody>
-            <ActionForm action={saveTargetsAction} className="grid gap-4 md:grid-cols-2">
+            <ActionForm
+              action={saveTargetsAction}
+              className="grid grid-cols-1 gap-4 md:grid-cols-2"
+            >
               <TextField
                 name="targetMrr"
                 label="Target monthly recurring revenue (R)"

@@ -39,7 +39,10 @@ export default async function PackagePage({
         / {p.name}
       </div>
       <h1 className="mb-6 text-2xl font-semibold tracking-tight">{p.name}</h1>
-      <ActionForm action={savePackageAction} className="grid max-w-5xl gap-6 lg:grid-cols-2">
+      <ActionForm
+        action={savePackageAction}
+        className="grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-2"
+      >
         <input type="hidden" name="packageId" value={p.id} />
         <Card>
           <CardHeader title="Package" />

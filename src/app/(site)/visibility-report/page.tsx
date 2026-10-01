@@ -51,7 +51,7 @@ export default async function VisibilityReportPage({
 
   return (
     <section className="py-12 sm:py-20">
-      <Container className="grid gap-12 lg:grid-cols-[1fr_1.05fr]">
+      <Container className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.05fr]">
         <div>
           <Eyebrow>Free Visibility Report</Eyebrow>
           <DisplayHeading as="h1" className="mt-3 sm:text-5xl">
@@ -72,7 +72,7 @@ export default async function VisibilityReportPage({
               ]}
             />
           </div>
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
+          <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
             {[
               [Clock, "Ready in about a minute"],
               [FileSearch, "What, why and what to do"],

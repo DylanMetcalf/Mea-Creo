@@ -57,7 +57,10 @@ export default async function ServicePage({ params }: PageProps<"/workspace/serv
         / {s.name}
       </div>
       <h1 className="mb-6 text-2xl font-semibold tracking-tight">{s.name}</h1>
-      <ActionForm action={saveServiceAction} className="grid gap-6 xl:grid-cols-[1fr_380px]">
+      <ActionForm
+        action={saveServiceAction}
+        className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_380px]"
+      >
         <input type="hidden" name="serviceId" value={s.id} />
         <div className="space-y-6">
           <Card>
@@ -83,7 +86,7 @@ export default async function ServicePage({ params }: PageProps<"/workspace/serv
                 rows={4}
                 disabled={locked}
               />
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <TextArea
                   name="includedActivities"
                   label="Included activities"

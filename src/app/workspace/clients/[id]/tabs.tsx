@@ -79,7 +79,7 @@ export function OverviewTab({ data }: Props) {
   const done = checklist.filter((c) => c.done).length;
   const openOpps = data.opportunities.filter((o) => o.status === "open");
   return (
-    <div className="grid gap-6 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
       <div className="space-y-6 xl:col-span-2">
         <Card>
           <CardHeader
@@ -369,7 +369,7 @@ export function StrategyTab({ data }: Props) {
   })).filter((g) => g.facts.length);
   const unverified = data.facts.filter((f) => f.verification === "unverified");
   return (
-    <div className="grid gap-6 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
       <div className="space-y-6 xl:col-span-2">
         <Card>
           <CardHeader
@@ -632,7 +632,7 @@ export function WorkTab({ data }: Props) {
     .slice(-10)
     .reverse();
   return (
-    <div className="grid gap-6 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
       <Card className="xl:col-span-2">
         <CardHeader
           title="Tasks"
@@ -748,7 +748,7 @@ export async function ServicesTab({ data, canManage }: Props & { canManage: bool
           description="Add services below, or accept a proposal to set them up automatically."
         />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {data.services.map(({ cs, service }) => (
             <Card key={cs.id} className={cs.status === "cancelled" ? "opacity-60" : ""}>
               <CardBody className="space-y-3">
@@ -825,7 +825,7 @@ export async function ServicesTab({ data, canManage }: Props & { canManage: bool
           <CardBody>
             <ActionForm
               action={addClientServiceAction}
-              className="grid gap-4 md:grid-cols-4"
+              className="grid grid-cols-1 gap-4 md:grid-cols-4"
               resetOnSuccess
             >
               <Hidden data={data} />
@@ -894,7 +894,7 @@ export function VisibilityTab({ data }: Props) {
           <CardBody className="space-y-5">
             <p className="text-ink-soft">{latest.result.headline}</p>
             <ReportSummary result={latest.result} />
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {latest.result.categories.map((c) => (
                 <div
                   key={c.key}
@@ -1020,7 +1020,7 @@ export async function DocumentsTab({ data }: Props) {
     clientOnly: false,
   });
   return (
-    <div className="grid gap-6 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
       <Card className="xl:col-span-2">
         <CardHeader
           title="Documents"
@@ -1300,7 +1300,7 @@ export function MessagesTab({ data }: Props) {
 
 export function ActivityTab({ data }: Props) {
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
       <Card>
         <CardHeader
           title="Growth timeline"
@@ -1393,7 +1393,7 @@ export function ActivityTab({ data }: Props) {
 
 export function SettingsTab({ data, canDelete }: Props & { canDelete: boolean }) {
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
       <Card>
         <CardHeader
           title="Portal users"
@@ -1422,7 +1422,7 @@ export function SettingsTab({ data, canDelete }: Props & { canDelete: boolean })
           </ul>
           <ActionForm action={inviteUserAction} className="space-y-3" resetOnSuccess>
             <Hidden data={data} />
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <TextField name="name" label="Name" required />
               <TextField name="email" type="email" label="Email" required />
             </div>

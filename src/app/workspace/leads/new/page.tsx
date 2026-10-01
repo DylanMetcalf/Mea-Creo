@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Add lead" };
 export default async function NewLeadPage() {
   await requireStaff("leads.write");
   return (
-    <div className="grid max-w-5xl gap-6 lg:grid-cols-[1.6fr_1fr]">
+    <div className="grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
       <div>
         <PageHeader
           title="Add a lead"
@@ -25,7 +25,7 @@ export default async function NewLeadPage() {
         <Card className="p-6">
           <ActionForm action={createLeadAction} className="space-y-4">
             <TextField name="company" label="Company" required />
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <TextField name="website" label="Website" placeholder="company.co.za" />
               <TextField name="industry" label="Industry" />
               <TextField name="contactName" label="Contact name" />

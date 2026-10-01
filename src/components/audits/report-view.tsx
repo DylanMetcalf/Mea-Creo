@@ -42,7 +42,7 @@ function FindingRow({ finding }: { finding: AuditFinding }) {
         <span className="text-ink flex-1 text-sm font-medium">{finding.title}</span>
         {isIssue && <Badge tone={IMPACT_TONE[finding.impact]}>{finding.impact} impact</Badge>}
       </summary>
-      <dl className="mt-3 ml-7 grid gap-3 text-sm sm:grid-cols-3">
+      <dl className="mt-3 ml-7 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
         <div>
           <dt className="text-muted text-xs font-semibold tracking-wide uppercase">
             What&apos;s happening
@@ -133,7 +133,7 @@ export function ReportView({
           <h2 id="opportunities" className="font-display text-ink text-2xl sm:text-3xl">
             Your biggest opportunities
           </h2>
-          <ol className="mt-5 grid gap-3 md:grid-cols-2">
+          <ol className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
             {result.opportunities.map((o, i) => (
               <li
                 key={o.title}
@@ -160,7 +160,7 @@ export function ReportView({
         <h2 id="categories" className="font-display text-ink text-2xl sm:text-3xl">
           Findings by area
         </h2>
-        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
           {result.categories.map((category) => (
             <CategoryCard key={category.key} category={category} />
           ))}
@@ -172,7 +172,7 @@ export function ReportView({
           <h2 id="competitors" className="font-display text-ink text-2xl">
             What competitors are doing that you could consider
           </h2>
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             {result.competitors.map((c) => (
               <div key={c.url} className="rounded-card border-border bg-surface border p-4">
                 <p className="font-medium">{c.name}</p>

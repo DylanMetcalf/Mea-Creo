@@ -28,7 +28,7 @@ export default async function InsightsAdminPage() {
         title="Website content"
         description="Insights articles and case studies for the public website. Nothing is published without a person choosing to publish it."
       />
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <Card>
           <CardHeader
             title="Insights"

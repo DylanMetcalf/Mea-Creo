@@ -96,7 +96,7 @@ export default async function TasksPage({ searchParams }: PageProps<"/workspace/
         active={view}
         tabs={VIEWS.map((v) => ({ key: v, label: v === "mine" ? "My tasks" : humanize(v) }))}
       />
-      <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_340px]">
         <div>
           {clientFilter && (
             <p className="mb-3 text-sm">

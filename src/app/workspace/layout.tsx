@@ -1,4 +1,4 @@
-import { and, count, eq, isNull } from "drizzle-orm";
+import { and, count, eq, inArray, isNull } from "drizzle-orm";
 import { Bell, LogOut, Menu, Plus, Search } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -36,7 +36,12 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
       .select({ n: count() })
       .from(notifications)
       .where(and(eq(notifications.userId, ctx.user.id), isNull(notifications.readAt))),
-    db.select({ n: count() }).from(approvals).where(eq(approvals.status, "pending")),
+    db
+      .select({ n: count() })
+      .from(approvals)
+      .where(
+        and(eq(approvals.status, "pending"), inArray(approvals.level, ["internal", "manual"])),
+      ),
     getPlatformSetting(db, "emergency"),
     getPlatformSetting(db, "billing"),
   ]);

@@ -96,7 +96,7 @@ export default async function ProposalPage({ params }: PageProps<"/workspace/pro
         </div>
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
         <ActionForm action={saveProposalAction} className="space-y-6" id="proposal-form">
           <input type="hidden" name="proposalId" value={p.id} />
           <Card>
@@ -233,7 +233,7 @@ export default async function ProposalPage({ params }: PageProps<"/workspace/pro
                 rows={4}
                 disabled={locked}
               />
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <TextArea
                   name="problems"
                   label="What we found"
@@ -284,7 +284,7 @@ export default async function ProposalPage({ params }: PageProps<"/workspace/pro
                 rows={5}
                 disabled={locked}
               />
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <TextField
                   name="contactName"
                   label="Contact name"

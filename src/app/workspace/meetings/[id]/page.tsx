@@ -116,7 +116,7 @@ export default async function MeetingPage({ params }: PageProps<"/workspace/meet
         )}
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="space-y-6">
           <Card>
             <CardHeader
@@ -231,7 +231,7 @@ export default async function MeetingPage({ params }: PageProps<"/workspace/meet
                     ["Services discussed", m.outcome.servicesDiscussed.join(", ") || null],
                   ]}
                 />
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <section>
                     <h3 className="mb-1 text-sm font-semibold">Needs</h3>
                     <Bullets items={m.outcome.needs} />

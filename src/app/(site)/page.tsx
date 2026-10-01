@@ -116,7 +116,7 @@ export default function HomePage() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24">
-        <Container className="grid items-center gap-12 lg:grid-cols-[1.15fr_1fr]">
+        <Container className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.15fr_1fr]">
           <div>
             <Eyebrow>Visibility · Growth · Automation</Eyebrow>
             <h1 className="font-display mt-4 text-[2.6rem] leading-[1.05] tracking-tight text-balance sm:text-6xl">
@@ -151,7 +151,7 @@ export default function HomePage() {
           Strong products and services lose to competitors who are simply easier to find and
           understand. It usually comes down to three gaps.
         </SectionIntro>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
           {problems.map(({ icon: Icon, title, body }) => (
             <div key={title} className="rounded-card border-border bg-paper border p-6">
               <Icon className="text-brand-600 size-6" aria-hidden />
@@ -168,7 +168,7 @@ export default function HomePage() {
           eyebrow="What we do"
           title="Visibility first. Then growth, automation and creative to make it count."
         />
-        <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
           {pillars.map(({ href, icon: Icon, tag, name, body, items, primary }) => (
             <Link
               key={href}
@@ -209,7 +209,7 @@ export default function HomePage() {
 
       {/* How it works */}
       <Section tone="surface">
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.5fr]">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.5fr]">
           <SectionIntro eyebrow="How it works" title="A system, not a one-off project.">
             Every engagement follows the same loop, so work stays focused on what moves the needle
             and nothing disappears into a black box.
@@ -219,7 +219,7 @@ export default function HomePage() {
               </LinkButton>
             </div>
           </SectionIntro>
-          <ol className="grid gap-4 sm:grid-cols-2">
+          <ol className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {HOW_IT_WORKS.map((step, index) => (
               <li key={step.name} className="rounded-card border-border bg-paper border p-5">
                 <span className="text-brand-600 font-mono text-xs">0{index + 1}</span>
@@ -233,7 +233,7 @@ export default function HomePage() {
 
       {/* Visibility report */}
       <Section>
-        <div className="grid items-center gap-12 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
           <div>
             <SectionIntro
               eyebrow="Free Visibility Report"
@@ -242,7 +242,7 @@ export default function HomePage() {
               Enter your website and get a structured snapshot across search, AI discoverability,
               content, local presence and conversion. Every finding explains:
             </SectionIntro>
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
                 [Eye, "What's happening"],
                 [LineChart, "Why it matters"],
@@ -304,7 +304,7 @@ export default function HomePage() {
       {/* Why Mea Creo */}
       <Section tone="surface">
         <SectionIntro eyebrow="Why Mea Creo" title="Capability through clarity." />
-        <div className="mt-12 grid gap-x-10 gap-y-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid grid-cols-1 gap-x-10 gap-y-8 md:grid-cols-2 lg:grid-cols-3">
           {reasons.map(([title, body]) => (
             <div key={title} className="border-border border-t pt-5">
               <h3 className="font-semibold">{title}</h3>
@@ -316,7 +316,7 @@ export default function HomePage() {
 
       {/* Transparency */}
       <Section>
-        <div className="grid items-center gap-12 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
           <SectionIntro
             eyebrow="Your client workspace"
             title="See exactly what we're doing for you."
@@ -325,7 +325,7 @@ export default function HomePage() {
             reports in plain language, files, invoices and a growth timeline. It shows simple
             inputs, clear activity and results you can understand.
           </SectionIntro>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {[
               [
                 "This month",

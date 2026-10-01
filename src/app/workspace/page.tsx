@@ -92,7 +92,7 @@ export default async function CommandCentrePage() {
             : ""}
         </p>
         {data.priorities.length > 0 ? (
-          <ol className="mt-6 grid gap-2 md:grid-cols-2">
+          <ol className="mt-6 grid grid-cols-1 gap-2 md:grid-cols-2">
             {data.priorities.slice(0, 6).map((p, i) => (
               <li key={p.text}>
                 <Link
@@ -138,7 +138,7 @@ export default async function CommandCentrePage() {
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader
             title="Upcoming meetings"
@@ -224,7 +224,7 @@ export default async function CommandCentrePage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader
             title="Overdue & due today"
@@ -353,7 +353,7 @@ export default async function CommandCentrePage() {
               hint={`${data.kpis.renewals.length} renewal${data.kpis.renewals.length === 1 ? "" : "s"} in 30 days`}
             />
           </div>
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <Card className="lg:col-span-2">
               <CardHeader
                 title="Monthly revenue by service"

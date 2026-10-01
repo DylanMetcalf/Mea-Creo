@@ -37,7 +37,7 @@ export default async function AuditsPage() {
         title="Visibility reports"
         description="Every Visibility Report: public requests, prospects and clients. Findings are rule-based and explained. There is no overall score."
       />
-      <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_340px]">
         <Card>
           {rows.length === 0 ? (
             <EmptyState

@@ -13,7 +13,7 @@ const LABELS: [keyof Omit<LeadScore, "scoredAt">, string][] = [
 /** Qualification shown as explained dimensions, each with its reasons. */
 export function ScoreDimensions({ score }: { score: LeadScore }) {
   return (
-    <dl className="grid gap-3 sm:grid-cols-2">
+    <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {LABELS.map(([key, label]) => {
         const dim = score[key];
         return (

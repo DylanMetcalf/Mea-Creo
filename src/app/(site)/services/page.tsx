@@ -35,7 +35,7 @@ export default function ServicesPage() {
       </section>
       {PILLARS.map((pillar, index) => (
         <Section key={pillar.slug} tone={index % 2 === 0 ? "surface" : "paper"}>
-          <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.2fr]">
             <div>
               <Eyebrow>
                 {String(index + 1).padStart(2, "0")} · {pillar.tagline}
@@ -49,7 +49,7 @@ export default function ServicesPage() {
                 Explore {pillar.name.toLowerCase()} <ArrowRight className="size-4" aria-hidden />
               </Link>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {pillar.services.map((service) => (
                 <div key={service.name} className="rounded-card border-border bg-paper border p-5">
                   <h3 className="font-semibold">{service.name}</h3>
@@ -61,7 +61,7 @@ export default function ServicesPage() {
         </Section>
       ))}
       <Section>
-        <div className="grid gap-10 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
           <div>
             <DisplayHeading>How engagements work</DisplayHeading>
             <p className="text-muted mt-4">

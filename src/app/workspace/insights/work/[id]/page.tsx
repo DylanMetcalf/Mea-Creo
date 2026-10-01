@@ -44,12 +44,15 @@ export default async function CaseStudyEditorPage({
           marked verified with a source.
         </Callout>
       </div>
-      <ActionForm action={saveCaseStudyAction} className="grid gap-6 xl:grid-cols-[1fr_340px]">
+      <ActionForm
+        action={saveCaseStudyAction}
+        className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_340px]"
+      >
         <input type="hidden" name="caseStudyId" value={c?.id ?? ""} />
         <Card>
           <CardBody className="space-y-4">
             <TextField name="title" label="Title" defaultValue={c?.title} required />
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <TextField name="clientName" label="Client" defaultValue={c?.clientName} required />
               <TextField name="industry" label="Industry" defaultValue={c?.industry ?? ""} />
             </div>
