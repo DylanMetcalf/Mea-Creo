@@ -50,13 +50,11 @@ export async function contactAction(_prev: ActionState, formData: FormData): Pro
         lastActivityAt: new Date(),
       })
       .returning({ id: leads.id });
-    await db
-      .insert(leadActivities)
-      .values({
-        leadId: lead.id,
-        type: "note",
-        summary: `Contact form: ${d.message.slice(0, 300)}`,
-      });
+    await db.insert(leadActivities).values({
+      leadId: lead.id,
+      type: "note",
+      summary: `Contact form: ${d.message.slice(0, 300)}`,
+    });
     await emitEvent(db, "lead.created", null, { leadId: lead.id, source: "contact_form" });
     await notifyStaff(db, {
       kind: "lead.created",
