@@ -112,8 +112,8 @@ export function CheckList({ items, inverse }: { items: string[]; inverse?: boole
 }
 
 export function CtaBand({
-  title = "See how visible your business really is.",
-  body = "Get a free, structured Visibility Report: what's happening, why it matters and what we'd do next.",
+  title = "Let's talk about where your business could be.",
+  body = "Book a 30-minute strategy conversation with Dylan, or start with a free Visibility Report of your website.",
 }: {
   title?: string;
   body?: string;
@@ -126,16 +126,16 @@ export function CtaBand({
           <p className="text-brand-100 mt-3 text-lg">{body}</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <LinkButton href="/visibility-report" variant="inverse" size="lg">
-            Get your free Visibility Report <ArrowRight className="size-4" aria-hidden />
+          <LinkButton href="/book" variant="inverse" size="lg">
+            Book a strategy conversation <ArrowRight className="size-4" aria-hidden />
           </LinkButton>
           <LinkButton
-            href="/book"
+            href="/visibility-report"
             variant="ghost"
             size="lg"
             className="text-white hover:bg-white/10 hover:text-white"
           >
-            Talk to Mea Creo
+            Get a free Visibility Report
           </LinkButton>
         </div>
       </div>

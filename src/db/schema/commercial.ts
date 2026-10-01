@@ -12,11 +12,15 @@ import { createdAt, currency, id, moneyMinor, timestamps } from "./_common";
 import { organisations, users } from "./identity";
 
 export const SERVICE_CATEGORIES = [
+  "package",
   "visibility",
   "growth",
   "automation",
   "creative",
   "website",
+  "audit",
+  "consulting",
+  "quality",
 ] as const;
 export type ServiceCategory = (typeof SERVICE_CATEGORIES)[number];
 

@@ -6,6 +6,7 @@ import { LinkButton } from "@/components/ui/button";
 export const SITE_NAV = [
   { href: "/services", label: "Services" },
   { href: "/how-it-works", label: "How it works" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/work", label: "Work" },
   { href: "/insights", label: "Insights" },
   { href: "/about", label: "About" },
@@ -38,8 +39,8 @@ export function SiteHeader() {
           <Link href="/login" className="text-muted hover:text-ink px-2 text-sm">
             Client sign in
           </Link>
-          <LinkButton href="/visibility-report" size="sm">
-            Free Visibility Report
+          <LinkButton href="/book" size="sm">
+            Book a strategy call
           </LinkButton>
         </div>
         <details className="group relative lg:hidden">
@@ -66,7 +67,10 @@ export function SiteHeader() {
               >
                 Client sign in
               </Link>
-              <LinkButton href="/visibility-report" className="mt-2">
+              <LinkButton href="/book" className="mt-2">
+                Book a strategy call
+              </LinkButton>
+              <LinkButton href="/visibility-report" variant="secondary" className="mt-2">
                 Free Visibility Report
               </LinkButton>
             </nav>

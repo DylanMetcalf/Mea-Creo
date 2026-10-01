@@ -11,6 +11,7 @@ import { fromMajor } from "@/lib/money";
 import { absoluteUrl } from "@/lib/urls";
 import { logActivity, userActor } from "@/modules/activity/log";
 import { API_SCOPES, type ApiScope, createApiKey, revokeApiKey } from "@/modules/api-keys/service";
+import { bankDetailsSchema, maskAccountNumber, setBankDetails } from "@/modules/banking/service";
 import { requireStaff } from "@/modules/auth/context";
 import { STAFF_ROLES } from "@/modules/auth/permissions";
 import { sendEmail } from "@/modules/email/service";
@@ -85,7 +86,6 @@ export async function saveBillingAction(_p: ActionState, fd: FormData): Promise<
         reminderDaysAfterDue: z.string().max(40),
         invoicePrefix: z.string().trim().min(1).max(8),
         proposalPrefix: z.string().trim().min(1).max(8),
-        eftDetails: optionalText(1000),
       }),
       fd,
     );
@@ -122,6 +122,9 @@ export async function saveBookingAction(_p: ActionState, fd: FormData): Promise<
     const next = {
       ...current,
       workingDays: fd.getAll("workingDays").map(Number),
+      discoveryDays: fd.getAll("discoveryDays").map(Number),
+      minNoticeBusinessDays: Math.max(0, Math.min(20, n("minNoticeBusinessDays") || 0)),
+      maxBookingsPerDay: Math.max(0, Math.min(20, n("maxBookingsPerDay") || 0)),
       startHour: n("startHour"),
       endHour: n("endHour"),
       bufferMinutes: n("bufferMinutes"),
@@ -135,6 +138,8 @@ export async function saveBookingAction(_p: ActionState, fd: FormData): Promise<
     };
     if (next.endHour <= next.startHour)
       return { ok: false, message: "The day must end after it starts." };
+    if (!next.discoveryDays.length)
+      return { ok: false, message: "Choose at least one day for discovery calls." };
     await save("booking", next);
     return { ok: true, message: "Availability saved." };
   }, fd);
@@ -203,6 +208,12 @@ export async function saveTargetsAction(_p: ActionState, fd: FormData): Promise<
       targetMrrMinor: minorOrNull(s("targetMrr")),
       monthlyOperatingCostsMinor: minorOrNull(s("monthlyOperatingCosts")),
       desiredMarginPercent: s("desiredMarginPercent") ? Number(s("desiredMarginPercent")) : null,
+      minimumMonthlyValueMinor: minorOrNull(s("minimumMonthlyValue")),
+      targetAverageClientValueMinor: minorOrNull(s("targetAverageClientValue")),
+      targetNewClientsPerMonth: s("targetNewClientsPerMonth")
+        ? Math.round(Number(s("targetNewClientsPerMonth")))
+        : null,
+      clientCapacity: s("clientCapacity") ? Math.round(Number(s("clientCapacity"))) : null,
     });
     return { ok: true, message: "Targets saved." };
   }, fd);
@@ -312,4 +323,27 @@ export async function revokeApiKeyAction(id: string): Promise<void> {
     summary: `Revoked API key ${id}`,
   });
   refresh();
+}
+
+/** Bank details: founder only, stored encrypted, never logged. */
+export async function saveBankDetailsAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const ctx = await requireStaff("billing.manage");
+    if (ctx.role !== "founder")
+      throw new AppError("FORBIDDEN", {
+        userMessage: "Only a founder can change banking details.",
+      });
+    const parsed = parseForm(bankDetailsSchema, fd);
+    if (!parsed.success)
+      return { ...parsed.state, values: { ...parsed.state?.values, accountNumber: "" } };
+    const db = await getDb();
+    await setBankDetails(db, parsed.data, ctx.user.id);
+    // The audit trail records that details changed, never the details themselves.
+    await logActivity(db, userActor(ctx.user), {
+      action: "banking.updated",
+      summary: `${ctx.user.name} updated the banking details (account ${maskAccountNumber(parsed.data.accountNumber)})`,
+    });
+    refresh();
+    return { ok: true, message: "Banking details saved (encrypted)." };
+  }, fd);
 }

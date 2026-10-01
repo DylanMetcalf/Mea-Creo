@@ -8,7 +8,7 @@ import { getDb } from "@/db";
 import { invoices } from "@/db/schema";
 import { fmtDate, fmtMoney } from "@/lib/format";
 import { requireClient } from "@/modules/auth/context";
-import { getPlatformSetting } from "@/modules/settings/service";
+import { eftLines, getBankDetails } from "@/modules/banking/service";
 import { portalPayAction } from "../actions";
 
 export const metadata: Metadata = { title: "Billing" };
@@ -17,13 +17,13 @@ export default async function PortalBilling({ searchParams }: PageProps<"/portal
   const ctx = await requireClient("portal.billing");
   const sp = await searchParams;
   const db = await getDb();
-  const [rows, billing] = await Promise.all([
+  const [rows, bank] = await Promise.all([
     db
       .select()
       .from(invoices)
       .where(eq(invoices.organisationId, ctx.organisationId))
       .orderBy(desc(invoices.issuedAt)),
-    getPlatformSetting(db, "billing"),
+    getBankDetails(db),
   ]);
   const visible = rows.filter((i) => i.status !== "draft");
   const due = visible.filter((i) => i.status === "open" || i.status === "overdue");
@@ -77,13 +77,16 @@ export default async function PortalBilling({ searchParams }: PageProps<"/portal
               </li>
             ))}
           </ul>
-          {billing.eftDetails && (
+          {bank && (
             <div className="border-border border-t px-5 py-4 text-sm">
               <p className="font-medium">Paying by EFT?</p>
-              <p className="text-ink-soft mt-1 whitespace-pre-line">{billing.eftDetails}</p>
+              <ul className="text-ink-soft mt-1 space-y-0.5">
+                {eftLines(bank, "your invoice number").map((l) => (
+                  <li key={l}>{l}</li>
+                ))}
+              </ul>
               <p className="text-muted mt-1 text-xs">
-                Use the invoice number as your reference. EFT payments are marked paid once they
-                clear.
+                EFT payments are marked paid once they clear.
               </p>
             </div>
           )}

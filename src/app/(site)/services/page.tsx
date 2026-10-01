@@ -10,11 +10,12 @@ import {
   Section,
 } from "@/components/site/marketing";
 import { PILLARS } from "@/content/pillars";
+import { SERVICE_CATALOGUE } from "@/modules/services/catalogue";
 
 export const metadata: Metadata = {
-  title: "Services: Visibility, Growth, Automation & Creative",
+  title: "Services: Visibility, Growth, Technology, Content, Consulting & QA",
   description:
-    "SEO, GEO, AEO, lead generation, Google Ads, LinkedIn networking, AI automation and creative services for B2B businesses.",
+    "SEO, GEO, AEO, lead generation, conversion, websites, AI systems and automation, content, consulting and quality assurance for B2B and technical businesses.",
   alternates: { canonical: "/services" },
 };
 
@@ -28,8 +29,8 @@ export default function ServicesPage() {
             Everything it takes to be found, chosen and grow, in one connected system.
           </DisplayHeading>
           <p className="text-muted mt-5 max-w-2xl text-lg">
-            Most clients start with visibility. Growth, automation and creative are added when
-            they&apos;ll make a measurable difference, not as a bundle for its own sake.
+            Most clients start with visibility. Growth, technology, content and consulting are added
+            when they&apos;ll make a measurable difference, not as a bundle for its own sake.
           </p>
         </Container>
       </section>
@@ -78,6 +79,34 @@ export default function ServicesPage() {
               "Add or change services as your needs evolve",
             ]}
           />
+        </div>
+      </Section>
+      <Section tone="surface">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.4fr]">
+          <div>
+            <Eyebrow>Productised audits</Eyebrow>
+            <h2 className="font-display mt-3 text-3xl sm:text-4xl">
+              Focused assessments with clear answers.
+            </h2>
+            <p className="text-muted mt-3 text-lg">
+              Repeatable, structured audits for a specific question. Each ends with prioritised,
+              practical recommendations.
+            </p>
+            <Link
+              href="/book"
+              className="text-brand-700 hover:text-brand-900 mt-6 inline-flex items-center gap-1 font-medium"
+            >
+              Ask about an audit <ArrowRight className="size-4" aria-hidden />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {SERVICE_CATALOGUE.filter((s) => s.category === "audit").map((a) => (
+              <div key={a.slug} className="rounded-card border-border bg-paper border p-5">
+                <h3 className="font-semibold">{a.name}</h3>
+                <p className="text-muted mt-1.5 text-sm">{a.summary}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </Section>
       <CtaBand />

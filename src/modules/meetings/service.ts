@@ -23,10 +23,15 @@ export const MEETING_TYPE_LABELS: Record<MeetingType, string> = {
   internal: "Internal meeting",
 };
 
-/** Busy time from our own meetings plus the connected calendar (if any). */
-async function busyIntervals(db: DbOrTx, from: Date, to: Date): Promise<Interval[]> {
+/** Busy time from our own meetings plus the connected calendar(s), and bookings per day. */
+async function busyIntervals(
+  db: DbOrTx,
+  from: Date,
+  to: Date,
+  timezone: string,
+): Promise<{ busy: Interval[]; bookedPerDay: Map<string, number> }> {
   const rows = await db
-    .select({ start: meetings.startsAt, end: meetings.endsAt })
+    .select({ start: meetings.startsAt, end: meetings.endsAt, type: meetings.type })
     .from(meetings)
     .where(
       and(
@@ -36,6 +41,12 @@ async function busyIntervals(db: DbOrTx, from: Date, to: Date): Promise<Interval
       ),
     );
   const busy: Interval[] = rows.map((r) => ({ start: r.start, end: r.end }));
+  const bookedPerDay = new Map<string, number>();
+  for (const r of rows) {
+    if (r.type === "internal") continue;
+    const key = r.start.toLocaleDateString("en-CA", { timeZone: timezone });
+    bookedPerDay.set(key, (bookedPerDay.get(key) ?? 0) + 1);
+  }
   const calendar = resolveIntegration("calendar");
   if (calendar.available) {
     try {
@@ -47,7 +58,7 @@ async function busyIntervals(db: DbOrTx, from: Date, to: Date): Promise<Interval
       );
     }
   }
-  return busy;
+  return { busy, bookedPerDay };
 }
 
 export async function availableSlots(
@@ -57,13 +68,21 @@ export async function availableSlots(
   const settings = await getPlatformSetting(db, "booking");
   const durationMinutes = settings.durations[type];
   const now = new Date();
-  const busy = await busyIntervals(
+  const { busy, bookedPerDay } = await busyIntervals(
     db,
     now,
     new Date(now.getTime() + (settings.horizonDays + 1) * 86400_000),
+    settings.timezone,
   );
   return {
-    days: computeSlots({ settings, durationMinutes, busy, now }),
+    days: computeSlots({
+      settings,
+      durationMinutes,
+      busy,
+      now,
+      bookedPerDay,
+      workingDays: type === "discovery" ? settings.discoveryDays : undefined,
+    }),
     timezone: settings.timezone,
     durationMinutes,
   };

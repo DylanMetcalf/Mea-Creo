@@ -55,7 +55,7 @@ export default async function VisibilityReportPage({
         <div>
           <Eyebrow>Free Visibility Report</Eyebrow>
           <DisplayHeading as="h1" className="mt-3 sm:text-5xl">
-            How easy is your business to find, trust and choose?
+            How easy is your business to find, understand and choose?
           </DisplayHeading>
           <p className="text-muted mt-5 text-lg">
             Enter your website and we&apos;ll analyse how you show up across search, AI discovery

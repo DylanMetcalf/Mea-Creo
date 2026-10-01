@@ -1,21 +1,24 @@
 /**
- * Public-facing company details.
- *
- * These are defaults migrated from the previous Wix site (https://www.meacreo.co.za/,
- * captured 2026-09-30). They move into admin-editable settings in Phase 6.
- * TODO(before production): Dylan to verify every value below.
+ * Company details, as supplied by the director in the Master Build handoff (2026-10).
+ * These are the seed defaults; the live values are edited in Workspace → Settings → Company.
+ * Banking details are deliberately NOT here: they are private and entered in Settings,
+ * where they are stored encrypted.
  */
 export const siteConfig = {
   legalName: "Mea Creo (Pty) Ltd",
   name: "Mea Creo",
-  tagline: "Get found. Get noticed. Grow.",
+  tagline: "Easier to find. Easier to understand. Easier to choose.",
   description:
-    "Mea Creo helps businesses become more visible online, generate better opportunities and build the digital systems that turn attention into growth.",
+    "Mea Creo helps businesses become easier to find, easier to understand and easier to choose, through digital visibility, lead generation, content and automation.",
+  registrationNumber: "2022/626541/07",
+  director: "Dylan Metcalf",
   contact: {
     email: "dylan@meacreo.co.za",
     phone: "+27 79 889 5569",
-    locality: "Pretoria",
-    region: "Gauteng",
+    streetAddress: "Terram Farm, 58 Tonteldoos Road, Tonteldoos",
+    locality: "Dullstroom",
+    region: "Mpumalanga",
+    postalCode: "1111",
     country: "South Africa",
     countryCode: "ZA",
   },

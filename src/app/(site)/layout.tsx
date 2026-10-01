@@ -24,11 +24,14 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
             telephone: company.phone,
             address: {
               "@type": "PostalAddress",
+              streetAddress: company.streetAddress,
+              postalCode: company.postalCode,
               addressLocality: company.locality,
               addressRegion: company.region,
               addressCountry: siteConfig.contact.countryCode,
             },
             founder: { "@type": "Person", name: "Dylan Metcalf" },
+            identifier: siteConfig.registrationNumber,
             sameAs: [company.linkedinUrl, company.instagramUrl, company.facebookUrl].filter(
               Boolean,
             ),

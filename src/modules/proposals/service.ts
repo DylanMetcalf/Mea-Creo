@@ -120,7 +120,7 @@ export async function createProposalFromLead(
       maxTokens: 400,
     },
     rules: () =>
-      `A ${chosen.length > 1 ? "combined" : "focused"} programme to help ${lead.company} become easier to find, trust and choose: ${chosen.map((s) => s.name).join(", ")}, delivered and reported monthly.`,
+      `A ${chosen.length > 1 ? "combined" : "focused"} programme to help ${lead.company} become easier to find, understand and choose: ${chosen.map((s) => s.name).join(", ")}, delivered and reported monthly.`,
   });
 
   const [proposal] = await db

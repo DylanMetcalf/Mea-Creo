@@ -8,8 +8,11 @@ const columns = [
     links: [
       ["/services/visibility", "Visibility"],
       ["/services/growth", "Growth"],
-      ["/services/automation", "Automation"],
-      ["/services/creative", "Creative"],
+      ["/services/content", "Content"],
+      ["/services/technology", "Technology"],
+      ["/services/consulting", "Consulting"],
+      ["/services/quality-assurance", "Quality assurance"],
+      ["/pricing", "Pricing"],
     ],
   },
   {
@@ -26,7 +29,7 @@ const columns = [
     title: "Get started",
     links: [
       ["/visibility-report", "Free Visibility Report"],
-      ["/book", "Book a call"],
+      ["/book", "Book a strategy call"],
       ["/login", "Client sign in"],
     ],
   },
@@ -57,8 +60,8 @@ export function SiteFooter({
         <div className="space-y-4">
           <Logo />
           <p className="text-muted max-w-xs text-sm">
-            Visibility, growth and automation for businesses that want to be easier to find, trust
-            and choose.
+            Visibility, growth and automation for businesses that want to be easier to find,
+            understand and choose.
           </p>
           <address className="text-ink-soft space-y-1 text-sm not-italic">
             <a href={`mailto:${c.email}`} className="hover:text-brand-700 block">
@@ -107,7 +110,8 @@ export function SiteFooter({
       <div className="border-border border-t">
         <div className="text-muted mx-auto flex max-w-6xl flex-col gap-2 px-4 py-5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>
-            © {new Date().getFullYear()} {siteConfig.legalName}. All rights reserved.
+            © {new Date().getFullYear()} {siteConfig.legalName} · Reg.{" "}
+            {siteConfig.registrationNumber}. All rights reserved.
           </p>
           <div className="flex gap-4">
             <Link href="/legal/privacy" className="hover:text-ink">

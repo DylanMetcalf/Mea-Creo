@@ -1,10 +1,17 @@
-import type { ApprovalLevel, AutomationLevel, BillingType, ServiceCategory } from "@/db/schema";
+import type {
+  ApprovalLevel,
+  AutomationLevel,
+  BillingType,
+  ServiceCategory,
+  ServicePrices,
+} from "@/db/schema";
 
 /**
  * The initial Mea Creo service catalogue, seeded into the `services` table.
  * After seeding, the database is the source of truth and everything here is
- * editable in Workspace → Services. No prices are defined here on purpose:
- * pricing is entered by the owner (demo mode adds clearly-labelled demo prices).
+ * editable in Workspace → Services. Only the approved package prices from the Master Build
+ * handoff are defined here (Foundation, Visibility, Growth, Scale). Individual services have
+ * no price until the owner sets one; demo mode adds clearly-labelled demo prices.
  */
 export interface CatalogueService {
   slug: string;
@@ -25,9 +32,253 @@ export interface CatalogueService {
   defaultApprovalLevel: ApprovalLevel;
   selfService?: boolean;
   requiresStrategy?: boolean;
+  /** Approved prices only (integer minor units). Never invent a price. */
+  prices?: ServicePrices;
 }
 
+const zar = (p: {
+  setupMinor?: number;
+  monthlyMinor?: number;
+  oneOffMinor?: number;
+}): ServicePrices => ({ ZAR: p });
+
+type Productised = Pick<
+  CatalogueService,
+  "slug" | "name" | "summary" | "description" | "includedActivities" | "deliverables"
+> &
+  Partial<CatalogueService>;
+
+/** Repeatable, productised offers share defaults. */
+function productised(category: ServiceCategory, p: Productised): CatalogueService {
+  return {
+    category,
+    billingType: "on_request",
+    kpis: [],
+    requiredInputs: ["Website address", "A short conversation about goals"],
+    requiredIntegrations: [],
+    agents: ["research", "visibility", "quality_control"],
+    runKinds: [],
+    automationLevel: "assisted",
+    humanInvolvement:
+      "Prepared with Mea Creo's audit engine and reviewed by Dylan before delivery.",
+    defaultApprovalLevel: "internal",
+    requiresStrategy: false,
+    ...p,
+  };
+}
+
+const ALL_VISIBILITY_RUNS = [
+  "visibility_audit",
+  "seo_analysis",
+  "ai_visibility_analysis",
+  "competitor_analysis",
+  "website_conversion_audit",
+  "content_opportunity_scan",
+  "monthly_client_review",
+];
+
 export const SERVICE_CATALOGUE: CatalogueService[] = [
+  // ---------------------------------------------------------------- Packages (approved pricing)
+  {
+    slug: "package-foundation",
+    name: "Foundation",
+    category: "package",
+    billingType: "once_off",
+    summary: "A complete visibility and growth assessment with a strategic roadmap.",
+    description:
+      "The starting point for most clients: where you stand, why, and exactly what to do next, across your website, search, Google, competitors, conversion and lead generation.",
+    includedActivities: [
+      "Digital visibility audit",
+      "Website assessment",
+      "Search and Google assessment",
+      "Competitor assessment",
+      "SEO baseline",
+      "GEO and AEO baseline",
+      "Conversion assessment",
+      "Lead-generation assessment",
+      "Strategic roadmap",
+    ],
+    deliverables: ["Foundation report", "Prioritised strategic roadmap", "Walk-through meeting"],
+    kpis: ["Baseline visibility", "Baseline enquiries"],
+    requiredInputs: [
+      "Website address",
+      "Google Search Console and Analytics access (recommended)",
+      "Goals conversation",
+    ],
+    requiredIntegrations: ["search", "analytics"],
+    agents: ["research", "visibility", "strategy", "quality_control"],
+    runKinds: [
+      "visibility_audit",
+      "seo_analysis",
+      "ai_visibility_analysis",
+      "competitor_analysis",
+      "website_conversion_audit",
+    ],
+    automationLevel: "assisted",
+    humanInvolvement:
+      "Analysis assisted by the audit engine; findings, roadmap and walk-through by Dylan.",
+    defaultApprovalLevel: "internal",
+    requiresStrategy: false,
+    prices: zar({ oneOffMinor: 750_000 }),
+  },
+  {
+    slug: "package-visibility",
+    name: "Visibility",
+    category: "package",
+    billingType: "monthly",
+    summary: "Be found on Google and understood by AI search, month after month.",
+    description:
+      "Ongoing search visibility: SEO, GEO and AEO, website optimisation, Google visibility, search content, monitoring and monthly reporting with strategic recommendations.",
+    includedActivities: [
+      "SEO and search visibility",
+      "GEO and AEO",
+      "Website optimisation",
+      "Google visibility",
+      "Search content",
+      "Monthly optimisation",
+      "Visibility monitoring",
+      "Monthly reporting",
+      "Strategic recommendations",
+    ],
+    deliverables: ["Monthly optimisation work", "Monthly report", "Recommendations for next month"],
+    kpis: [
+      "Organic impressions and clicks",
+      "Visibility for priority searches",
+      "Organic enquiries",
+    ],
+    requiredInputs: [
+      "Website access or a developer contact",
+      "Search Console and Analytics access",
+      "Priority services and locations",
+    ],
+    requiredIntegrations: ["search", "analytics"],
+    agents: ["visibility", "research", "content", "reporting", "quality_control"],
+    runKinds: ALL_VISIBILITY_RUNS,
+    automationLevel: "assisted",
+    humanInvolvement: "Strategy, prioritisation and approval of changes by Mea Creo.",
+    defaultApprovalLevel: "client",
+    prices: zar({ monthlyMinor: 850_000 }),
+  },
+  {
+    slug: "package-growth",
+    name: "Growth",
+    category: "package",
+    billingType: "monthly",
+    summary: "Everything in Visibility, plus content, lead generation and conversion.",
+    description:
+      "Visibility plus the work that turns it into pipeline: content strategy and ongoing content, lead generation and capture, conversion optimisation, LinkedIn and content strategy, competitor monitoring, marketing automation and AI-assisted workflows, with a monthly strategy review.",
+    includedActivities: [
+      "Everything in Visibility",
+      "Content strategy and ongoing content",
+      "Lead generation and lead capture",
+      "Conversion optimisation",
+      "LinkedIn and content strategy",
+      "Competitor monitoring",
+      "Marketing automation and AI-assisted workflows",
+      "Monthly strategy review",
+    ],
+    deliverables: [
+      "Monthly content",
+      "Qualified prospect research and approved outreach",
+      "Monthly report and strategy review",
+    ],
+    kpis: ["Enquiries", "Meetings booked", "Conversion rate", "Organic visibility"],
+    requiredInputs: [
+      "Everything for Visibility",
+      "Ideal customer profile",
+      "Sales process overview",
+    ],
+    requiredIntegrations: ["search", "analytics", "email"],
+    agents: [
+      "visibility",
+      "research",
+      "content",
+      "lead",
+      "outreach",
+      "reporting",
+      "quality_control",
+    ],
+    runKinds: [
+      ...ALL_VISIBILITY_RUNS,
+      "lead_opportunity_scan",
+      "linkedin_opportunity_scan",
+      "client_growth_review",
+    ],
+    automationLevel: "assisted",
+    humanInvolvement: "Strategy, content and every outreach message approved by a person.",
+    defaultApprovalLevel: "client",
+    prices: zar({ monthlyMinor: 1_250_000 }),
+  },
+  {
+    slug: "package-scale",
+    name: "Scale",
+    category: "package",
+    billingType: "monthly",
+    summary: "Everything in Growth, plus advanced search, lead systems, CRM and AI automation.",
+    description:
+      "For businesses ready to systemise growth: advanced SEO, GEO and AEO, lead-generation systems, CRM workflows, AI automation, reporting dashboards, content systems, campaign support, strategic consulting and priority support.",
+    includedActivities: [
+      "Everything in Growth",
+      "Advanced SEO, GEO and AEO",
+      "Lead-generation systems",
+      "CRM workflows",
+      "AI automation",
+      "Reporting dashboard",
+      "Content systems",
+      "Campaign support",
+      "Strategic consulting",
+      "Priority support",
+    ],
+    deliverables: [
+      "Lead and CRM systems",
+      "Reporting dashboard",
+      "Monthly strategy session",
+      "Priority support",
+    ],
+    kpis: ["Pipeline value", "Meetings booked", "Cost per enquiry", "Hours saved by automation"],
+    requiredInputs: ["Everything for Growth", "CRM and system access"],
+    requiredIntegrations: ["search", "analytics", "email", "crm"],
+    agents: [
+      "visibility",
+      "research",
+      "content",
+      "lead",
+      "outreach",
+      "operations",
+      "reporting",
+      "strategy",
+      "quality_control",
+    ],
+    runKinds: [
+      ...ALL_VISIBILITY_RUNS,
+      "lead_opportunity_scan",
+      "linkedin_opportunity_scan",
+      "client_growth_review",
+    ],
+    automationLevel: "assisted",
+    humanInvolvement: "Dedicated strategy with Dylan; automation with approval checkpoints.",
+    defaultApprovalLevel: "client",
+    prices: zar({ monthlyMinor: 1_850_000 }),
+  },
+  {
+    slug: "package-custom",
+    name: "Custom",
+    category: "package",
+    billingType: "on_request",
+    summary: "A scoped quotation for larger or more complex requirements.",
+    description:
+      "For large websites, complex automation, large SEO programmes, multiple locations, large content requirements, complex CRM, custom software, extensive campaigns or enterprise requirements.",
+    includedActivities: ["Scoping conversation", "Custom proposal"],
+    deliverables: ["Custom proposal and quotation"],
+    kpis: [],
+    requiredInputs: ["Requirements conversation"],
+    requiredIntegrations: [],
+    agents: ["research", "proposal"],
+    runKinds: ["visibility_audit"],
+    automationLevel: "manual",
+    humanInvolvement: "Scoped and quoted by Dylan.",
+    defaultApprovalLevel: "internal",
+  },
   // ---------------------------------------------------------------- Visibility
   {
     slug: "seo",
@@ -329,8 +580,8 @@ export const SERVICE_CATALOGUE: CatalogueService[] = [
   },
   {
     slug: "automation-consulting",
-    name: "Automation consulting",
-    category: "automation",
+    name: "Automation & AI consulting",
+    category: "consulting",
     billingType: "once_off",
     summary: "Find out where automation and AI will actually pay off in your business.",
     description:
@@ -504,15 +755,188 @@ export const SERVICE_CATALOGUE: CatalogueService[] = [
     humanInvolvement: "Delivered by Mea Creo.",
     defaultApprovalLevel: "client",
   },
+  // ---------------------------------------------------------------- Productised audits
+  productised("audit", {
+    slug: "digital-visibility-audit",
+    name: "Digital Visibility Audit",
+    summary: "A structured assessment of how you're found, understood and chosen online.",
+    description:
+      "Website, Google, SEO, GEO, AEO, content, brand, competitors, conversion and lead capture, assessed and prioritised.",
+    includedActivities: [
+      "Website",
+      "Google presence",
+      "SEO, GEO and AEO",
+      "Content and brand",
+      "Competitors",
+      "Conversion and lead capture",
+    ],
+    deliverables: ["Visibility audit report", "Prioritised recommendations"],
+    runKinds: ["visibility_audit", "competitor_analysis", "website_conversion_audit"],
+  }),
+  productised("audit", {
+    slug: "search-opportunity-report",
+    name: "Search Opportunity Report",
+    summary: "Where the commercial search demand is, and how to win more of it.",
+    description:
+      "Commercial keywords, search gaps, competitor opportunities, content opportunities, local opportunities and AI-search opportunities.",
+    includedActivities: [
+      "Commercial keyword research",
+      "Search gap analysis",
+      "Competitor opportunities",
+      "Content and local opportunities",
+      "AI-search opportunities",
+    ],
+    deliverables: ["Search opportunity report"],
+    requiredIntegrations: ["search"],
+    runKinds: ["seo_analysis", "content_opportunity_scan", "competitor_analysis"],
+  }),
+  productised("audit", {
+    slug: "ai-readiness-audit",
+    name: "AI Readiness Audit",
+    summary: "Is your business positioned to benefit from AI search, internal AI and automation?",
+    description:
+      "Assesses readiness for AI and generative search, internal AI use, automation, workflow systems and AI-assisted sales.",
+    includedActivities: [
+      "AI and generative search readiness",
+      "Internal AI opportunities",
+      "Automation and workflow readiness",
+      "AI-assisted sales readiness",
+    ],
+    deliverables: ["AI readiness report", "Recommended next steps"],
+    runKinds: ["ai_visibility_analysis"],
+  }),
+  productised("audit", {
+    slug: "lead-engine-audit",
+    name: "Lead Engine Audit",
+    summary: "What happens between a visitor arriving and a sale, and where leads leak.",
+    description:
+      "Website calls to action, forms, contact mechanisms, booking, lead routing, CRM, follow-up and conversion.",
+    includedActivities: [
+      "CTAs and forms",
+      "Contact and booking mechanisms",
+      "Lead routing and CRM",
+      "Follow-up process",
+      "Conversion",
+    ],
+    deliverables: ["Lead engine report", "Fix list"],
+    runKinds: ["website_conversion_audit"],
+  }),
+  productised("audit", {
+    slug: "digital-brand-audit",
+    name: "Digital Brand Audit",
+    summary: "How consistently and convincingly your brand shows up online.",
+    description:
+      "Positioning, visual identity, messaging, consistency, website, social, search and content.",
+    includedActivities: [
+      "Positioning and messaging",
+      "Visual identity and consistency",
+      "Website, social and search presence",
+      "Content",
+    ],
+    deliverables: ["Brand audit report", "Recommendations"],
+    runKinds: ["visibility_audit"],
+  }),
+  productised("audit", {
+    slug: "automation-opportunity-audit",
+    name: "Automation Opportunity Audit",
+    summary: "Find the repetitive processes worth automating, sized and prioritised.",
+    description:
+      "Maps repetitive business processes and identifies where automation and AI will genuinely pay off.",
+    includedActivities: ["Process mapping", "Opportunity sizing", "Prioritised roadmap"],
+    deliverables: ["Automation opportunity report", "Roadmap"],
+    agents: ["research", "operations", "quality_control"],
+  }),
+  // ---------------------------------------------------------------- Consulting
+  productised("consulting", {
+    slug: "digital-strategy-consulting",
+    name: "Digital & marketing strategy",
+    summary:
+      "Positioning, messaging, channels and priorities, grounded in data and buyer psychology.",
+    description:
+      "Strategy work that combines data, psychology, creativity, technology and business strategy into a clear plan.",
+    includedActivities: [
+      "Discovery workshop",
+      "Positioning and messaging",
+      "Channel and content plan",
+      "Roadmap",
+    ],
+    deliverables: ["Strategy document", "Roadmap"],
+    humanInvolvement: "Delivered by Dylan.",
+  }),
+  productised("consulting", {
+    slug: "growth-consulting",
+    name: "Visibility & growth consulting",
+    summary: "An outside, practical view of how to grow visibility and pipeline.",
+    description: "Ongoing or one-off advisory sessions on visibility, lead generation and growth.",
+    includedActivities: ["Advisory sessions", "Prioritised recommendations"],
+    deliverables: ["Session notes and actions"],
+    humanInvolvement: "Delivered by Dylan.",
+  }),
+  // ---------------------------------------------------------------- Quality assurance
+  productised("quality", {
+    slug: "content-quality-assurance",
+    name: "Content Quality Assurance",
+    summary: "Independent QA of content before it's published.",
+    description:
+      "Content review, brand compliance, accuracy, visual, messaging, SEO and search-readiness review against a configurable checklist, with a documented approve-or-revise decision and final approval workflow.",
+    includedActivities: [
+      "Content review",
+      "Brand compliance",
+      "Accuracy and spelling",
+      "Visual and messaging review",
+      "SEO, GEO and AEO readiness",
+      "Compliance checklist",
+      "Final approval workflow",
+    ],
+    deliverables: ["QA decision per item, with notes", "Monthly quality summary"],
+    agents: ["quality_control"],
+    humanInvolvement: "Every QA decision is made by a person; automated checks assist.",
+  }),
+  // ---------------------------------------------------------------- Technology
+  productised("automation", {
+    slug: "crm-workflow-systems",
+    name: "CRM, lead-generation & workflow systems",
+    summary: "Lead capture, routing, follow-up and pipeline tracking so no enquiry is lost.",
+    description:
+      "Design and build of CRM setups, lead-generation systems, workflow automation and integrations between your tools.",
+    includedActivities: ["Process mapping", "CRM setup", "Workflow automation", "Integrations"],
+    deliverables: ["Working system", "Documentation and handover"],
+    automationLevel: "manual",
+    humanInvolvement: "Designed and built by Mea Creo.",
+  }),
+  productised("automation", {
+    slug: "dashboards-portals-apps",
+    name: "Dashboards, portals & internal applications",
+    summary: "Reporting dashboards, client portals and internal tools.",
+    description:
+      "Custom dashboards, client portals and internal business applications that turn scattered information into clear next actions.",
+    includedActivities: ["Requirements", "Design", "Build", "Handover"],
+    deliverables: ["Working application", "Documentation"],
+    automationLevel: "manual",
+    humanInvolvement: "Designed and built by Mea Creo.",
+  }),
 ];
 
 export const CATEGORY_LABELS: Record<ServiceCategory, string> = {
+  package: "Packages",
   visibility: "Visibility",
   growth: "Growth",
-  automation: "Automation",
-  creative: "Creative",
-  website: "Website",
+  creative: "Content",
+  automation: "Technology & automation",
+  website: "Websites",
+  audit: "Productised audits",
+  consulting: "Consulting",
+  quality: "Quality assurance",
 };
+
+/** Package slugs in display order. */
+export const PACKAGE_SLUGS = [
+  "package-foundation",
+  "package-visibility",
+  "package-growth",
+  "package-scale",
+  "package-custom",
+] as const;
 
 const NAME_BY_SLUG = new Map(SERVICE_CATALOGUE.map((s) => [s.slug, s.name]));
 

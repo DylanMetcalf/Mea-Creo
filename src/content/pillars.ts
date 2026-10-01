@@ -4,7 +4,7 @@
  * proposals and billing lives in the database (Workspace → Services).
  */
 export interface Pillar {
-  slug: "visibility" | "growth" | "automation" | "creative";
+  slug: "visibility" | "growth" | "content" | "technology" | "consulting" | "quality-assurance";
   name: string;
   tagline: string;
   headline: string;
@@ -108,7 +108,7 @@ export const PILLARS: Pillar[] = [
     intro:
       "Being found is the start. Growth work brings the right decision makers to you, and takes your message to them, with every external message approved by a person.",
     metaDescription:
-      "Lead generation, Google Ads, LinkedIn networking and conversion optimisation for B2B businesses.",
+      "Lead generation, conversion optimisation, content and LinkedIn strategy, and campaign strategy for B2B and technical businesses.",
     outcomes: [
       "A qualified pipeline of relevant prospects",
       "Personal, compliant outreach",
@@ -138,10 +138,15 @@ export const PILLARS: Pillar[] = [
         ],
       },
       {
-        name: "Google Ads",
+        name: "Content, campaign and marketing strategy",
         description:
-          "Search advertising built around enquiries, not clicks. Budget changes always need your approval.",
-        points: ["Campaign strategy and build", "Conversion tracking", "Ongoing optimisation"],
+          "What to say, to whom, where and in what order, grounded in how your buyers actually think and decide.",
+        points: [
+          "Audience and positioning work",
+          "Content strategy",
+          "Campaign planning (including search ads where they fit)",
+          "Monthly strategy review",
+        ],
       },
       {
         name: "Conversion optimisation",
@@ -166,43 +171,62 @@ export const PILLARS: Pillar[] = [
       "No bulk spam and no platform workarounds. Just well-researched, personal outreach that you approve.",
   },
   {
-    slug: "automation",
-    name: "Automation",
-    tagline: "Get automated",
-    headline: "Remove repetitive work. Keep people on what matters.",
+    slug: "technology",
+    name: "Technology",
+    tagline: "Get systemised",
+    headline: "Websites, AI and systems that do the work behind the scenes.",
     intro:
-      "We design practical automations and AI agents that take repetitive work off your team, with human checkpoints wherever customers, money or commitments are involved.",
+      "Visibility only pays off if the business behind it can respond. We build websites, automations, CRM workflows, dashboards, portals and AI agents, with human checkpoints wherever customers, money or commitments are involved.",
     metaDescription:
-      "AI agents, workflow automation, business systems and reporting automation for service businesses.",
+      "Website development, AI systems, business automation, CRM and workflow systems, dashboards and client portals for growing businesses.",
     outcomes: [
-      "Hours back every week",
-      "Faster, more consistent follow-up",
-      "Reports that assemble themselves",
+      "A website that explains, convinces and converts",
+      "Faster, more consistent follow-up on every lead",
+      "Hours back every week from repetitive work",
       "Clear control over what runs automatically",
     ],
     services: [
       {
-        name: "AI agents & workflow automation",
+        name: "Website development",
+        description:
+          "Fast, search-ready websites that make it obvious what you do, who it's for and what to do next.",
+        points: [
+          "Structure and copy",
+          "Design and build",
+          "Search and AI readiness",
+          "Analytics and tracking",
+        ],
+      },
+      {
+        name: "AI systems & business automation",
         description:
           "Enquiry handling, follow-ups, document processing and internal workflows, designed with approval steps built in.",
         points: [
           "Process mapping",
           "Automation design and build",
-          "Human-in-the-loop checkpoints",
+          "AI agents with human-in-the-loop checkpoints",
           "Documentation and handover",
         ],
       },
       {
-        name: "Reporting automation",
+        name: "CRM, lead-generation and workflow systems",
         description:
-          "Monthly business reports that pull from your systems and explain what happened and what to do next.",
-        points: ["Data connections", "Report design", "Monthly generation and review"],
+          "Lead capture, routing, follow-up and pipeline tracking that make sure no enquiry is lost.",
+        points: [
+          "Lead capture and routing",
+          "CRM setup and workflows",
+          "Integrations between your tools",
+        ],
       },
       {
-        name: "Automation consulting",
+        name: "Dashboards, portals and internal applications",
         description:
-          "A structured review of your operations to find where automation will genuinely pay off, sized and prioritised.",
-        points: ["Discovery workshop", "Opportunity sizing", "Roadmap"],
+          "Reporting dashboards, client portals and internal tools that turn scattered information into clear next actions.",
+        points: [
+          "Data connections",
+          "Dashboard and portal design",
+          "Internal business applications",
+        ],
       },
     ],
     faq: [
@@ -221,29 +245,29 @@ export const PILLARS: Pillar[] = [
       "We automate what is safe to automate, and keep a person in charge of everything else.",
   },
   {
-    slug: "creative",
-    name: "Creative",
+    slug: "content",
+    name: "Content",
     tagline: "Get noticed",
-    headline: "Once they find you, give them something worth seeing.",
+    headline: "Content that makes people proud to show your business.",
     intro:
-      "Visibility gets you considered. Credible imagery, video and content get you chosen. Our creative work supports your website, proposals, LinkedIn and campaigns.",
+      "Visibility gets you considered. Credible photography, video, design and writing get you chosen. Our content work supports your website, proposals, LinkedIn and campaigns, and it's planned around how your buyers think.",
     metaDescription:
-      "Photography, videography, graphic design, content creation and social media for B2B brands.",
+      "Photography, videography, graphic design and content creation for B2B, industrial and professional service businesses.",
     outcomes: [
-      "Authentic imagery of your people and work",
-      "Content that supports search and sales",
+      "Authentic imagery of your people, products and work",
+      "Content that supports search, sales and campaigns",
       "Consistent, professional brand presentation",
     ],
     services: [
       {
-        name: "Photography",
-        description: "Your people, premises, products and work on site, captured professionally.",
-        points: ["Shoot planning", "On-site photography", "Web-ready delivery"],
-      },
-      {
-        name: "Videography",
-        description: "Short videos that explain what you do and why it matters.",
-        points: ["Scripting", "Filming and editing", "Formats for web and social"],
+        name: "Brand and content shoots",
+        description:
+          "Your people, premises, products and work on site, captured professionally: photography and video planned around where it will be used.",
+        points: [
+          "Shoot planning",
+          "On-site photography and video",
+          "Web, social and print delivery",
+        ],
       },
       {
         name: "Graphic design",
@@ -253,24 +277,110 @@ export const PILLARS: Pillar[] = [
       {
         name: "Content creation",
         description:
-          "Articles, service pages and LinkedIn content planned around what buyers search for.",
+          "Articles, service pages, corporate and product content, and LinkedIn posts planned around what buyers search for and ask.",
         points: ["Content planning", "Writing and design", "Approval workflow"],
       },
       {
-        name: "Social media",
-        description: "Consistent, credible presence, LinkedIn first for B2B.",
-        points: ["Content calendar", "Scheduling", "Community management"],
+        name: "Social content",
+        description: "A consistent, credible presence, LinkedIn first for B2B.",
+        points: ["Content calendar", "Creation", "Scheduling"],
       },
     ],
     faq: [
       {
-        question: "Can we book creative work on its own?",
+        question: "Can we book photography or video on its own?",
         answer:
-          "Yes. Photography, video and design are available as one-off projects, as well as part of a wider visibility programme.",
+          "Yes. Photography, video and design are available as projects, as well as part of a wider visibility and growth programme.",
       },
     ],
     honesty:
-      "Creative work is planned around where it will be used, so it earns its place on your website, in proposals and in campaigns.",
+      "Content is a supporting capability: it's planned around where it will be used, so it earns its place on your website, in proposals and in campaigns.",
+  },
+  {
+    slug: "consulting",
+    name: "Consulting",
+    tagline: "Get clarity",
+    headline: "Strategy for visibility, growth and AI, from someone who does the work.",
+    intro:
+      "Sometimes the most valuable thing is a clear plan. We help you decide what to do, in what order, and what to leave alone, across digital strategy, marketing, visibility and AI.",
+    metaDescription:
+      "Digital strategy, marketing strategy, visibility consulting, AI and business consulting, and growth consulting.",
+    outcomes: [
+      "A clear, prioritised roadmap",
+      "Decisions grounded in data and in how buyers actually think",
+      "Confidence about where to invest, and where not to",
+    ],
+    services: [
+      {
+        name: "Digital and marketing strategy",
+        description:
+          "Positioning, messaging, channels and priorities, combining data with psychology, creativity and business strategy.",
+        points: ["Discovery workshop", "Positioning and messaging", "Channel and content plan"],
+      },
+      {
+        name: "Visibility consulting",
+        description:
+          "An outside view of how you're found, understood and chosen, with a practical plan.",
+        points: ["Visibility assessment", "Competitor view", "Prioritised recommendations"],
+      },
+      {
+        name: "AI and business consulting",
+        description:
+          "Where AI and automation will genuinely pay off in your business, and how to adopt them safely.",
+        points: ["AI readiness review", "Automation opportunities", "Implementation roadmap"],
+      },
+    ],
+    faq: [
+      {
+        question: "Do you only advise, or also implement?",
+        answer:
+          "Both. Many clients start with a strategy engagement and then have Mea Creo implement it, but the plan is yours either way.",
+      },
+    ],
+    honesty: "We'll tell you when something isn't worth doing, even if it's something we sell.",
+  },
+  {
+    slug: "quality-assurance",
+    name: "Quality Assurance",
+    tagline: "Get it right",
+    headline: "An independent quality check before anything goes out.",
+    intro:
+      "Your team produces content. We make sure it's accurate, on-brand, search-ready and compliant before it's published, with a clear checklist and a documented approve-or-revise decision.",
+    metaDescription:
+      "Independent content quality assurance: brand compliance, accuracy, visual, messaging, SEO and search-readiness review with a final approval workflow.",
+    outcomes: [
+      "Consistent brand and messaging across everything you publish",
+      "Fewer errors reaching customers",
+      "Content that's ready for search and AI from day one",
+      "A clear record of what was checked and approved",
+    ],
+    services: [
+      {
+        name: "Content QA",
+        description:
+          "Every piece reviewed against a checklist you agree: brand, accuracy, spelling, visuals, messaging, calls to action and compliance.",
+        points: [
+          "Brand compliance and messaging review",
+          "Accuracy, spelling and visual review",
+          "SEO, GEO and AEO readiness review",
+          "Approve or revise, with clear notes",
+        ],
+      },
+      {
+        name: "Final approval workflow",
+        description:
+          "A structured path from draft to internal review, QA, client review and publication, with a record at every step.",
+        points: ["Configurable checklists", "Approval tracking", "Monthly quality summary"],
+      },
+    ],
+    faq: [
+      {
+        question: "Can you QA content we produce in-house or with another agency?",
+        answer:
+          "Yes. That's exactly what the service is for. We work from your brand guidelines and requirements.",
+      },
+    ],
+    honesty: "QA reduces risk; it doesn't replace your own sign-off on legal or technical claims.",
   },
 ];
 

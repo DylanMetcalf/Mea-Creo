@@ -3,7 +3,7 @@
 The website, acquisition engine, operating workspace and client portal for
 **Mea Creo (Pty) Ltd**, a visibility, growth and automation company.
 
-> Become easier to find. Easier to trust. Easier to choose.
+> Easier to find. Easier to understand. Easier to choose.
 
 **Status:** V1 built and tested; not yet deployed. Start with the
 [Owner Handbook](docs/OWNER_HANDBOOK.md) and the [walkthrough](docs/WALKTHROUGH.md).

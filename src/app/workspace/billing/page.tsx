@@ -12,6 +12,7 @@ import { INVOICE_STATUSES, invoices, organisations, payments } from "@/db/schema
 import { resolveIntegration } from "@/integrations/registry";
 import { fmtDate, fmtMoney } from "@/lib/format";
 import { requireStaff, staffClientScope } from "@/modules/auth/context";
+import { getBankDetails } from "@/modules/banking/service";
 import { getPlatformSetting } from "@/modules/settings/service";
 import { runDailyBillingAction } from "./actions";
 
@@ -27,7 +28,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/workspac
   const db = await getDb();
   const inScope = scope === "all" ? undefined : inArray(invoices.organisationId, scope);
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  const [rows, [totals], [received], billing] = await Promise.all([
+  const [rows, [totals], [received], billing, bank] = await Promise.all([
     db
       .select({ i: invoices, org: organisations.name })
       .from(invoices)
@@ -55,6 +56,7 @@ export default async function BillingPage({ searchParams }: PageProps<"/workspac
         ),
       ),
     getPlatformSetting(db, "billing"),
+    getBankDetails(db),
   ]);
   const paymentsIntegration = resolveIntegration("payments");
   const accounting = resolveIntegration("accounting");
@@ -85,9 +87,10 @@ export default async function BillingPage({ searchParams }: PageProps<"/workspac
             Integrations. REQUIRES CONFIGURATION.
           </Callout>
         )}
-        {!billing.eftDetails && (
-          <Callout tone="warning" title="No EFT details on invoices">
-            Add your bank details in Settings → Billing so invoices show how to pay by EFT.
+        {!bank && (
+          <Callout tone="warning" title="No bank details on invoices">
+            Add your bank details in Settings → Billing (founder only, stored encrypted) so invoices
+            show how to pay by EFT.
           </Callout>
         )}
         {billing.pricesAreDemo && (

@@ -11,8 +11,10 @@ export const settingsSchemas = {
     tradingName: z.string().min(1),
     email: z.email(),
     phone: z.string(),
+    streetAddress: z.string().optional(),
     locality: z.string(),
     region: z.string(),
+    postalCode: z.string().optional(),
     country: z.string(),
     registrationNumber: z.string().optional(),
     vatNumber: z.string().optional(),
@@ -37,8 +39,8 @@ export const settingsSchemas = {
     proposalPrefix: z.string().min(1).max(8),
     /** Seeded demo prices are marked so they can never be mistaken for real pricing. */
     pricesAreDemo: z.boolean(),
-    /** Bank details printed on invoices for EFT payment. Entered by the owner; never invented. */
-    eftDetails: z.string().max(1000).optional(),
+    /** Show the package prices on the public website (/pricing and the home page). */
+    showPricesPublicly: z.boolean().default(true),
   }),
   booking: z.object({
     timezone: z.string(),
@@ -47,6 +49,12 @@ export const settingsSchemas = {
     endHour: z.number().int().min(1).max(24),
     bufferMinutes: z.number().int().min(0).max(120),
     minNoticeHours: z.number().int().min(0).max(240),
+    /** Earliest booking is this many business days (Mon–Fri) after today. 0 = hours rule only. */
+    minNoticeBusinessDays: z.number().int().min(0).max(20).default(1),
+    /** Discovery (visibility review) calls only on these days; other meetings use workingDays. */
+    discoveryDays: z.array(z.number().int().min(0).max(6)).default([1, 2, 3]),
+    /** Maximum meetings booked through the booking pages per day. 0 = no limit. */
+    maxBookingsPerDay: z.number().int().min(0).max(20).default(3),
     horizonDays: z.number().int().min(1).max(90),
     durations: z.object({
       discovery: z.number().int(),
@@ -81,6 +89,12 @@ export const settingsSchemas = {
     targetMrrMinor: z.number().int().nullable(),
     monthlyOperatingCostsMinor: z.number().int().nullable(),
     desiredMarginPercent: z.number().nullable(),
+    /** Internal floor: below this monthly value a client isn't viable. Never published. */
+    minimumMonthlyValueMinor: z.number().int().nullable().default(null),
+    targetAverageClientValueMinor: z.number().int().nullable().default(null),
+    targetNewClientsPerMonth: z.number().int().nullable().default(null),
+    /** How many clients Dylan can personally serve before delegating. */
+    clientCapacity: z.number().int().nullable().default(null),
   }),
   setup: z.object({ completedSteps: z.array(z.string()) }),
 } as const;
@@ -94,13 +108,17 @@ export const settingsDefaults: { [K in SettingsKey]: Settings<K> } = {
     tradingName: siteConfig.name,
     email: siteConfig.contact.email,
     phone: siteConfig.contact.phone,
+    streetAddress: siteConfig.contact.streetAddress,
     locality: siteConfig.contact.locality,
     region: siteConfig.contact.region,
+    postalCode: siteConfig.contact.postalCode,
     country: siteConfig.contact.country,
+    registrationNumber: siteConfig.registrationNumber,
     linkedinUrl: "https://www.linkedin.com/in/mea-creo-011657239/",
     instagramUrl: "https://www.instagram.com/meacreo/",
     facebookUrl: "https://www.facebook.com/profile.php?id=61565803731608",
-    detailsVerified: false,
+    // Supplied by the director in the Master Build handoff.
+    detailsVerified: true,
   },
   brand: { primaryColor: "#4a6b58", accentColor: "#6b8971" },
   billing: {
@@ -114,6 +132,7 @@ export const settingsDefaults: { [K in SettingsKey]: Settings<K> } = {
     invoicePrefix: "MC",
     proposalPrefix: "MCP",
     pricesAreDemo: false,
+    showPricesPublicly: true,
   },
   booking: {
     timezone: "Africa/Johannesburg",
@@ -122,6 +141,9 @@ export const settingsDefaults: { [K in SettingsKey]: Settings<K> } = {
     endHour: 16,
     bufferMinutes: 15,
     minNoticeHours: 20,
+    minNoticeBusinessDays: 1,
+    discoveryDays: [1, 2, 3],
+    maxBookingsPerDay: 3,
     horizonDays: 21,
     durations: {
       discovery: 30,
@@ -145,11 +167,16 @@ export const settingsDefaults: { [K in SettingsKey]: Settings<K> } = {
     pausePayments: false,
     pausedAgents: [],
   },
+  // From the Master Build handoff (approved by the director).
   targets: {
-    targetMonthlyRevenueMinor: null,
+    targetMonthlyRevenueMinor: 10_000_000, // R100,000 a month
     targetMrrMinor: null,
     monthlyOperatingCostsMinor: null,
     desiredMarginPercent: null,
+    minimumMonthlyValueMinor: 550_000, // R5,500 internal floor
+    targetAverageClientValueMinor: 800_000, // R8,000
+    targetNewClientsPerMonth: 3, // 2–3
+    clientCapacity: 10, // 8–10
   },
   setup: { completedSteps: [] },
 };

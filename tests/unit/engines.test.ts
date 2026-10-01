@@ -111,6 +111,32 @@ describe("Booking availability", () => {
   });
 });
 
+describe("Booking rules", () => {
+  const settings = settingsDefaults.booking;
+  it("offers discovery calls only on the configured days, at least one business day ahead, within the daily maximum", () => {
+    // Friday 2026-10-09 10:00 SAST: next business day is Monday.
+    const now = new Date("2026-10-09T08:00:00Z");
+    const days = computeSlots({
+      settings,
+      durationMinutes: 30,
+      busy: [],
+      now,
+      workingDays: settings.discoveryDays,
+    });
+    expect(days[0].date).toBe("2026-10-12");
+    for (const d of days) expect([1, 2, 3]).toContain(new Date(`${d.date}T12:00:00Z`).getUTCDay());
+    const full = computeSlots({
+      settings,
+      durationMinutes: 30,
+      busy: [],
+      now,
+      workingDays: settings.discoveryDays,
+      bookedPerDay: new Map([["2026-10-12", settings.maxBookingsPerDay]]),
+    });
+    expect(full[0].date).toBe("2026-10-13");
+  });
+});
+
 describe("Payfast signature", () => {
   it("encodes like PHP urlencode and skips empty fields", () => {
     expect(payfastEncode("Test Item & co")).toBe("Test+Item+%26+co");

@@ -51,7 +51,7 @@ export function ReportForm({ utm }: { utm: Record<string, string> }) {
       />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <TextField name="industry" label="Industry" placeholder="e.g. Engineering" />
-        <TextField name="location" label="Location" placeholder="e.g. Pretoria" />
+        <TextField name="location" label="Location" placeholder="e.g. Johannesburg" />
       </div>
       <SelectField
         name="employeeRange"

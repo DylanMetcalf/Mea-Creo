@@ -81,11 +81,33 @@ export function computeSlots(input: {
   busy: Interval[];
   now?: Date;
   stepMinutes?: number;
+  /** Override the days of the week (e.g. discovery calls only Mon–Wed). */
+  workingDays?: number[];
+  /** Meetings already booked per local date (YYYY-MM-DD), for the daily maximum. */
+  bookedPerDay?: Map<string, number>;
 }): DaySlots[] {
   const { settings, durationMinutes } = input;
   const now = input.now ?? new Date();
   const step = input.stepMinutes ?? 30;
-  const earliest = new Date(now.getTime() + settings.minNoticeHours * 3600_000);
+  const workingDays = input.workingDays ?? settings.workingDays;
+  let earliest = new Date(now.getTime() + settings.minNoticeHours * 3600_000);
+  // Business-day notice: the first bookable day is the Nth weekday after today.
+  if (settings.minNoticeBusinessDays > 0) {
+    let counted = 0;
+    let offset = 0;
+    let first = "";
+    while (counted < settings.minNoticeBusinessDays && offset < 40) {
+      offset++;
+      const p = zonedParts(new Date(now.getTime() + offset * 86400_000), settings.timezone);
+      if (p.weekday >= 1 && p.weekday <= 5) {
+        counted++;
+        first = `${p.year}-${p.month}-${p.day}`;
+      }
+    }
+    const [y, m, d] = first.split("-").map(Number);
+    const startOfDay = zonedTime(y, m, d, 0, 0, settings.timezone);
+    if (startOfDay > earliest) earliest = startOfDay;
+  }
   const buffer = settings.bufferMinutes * 60_000;
   const busy = input.busy.map((b) => ({
     start: b.start.getTime() - buffer,
@@ -96,7 +118,13 @@ export function computeSlots(input: {
   for (let offset = 0; offset <= settings.horizonDays; offset++) {
     const probe = new Date(now.getTime() + offset * 86400_000);
     const { year, month, day, weekday } = zonedParts(probe, settings.timezone);
-    if (!settings.workingDays.includes(weekday)) continue;
+    if (!workingDays.includes(weekday)) continue;
+    const dateKey = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    if (
+      settings.maxBookingsPerDay > 0 &&
+      (input.bookedPerDay?.get(dateKey) ?? 0) >= settings.maxBookingsPerDay
+    )
+      continue;
     const slots: Date[] = [];
     for (
       let minutes = settings.startHour * 60;
@@ -116,11 +144,7 @@ export function computeSlots(input: {
       if (busy.some((b) => start.getTime() < b.end && end > b.start)) continue;
       slots.push(start);
     }
-    if (slots.length)
-      days.push({
-        date: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-        slots,
-      });
+    if (slots.length) days.push({ date: dateKey, slots });
   }
   return days;
 }

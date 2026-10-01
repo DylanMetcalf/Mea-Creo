@@ -4,13 +4,14 @@ import { clients, invoiceLines, invoices } from "@/db/schema";
 import { fmtDate } from "@/lib/format";
 import { generatePdf, type PdfBlock } from "@/lib/pdf";
 import { formatProposalMoney } from "@/modules/proposals/service";
+import { eftLines, getBankDetails } from "@/modules/banking/service";
 import { getPlatformSetting } from "@/modules/settings/service";
 
 /** Invoice PDF. Callers check access first. Company and bank details come only from settings. */
 export async function invoicePdf(db: DbOrTx, id: string) {
   const [invoice] = await db.select().from(invoices).where(eq(invoices.id, id)).limit(1);
   if (!invoice) return null;
-  const [lines, [client], company, billing] = await Promise.all([
+  const [lines, [client], company, billing, bank] = await Promise.all([
     db
       .select()
       .from(invoiceLines)
@@ -19,6 +20,7 @@ export async function invoicePdf(db: DbOrTx, id: string) {
     db.select().from(clients).where(eq(clients.organisationId, invoice.organisationId)),
     getPlatformSetting(db, "company"),
     getPlatformSetting(db, "billing"),
+    getBankDetails(db),
   ]);
   const m = (minor: number) => formatProposalMoney(minor, invoice.currency);
   const blocks: PdfBlock[] = [
@@ -36,6 +38,9 @@ export async function invoicePdf(db: DbOrTx, id: string) {
             company.legalName,
             company.registrationNumber && `Reg. ${company.registrationNumber}`,
             company.vatNumber && `VAT ${company.vatNumber}`,
+            [company.streetAddress, company.locality, company.region, company.postalCode]
+              .filter(Boolean)
+              .join(", "),
             company.email,
           ]
             .filter(Boolean)
@@ -75,8 +80,8 @@ export async function invoicePdf(db: DbOrTx, id: string) {
     );
     blocks.push({
       type: "p",
-      text: billing.eftDetails
-        ? `Or by EFT, using ${invoice.number} as the reference:\n${billing.eftDetails}`
+      text: bank
+        ? `Or by EFT:\n${eftLines(bank, invoice.number).join("\n")}`
         : "EFT details are available on request.",
     });
   }

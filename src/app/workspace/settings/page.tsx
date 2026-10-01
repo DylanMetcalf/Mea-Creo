@@ -7,10 +7,17 @@ import {
   CheckboxField,
   SelectField,
   SubmitButton,
-  TextArea,
   TextField,
 } from "@/components/ui/form";
-import { Badge, Callout, Card, CardBody, CardHeader, PageHeader } from "@/components/ui/primitives";
+import {
+  Badge,
+  Callout,
+  Card,
+  CardBody,
+  CardHeader,
+  DescriptionList,
+  PageHeader,
+} from "@/components/ui/primitives";
 import { Tabs } from "@/components/ui/tabs";
 import { getDb } from "@/db";
 import {
@@ -27,6 +34,7 @@ import type { IntegrationHealth } from "@/integrations/types";
 import { fmtDateTime, humanize } from "@/lib/format";
 import { SUPPORTED_CURRENCIES } from "@/lib/money";
 import { API_SCOPES } from "@/modules/api-keys/service";
+import { getBankDetails, maskAccountNumber } from "@/modules/banking/service";
 import { requireStaff } from "@/modules/auth/context";
 import {
   ROLE_DESCRIPTIONS,
@@ -43,6 +51,7 @@ import {
   revokeApiKeyAction,
   saveAiAction,
   saveAutomationAction,
+  saveBankDetailsAction,
   saveBillingAction,
   saveBookingAction,
   saveCompanyAction,
@@ -193,79 +202,139 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
     }
     case "billing": {
       const b = await getPlatformSetting(db, "billing");
+      const bank = await getBankDetails(db);
+      const founder = ctx.role === "founder";
       body = (
-        <Card>
-          <CardHeader
-            title="Billing"
-            description="Applies to new invoices. Existing invoices keep the tax they were issued with."
-          />
-          <CardBody>
-            <ActionForm
-              action={saveBillingAction}
-              className="grid grid-cols-1 gap-4 md:grid-cols-2"
-            >
-              <SelectField
-                name="defaultCurrency"
-                label="Default currency"
-                defaultValue={b.defaultCurrency}
-                options={SUPPORTED_CURRENCIES.map((c) => ({ value: c, label: c }))}
-              />
-              <TextField
-                name="paymentTermsDays"
-                type="number"
-                label="Payment terms (days)"
-                defaultValue={String(b.paymentTermsDays)}
-              />
-              <div className="md:col-span-2">
-                <CheckboxField
-                  name="vatRegistered"
-                  label="Mea Creo is VAT registered"
-                  defaultChecked={b.vatRegistered}
-                  hint="Only tick this once SARS registration is confirmed. Add the VAT number under Company."
-                />
-              </div>
-              <TextField
-                name="taxRatePercent"
-                type="number"
-                label="VAT rate (%)"
-                defaultValue={String(b.taxRatePercent)}
-              />
-              <TextField
-                name="pauseAfterOverdueDays"
-                type="number"
-                label="Pause services after (days overdue)"
-                defaultValue={String(b.pauseAfterOverdueDays)}
-              />
-              <TextField
-                name="reminderDaysAfterDue"
-                label="Reminders (days after due)"
-                defaultValue={b.reminderDaysAfterDue.join(", ")}
-              />
-              <div className="grid grid-cols-2 gap-3">
-                <TextField
-                  name="invoicePrefix"
-                  label="Invoice prefix"
-                  defaultValue={b.invoicePrefix}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader
+              title="Billing"
+              description="Applies to new invoices. Existing invoices keep the tax they were issued with."
+            />
+            <CardBody>
+              <ActionForm
+                action={saveBillingAction}
+                className="grid grid-cols-1 gap-4 md:grid-cols-2"
+              >
+                <SelectField
+                  name="defaultCurrency"
+                  label="Default currency"
+                  defaultValue={b.defaultCurrency}
+                  options={SUPPORTED_CURRENCIES.map((c) => ({ value: c, label: c }))}
                 />
                 <TextField
-                  name="proposalPrefix"
-                  label="Proposal prefix"
-                  defaultValue={b.proposalPrefix}
+                  name="paymentTermsDays"
+                  type="number"
+                  label="Payment terms (days)"
+                  defaultValue={String(b.paymentTermsDays)}
                 />
-              </div>
-              <div className="md:col-span-2">
-                <TextArea
-                  name="eftDetails"
-                  label="EFT bank details (printed on invoices)"
-                  defaultValue={b.eftDetails ?? ""}
-                  rows={4}
-                  hint="Bank, account name, account number, branch code. Shown to clients on unpaid invoices."
+                <div className="md:col-span-2">
+                  <CheckboxField
+                    name="vatRegistered"
+                    label="Mea Creo is VAT registered"
+                    defaultChecked={b.vatRegistered}
+                    hint="Only tick this once SARS registration is confirmed. Add the VAT number under Company."
+                  />
+                </div>
+                <TextField
+                  name="taxRatePercent"
+                  type="number"
+                  label="VAT rate (%)"
+                  defaultValue={String(b.taxRatePercent)}
                 />
-              </div>
-              {ctx.can("billing.manage") && <SubmitButton>Save</SubmitButton>}
-            </ActionForm>
-          </CardBody>
-        </Card>
+                <TextField
+                  name="pauseAfterOverdueDays"
+                  type="number"
+                  label="Pause services after (days overdue)"
+                  defaultValue={String(b.pauseAfterOverdueDays)}
+                />
+                <TextField
+                  name="reminderDaysAfterDue"
+                  label="Reminders (days after due)"
+                  defaultValue={b.reminderDaysAfterDue.join(", ")}
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <TextField
+                    name="invoicePrefix"
+                    label="Invoice prefix"
+                    defaultValue={b.invoicePrefix}
+                  />
+                  <TextField
+                    name="proposalPrefix"
+                    label="Proposal prefix"
+                    defaultValue={b.proposalPrefix}
+                  />
+                </div>
+
+                {ctx.can("billing.manage") && <SubmitButton>Save</SubmitButton>}
+              </ActionForm>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader
+              title="Banking details"
+              description="Printed on unpaid invoices and shown to signed-in clients on their billing page. Stored encrypted; never on the public website, in AI prompts or in the code."
+            />
+            <CardBody className="space-y-4">
+              {bank ? (
+                <DescriptionList
+                  items={[
+                    ["Bank", bank.bank],
+                    ["Account holder", bank.accountHolder],
+                    ["Account type", bank.accountType || null],
+                    ["Branch code", bank.branchCode],
+                    ["Account number", maskAccountNumber(bank.accountNumber)],
+                  ]}
+                />
+              ) : (
+                <Callout tone="warning" title="Not set">
+                  Invoices will say EFT details are available on request.
+                </Callout>
+              )}
+              {founder ? (
+                <details>
+                  <summary className="text-brand-700 cursor-pointer text-sm">
+                    {bank ? "Change banking details" : "Add banking details"}
+                  </summary>
+                  <ActionForm
+                    action={saveBankDetailsAction}
+                    className="mt-3 grid grid-cols-1 gap-4 md:grid-cols-2"
+                  >
+                    <TextField name="bank" label="Bank" defaultValue={bank?.bank ?? ""} />
+                    <TextField
+                      name="accountHolder"
+                      label="Account holder"
+                      defaultValue={bank?.accountHolder ?? ""}
+                    />
+                    <TextField
+                      name="accountType"
+                      label="Account type"
+                      defaultValue={bank?.accountType ?? ""}
+                    />
+                    <TextField
+                      name="branchCode"
+                      label="Branch code"
+                      defaultValue={bank?.branchCode ?? ""}
+                      inputMode="numeric"
+                    />
+                    <TextField
+                      name="accountNumber"
+                      label="Account number"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      hint="Enter the full number each time you save. It is never displayed in full here."
+                    />
+                    <div className="flex items-end">
+                      <SubmitButton>Save banking details</SubmitButton>
+                    </div>
+                  </ActionForm>
+                </details>
+              ) : (
+                <p className="text-muted text-sm">Only a founder can change banking details.</p>
+              )}
+            </CardBody>
+          </Card>
+        </div>
       );
       break;
     }
@@ -280,7 +349,26 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
           <CardBody>
             <ActionForm action={saveBookingAction} className="space-y-4">
               <fieldset>
-                <legend className="mb-2 text-sm font-medium">Working days</legend>
+                <legend className="mb-2 text-sm font-medium">
+                  Discovery call days (website bookings)
+                </legend>
+                <div className="flex flex-wrap gap-3">
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d, i) => (
+                    <label key={d} className="flex items-center gap-1.5 text-sm">
+                      <input
+                        type="checkbox"
+                        name="discoveryDays"
+                        value={i}
+                        defaultChecked={b.discoveryDays.includes(i)}
+                        className="accent-brand-700 size-4"
+                      />{" "}
+                      {d}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend className="mb-2 text-sm font-medium">Working days (client meetings)</legend>
                 <div className="flex flex-wrap gap-3">
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d, i) => (
                     <label key={d} className="flex items-center gap-1.5 text-sm">
@@ -320,6 +408,18 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
                   type="number"
                   label="Minimum notice (hours)"
                   defaultValue={String(b.minNoticeHours)}
+                />
+                <TextField
+                  name="minNoticeBusinessDays"
+                  type="number"
+                  label="Minimum notice (business days)"
+                  defaultValue={String(b.minNoticeBusinessDays)}
+                />
+                <TextField
+                  name="maxBookingsPerDay"
+                  type="number"
+                  label="Maximum bookings per day (0 = no limit)"
+                  defaultValue={String(b.maxBookingsPerDay)}
                 />
                 <TextField
                   name="horizonDays"
@@ -840,6 +940,33 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
                 name="desiredMarginPercent"
                 label="Desired margin (%)"
                 defaultValue={t.desiredMarginPercent == null ? "" : String(t.desiredMarginPercent)}
+              />
+              <TextField
+                name="minimumMonthlyValue"
+                label="Minimum monthly client value (R, internal floor)"
+                defaultValue={major(t.minimumMonthlyValueMinor)}
+                inputMode="decimal"
+                hint="Used to flag prospects below the floor. Never shown publicly."
+              />
+              <TextField
+                name="targetAverageClientValue"
+                label="Target average client value (R/month)"
+                defaultValue={major(t.targetAverageClientValueMinor)}
+                inputMode="decimal"
+              />
+              <TextField
+                name="targetNewClientsPerMonth"
+                type="number"
+                label="Target new clients per month"
+                defaultValue={
+                  t.targetNewClientsPerMonth == null ? "" : String(t.targetNewClientsPerMonth)
+                }
+              />
+              <TextField
+                name="clientCapacity"
+                type="number"
+                label="Personal client capacity"
+                defaultValue={t.clientCapacity == null ? "" : String(t.clientCapacity)}
               />
               {canManage && <SubmitButton>Save</SubmitButton>}
             </ActionForm>
