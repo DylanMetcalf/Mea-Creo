@@ -81,7 +81,7 @@ export default async function ApprovalPage({ params }: PageProps<"/workspace/app
             <CardHeader title="What you're approving" />
             <CardBody>
               {a.preview ? (
-                <Prose markdown={a.preview} />
+                <Prose markdown={a.preview} breaks />
               ) : (
                 <p className="text-muted text-sm">No preview attached.</p>
               )}

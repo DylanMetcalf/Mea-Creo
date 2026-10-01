@@ -134,7 +134,11 @@ export default async function MeetingPage({ params }: PageProps<"/workspace/meet
               }
             />
             <CardBody className="space-y-5">
-              {m.briefing ? (
+              {m.briefing && m.briefing.sections.length === 0 ? (
+                <p className="text-muted text-sm">
+                  Nothing stored to brief on: this meeting isn&apos;t linked to a lead or client.
+                </p>
+              ) : m.briefing ? (
                 <>
                   {m.briefing.sections.map((s) => (
                     <section key={s.heading}>

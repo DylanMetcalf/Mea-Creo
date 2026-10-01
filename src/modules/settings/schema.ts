@@ -37,6 +37,8 @@ export const settingsSchemas = {
     proposalPrefix: z.string().min(1).max(8),
     /** Seeded demo prices are marked so they can never be mistaken for real pricing. */
     pricesAreDemo: z.boolean(),
+    /** Bank details printed on invoices for EFT payment. Entered by the owner; never invented. */
+    eftDetails: z.string().max(1000).optional(),
   }),
   booking: z.object({
     timezone: z.string(),

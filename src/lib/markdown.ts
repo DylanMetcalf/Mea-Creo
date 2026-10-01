@@ -6,8 +6,8 @@ import sanitizeHtml from "sanitize-html";
  * Renders untrusted markdown (AI drafts, CMS content, client messages) to safe HTML.
  * Only a small allow-list of tags survives; links open safely and scripts never do.
  */
-export function renderMarkdown(source: string): string {
-  const html = marked.parse(source, { async: false, gfm: true, breaks: false });
+export function renderMarkdown(source: string, options: { breaks?: boolean } = {}): string {
+  const html = marked.parse(source, { async: false, gfm: true, breaks: options.breaks ?? false });
   return sanitizeHtml(html, {
     allowedTags: [
       "h2",

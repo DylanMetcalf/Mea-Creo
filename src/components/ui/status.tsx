@@ -67,6 +67,14 @@ const MAPS: Record<string, Record<string, Tone>> = {
     no_action: "neutral",
   },
   audit: { queued: "neutral", running: "info", complete: "success", failed: "danger" },
+  report: { draft: "neutral", in_review: "warning", published: "success" },
+  payment: {
+    succeeded: "success",
+    failed: "danger",
+    cancelled: "neutral",
+    pending: "warning",
+    refunded: "neutral",
+  },
   service: { pending: "warning", active: "success", paused: "neutral", cancelled: "neutral" },
   lead: {
     new: "info",

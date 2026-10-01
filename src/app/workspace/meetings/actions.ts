@@ -71,14 +71,12 @@ export async function scheduleMeetingAction(
         .update(leads)
         .set({ stage: "call_booked", lastActivityAt: new Date() })
         .where(eq(leads.id, d.leadId));
-      await db
-        .insert(leadActivities)
-        .values({
-          leadId: d.leadId,
-          type: "meeting",
-          summary: `Call scheduled for ${d.date} ${d.time}.`,
-          actorId: ctx.user.id,
-        });
+      await db.insert(leadActivities).values({
+        leadId: d.leadId,
+        type: "meeting",
+        summary: `Call scheduled for ${d.date} ${d.time}.`,
+        actorId: ctx.user.id,
+      });
     }
     id = meeting.id;
   }, formData);
