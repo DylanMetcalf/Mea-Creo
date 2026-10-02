@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { logoutAction, switchOrganisationAction } from "@/app/(auth)/actions";
 import { Logo } from "@/components/brand/logo";
+import { Toaster } from "@/components/ui/overlay";
 import { PortalMobileNav, PortalNav } from "@/components/portal/nav";
 import { Avatar } from "@/components/ui/primitives";
 import { getDb } from "@/db";
@@ -137,6 +138,7 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
         </main>
       </div>
       <PortalMobileNav badges={badges} />
+      <Toaster />
     </div>
   );
 }

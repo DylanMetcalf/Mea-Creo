@@ -212,19 +212,20 @@
   background-size: 44px 44px;
 }
 
+/* Technical labels: mono, uppercase with tracking. A utility, so it works with variants. */
+@utility label-mono {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 @layer components {
   /* Display type: Manrope, tight and confident. Sizes come from utilities. */
   .font-display {
     font-weight: 700;
     letter-spacing: -0.032em;
     font-feature-settings: "ss01";
-  }
-  /* Technical labels: mono, small caps-like tracking. */
-  .label-mono {
-    font-family: var(--font-geist-mono), ui-monospace, monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
   }
 }
 
@@ -407,5 +408,15 @@ h3 {
 @keyframes grow {
   from {
     transform: scaleX(0);
+  }
+}
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
   }
 }

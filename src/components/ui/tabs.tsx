@@ -25,15 +25,20 @@ export function Tabs({
                 href={`${baseHref}${baseHref.includes("?") ? "&" : "?"}tab=${tab.key}`}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "inline-flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm whitespace-nowrap transition-colors",
+                  "-mb-px inline-flex items-center gap-1.5 border-b-2 px-3 py-3 text-sm whitespace-nowrap transition-colors",
                   isActive
-                    ? "border-brand-700 text-ink font-medium"
-                    : "text-muted hover:text-ink border-transparent",
+                    ? "border-brand-500 text-ink font-medium"
+                    : "text-muted hover:text-ink hover:border-border-strong border-transparent",
                 )}
               >
                 {tab.label}
                 {tab.count ? (
-                  <span className="bg-surface-2 text-muted rounded-full px-1.5 text-xs tabular-nums">
+                  <span
+                    className={cn(
+                      "rounded-full px-1.5 text-xs tabular-nums",
+                      isActive ? "bg-brand-100 text-brand-800" : "bg-surface-2 text-muted",
+                    )}
+                  >
                     {tab.count}
                   </span>
                 ) : null}

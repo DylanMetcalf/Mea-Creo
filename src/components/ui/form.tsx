@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, UploadCloud } from "lucide-react";
 import {
   type ComponentProps,
   createContext,
@@ -8,6 +8,7 @@ import {
   useActionState,
   useContext,
   useId,
+  useState,
 } from "react";
 import { useFormStatus } from "react-dom";
 import type { ActionState } from "@/lib/actions";
@@ -84,7 +85,7 @@ export function FormMessage({
 }
 
 const inputBase =
-  "block w-full rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm text-ink placeholder:text-subtle shadow-card focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-surface-2 aria-[invalid=true]:border-danger-700";
+  "block w-full rounded-[10px] border border-border-strong bg-surface px-3 py-2 text-sm text-ink placeholder:text-subtle shadow-[inset_0_1px_2px_rgb(14_25_21/0.04)] transition-[border-color,box-shadow] duration-150 hover:border-brand-300 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-muted aria-[invalid=true]:border-danger-700 aria-[invalid=true]:focus:ring-danger-100";
 
 type FieldProps = {
   name: string;
@@ -326,3 +327,100 @@ export function SubmitButton({
 }
 
 export { inputBase };
+
+/** Radio group with the same field shell as the other inputs. */
+export function RadioField({
+  name,
+  label,
+  options,
+  defaultValue,
+  hint,
+  className,
+}: {
+  name: string;
+  label: ReactNode;
+  options: { value: string; label: ReactNode; hint?: ReactNode }[];
+  defaultValue?: string;
+  hint?: ReactNode;
+  className?: string;
+}) {
+  const { id, errors, value } = useField(name);
+  return (
+    <fieldset
+      className={cn("min-w-0 space-y-2", className)}
+      aria-describedby={hint ? `${id}-hint` : undefined}
+    >
+      <legend className="text-ink mb-1 text-sm font-medium">{label}</legend>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {options.map((o) => (
+          <label
+            key={o.value}
+            className="border-border bg-surface has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50 has-[:checked]:ring-brand-100 hover:border-brand-300 has-[:focus-visible]:outline-brand-500 flex cursor-pointer items-start gap-3 rounded-xl border p-3 text-sm transition-colors has-[:checked]:ring-4 has-[:focus-visible]:outline-2"
+          >
+            <input
+              type="radio"
+              name={name}
+              value={o.value}
+              defaultChecked={(value ?? defaultValue) === o.value}
+              className="accent-brand-600 mt-0.5 size-4"
+            />
+            <span>
+              <span className="text-ink block font-medium">{o.label}</span>
+              {o.hint && <span className="text-muted block text-xs">{o.hint}</span>}
+            </span>
+          </label>
+        ))}
+      </div>
+      {hint && !errors && (
+        <p id={`${id}-hint`} className="text-muted text-xs">
+          {hint}
+        </p>
+      )}
+      {errors && <p className="text-danger-700 text-xs">{errors[0]}</p>}
+    </fieldset>
+  );
+}
+
+/** File picker as a drop zone. Uses the native input, so drag-and-drop and keyboard both work. */
+export function FileDropField({
+  name,
+  label,
+  hint,
+  accept,
+  multiple,
+}: {
+  name: string;
+  label: ReactNode;
+  hint?: ReactNode;
+  accept?: string;
+  multiple?: boolean;
+}) {
+  const id = useId();
+  const [files, setFiles] = useState<string[]>([]);
+  return (
+    <div className="space-y-1.5">
+      <span className="text-ink block text-sm font-medium">{label}</span>
+      <label
+        htmlFor={id}
+        className="border-border-strong bg-surface-2/60 hover:border-brand-400 hover:bg-brand-50/50 has-[:focus-visible]:outline-brand-500 relative flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed px-6 py-8 text-center transition-colors has-[:focus-visible]:outline-2"
+      >
+        <span className="bg-surface shadow-card text-brand-600 flex size-10 items-center justify-center rounded-xl">
+          <UploadCloud className="size-5" aria-hidden />
+        </span>
+        <span className="text-ink mt-3 text-sm font-medium">
+          {files.length ? files.join(", ") : "Drop files here or click to choose"}
+        </span>
+        {hint && <span className="text-muted mt-1 text-xs">{hint}</span>}
+        <input
+          id={id}
+          type="file"
+          name={name}
+          accept={accept}
+          multiple={multiple}
+          onChange={(e) => setFiles(Array.from(e.target.files ?? []).map((f) => f.name))}
+          className="absolute inset-0 cursor-pointer opacity-0"
+        />
+      </label>
+    </div>
+  );
+}

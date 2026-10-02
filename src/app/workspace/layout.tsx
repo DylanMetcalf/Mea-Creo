@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Logo } from "@/components/brand/logo";
+import { Toaster } from "@/components/ui/overlay";
 import { Avatar } from "@/components/ui/primitives";
 import { buttonClass } from "@/components/ui/button";
 import { CommandPalette, CommandTrigger } from "@/components/workspace/command-palette";
@@ -93,6 +94,7 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
     <div className="bg-paper flex min-h-screen">
       <SearchShortcut />
       <CommandPalette actions={QUICK_ACTIONS} />
+      <Toaster />
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 lg:block">{sidebar}</aside>
       <div className="flex min-w-0 flex-1 flex-col">
         {(emergency.pauseAllAutomation ||

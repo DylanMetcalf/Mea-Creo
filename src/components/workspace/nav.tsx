@@ -14,6 +14,7 @@ import {
   Menu,
   type LucideIcon,
   Newspaper,
+  Palette,
   Search,
   Send,
   Settings,
@@ -67,6 +68,7 @@ export const WORKSPACE_NAV: { title: string; items: NavItem[] }[] = [
     items: [
       { href: "/workspace/business", label: "Business", icon: BriefcaseBusiness },
       { href: "/workspace/settings", label: "Settings", icon: Settings },
+      { href: "/workspace/design-system", label: "Design system", icon: Palette },
     ],
   },
 ];
