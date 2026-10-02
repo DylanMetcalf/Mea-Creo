@@ -1,15 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Newsreader } from "next/font/google";
+import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-});
+// Display face: Manrope's engineered geometry reads as technical and precise at
+// heading sizes without the coldness of a pure grotesk. Geist carries body and UI.
+const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"], display: "swap" });
 
 const isProduction = process.env.APP_ENV === "production";
 
@@ -26,13 +24,13 @@ export const metadata: Metadata = {
   robots: isProduction ? { index: true, follow: true } : { index: false, follow: false },
 };
 
-export const viewport: Viewport = { themeColor: "#f6f3ee" };
+export const viewport: Viewport = { themeColor: "#f1f4f0" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en-ZA"
-      className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">{children}</body>
     </html>

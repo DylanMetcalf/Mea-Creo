@@ -4,31 +4,50 @@ import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 
 export function Container({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={cn("mx-auto w-full max-w-6xl px-4 sm:px-6", className)}>{children}</div>;
+  return (
+    <div className={cn("mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8", className)}>{children}</div>
+  );
 }
 
+export type SectionTone = "paper" | "surface" | "night" | "horizon" | "brand";
+
+/**
+ * Page rhythm: paper (mist) and surface (white) carry content; night is the dark
+ * technology section; horizon is the signature gradient moment. "brand" is kept as
+ * an alias of night for older pages.
+ */
 export function Section({
   className,
   children,
   id,
   tone = "paper",
+  containerClassName,
 }: {
   className?: string;
   children: ReactNode;
   id?: string;
-  tone?: "paper" | "surface" | "brand";
+  tone?: SectionTone;
+  containerClassName?: string;
 }) {
+  const dark = tone === "night" || tone === "horizon" || tone === "brand";
   return (
     <section
       id={id}
       className={cn(
-        "py-16 sm:py-24",
-        tone === "surface" && "border-border bg-surface border-y",
-        tone === "brand" && "bg-brand-900 text-white",
+        "relative isolate overflow-hidden py-20 sm:py-28",
+        tone === "surface" && "bg-surface",
+        dark && "bg-night text-night-text",
+        tone === "horizon" && "bg-horizon",
         className,
       )}
     >
-      <Container>{children}</Container>
+      {dark && (
+        <div
+          aria-hidden
+          className="bg-grid pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(70%_60%_at_50%_0%,#000,transparent)] opacity-60"
+        />
+      )}
+      <Container className={containerClassName}>{children}</Container>
     </section>
   );
 }
@@ -37,10 +56,14 @@ export function Eyebrow({ children, inverse }: { children: ReactNode; inverse?: 
   return (
     <p
       className={cn(
-        "text-xs font-semibold tracking-[0.14em] uppercase",
-        inverse ? "text-brand-300" : "text-brand-600",
+        "label-mono inline-flex items-center gap-2",
+        inverse ? "text-signal" : "text-brand-600",
       )}
     >
+      <span
+        aria-hidden
+        className={cn("size-1.5 rounded-full", inverse ? "bg-signal" : "bg-brand-500")}
+      />
       {children}
     </p>
   );
@@ -58,7 +81,7 @@ export function DisplayHeading({
   return (
     <Tag
       className={cn(
-        "font-display text-3xl leading-[1.12] tracking-tight text-balance sm:text-[2.6rem]",
+        "font-display text-[2rem] leading-[1.08] text-balance sm:text-[2.6rem] lg:text-[2.9rem]",
         className,
       )}
     >
@@ -83,10 +106,13 @@ export function SectionIntro({
   return (
     <div className={cn("max-w-2xl", align === "center" && "mx-auto text-center")}>
       {eyebrow && <Eyebrow inverse={inverse}>{eyebrow}</Eyebrow>}
-      <DisplayHeading className={cn("mt-3", inverse && "text-white")}>{title}</DisplayHeading>
+      <DisplayHeading className={cn("mt-4", inverse && "text-white")}>{title}</DisplayHeading>
       {children && (
         <div
-          className={cn("mt-4 text-lg leading-relaxed", inverse ? "text-brand-100" : "text-muted")}
+          className={cn(
+            "mt-5 text-[1.075rem] leading-relaxed",
+            inverse ? "text-night-muted" : "text-muted",
+          )}
         >
           {children}
         </div>
@@ -100,61 +126,86 @@ export function CheckList({ items, inverse }: { items: string[]; inverse?: boole
     <ul className="space-y-2.5">
       {items.map((item) => (
         <li key={item} className="flex gap-3">
-          <Check
-            className={cn("mt-0.5 size-4 shrink-0", inverse ? "text-brand-300" : "text-brand-600")}
+          <span
             aria-hidden
-          />
-          <span className={inverse ? "text-brand-50" : "text-ink-soft"}>{item}</span>
+            className={cn(
+              "mt-1 flex size-4 shrink-0 items-center justify-center rounded-full",
+              inverse ? "bg-signal/15 text-signal" : "bg-brand-100 text-brand-700",
+            )}
+          >
+            <Check className="size-3" strokeWidth={3} />
+          </span>
+          <span className={inverse ? "text-night-text" : "text-ink-soft"}>{item}</span>
         </li>
       ))}
     </ul>
   );
 }
 
+/** The signature closing moment: horizon gradient, light, and the two primary actions. */
 export function CtaBand({
   title = "Let's talk about where your business could be.",
   body = "Book a 30-minute strategy conversation with Dylan, or start with a free Visibility Report of your website.",
+  bookHref = "/book",
+  showReport = true,
 }: {
   title?: string;
   body?: string;
+  bookHref?: string;
+  showReport?: boolean;
 }) {
   return (
-    <Section tone="brand">
-      <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
-        <div className="max-w-2xl">
-          <DisplayHeading className="text-white">{title}</DisplayHeading>
-          <p className="text-brand-100 mt-3 text-lg">{body}</p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <LinkButton href="/book" variant="inverse" size="lg">
-            Book a strategy conversation <ArrowRight className="size-4" aria-hidden />
-          </LinkButton>
-          <LinkButton
-            href="/visibility-report"
-            variant="ghost"
-            size="lg"
-            className="text-white hover:bg-white/10 hover:text-white"
-          >
-            Get a free Visibility Report
-          </LinkButton>
+    <section className="px-3 pb-3 sm:px-4 sm:pb-4">
+      <div className="bg-horizon relative isolate overflow-hidden rounded-[28px] px-6 py-16 text-white sm:px-12 sm:py-24">
+        <div
+          aria-hidden
+          className="bg-grid pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(60%_80%_at_80%_100%,#000,transparent)]"
+        />
+        <div
+          aria-hidden
+          className="bg-ember-500/30 pointer-events-none absolute -right-24 -bottom-40 -z-10 size-[520px] rounded-full blur-3xl"
+        />
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-10 lg:flex-row lg:items-end">
+          <div className="max-w-2xl">
+            <Eyebrow inverse>Next step</Eyebrow>
+            <DisplayHeading className="mt-4 text-white sm:text-[3.2rem]">{title}</DisplayHeading>
+            <p className="text-night-muted mt-5 text-lg">{body}</p>
+          </div>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <LinkButton href={bookHref} variant="inverse" size="xl">
+              Book a strategy call
+              <ArrowRight
+                className="size-4 transition-transform group-hover/btn:translate-x-0.5"
+                aria-hidden
+              />
+            </LinkButton>
+            {showReport && (
+              <LinkButton href="/visibility-report" variant="glass" size="xl">
+                Get your free Visibility Report
+              </LinkButton>
+            )}
+          </div>
         </div>
       </div>
-    </Section>
+    </section>
   );
 }
 
 export function FaqList({ items }: { items: { question: string; answer: string }[] }) {
   return (
-    <div className="divide-border rounded-card border-border bg-surface divide-y border">
+    <div className="divide-border/80 border-border/80 divide-y border-y">
       {items.map((item) => (
-        <details key={item.question} className="group px-5 py-4">
-          <summary className="text-ink flex cursor-pointer list-none items-center justify-between gap-4 font-medium [&::-webkit-details-marker]:hidden">
+        <details key={item.question} className="group py-5">
+          <summary className="text-ink hover:text-brand-700 flex cursor-pointer list-none items-center justify-between gap-4 text-[1.05rem] font-medium transition-colors [&::-webkit-details-marker]:hidden">
             {item.question}
-            <span aria-hidden className="text-brand-600 transition-transform group-open:rotate-45">
+            <span
+              aria-hidden
+              className="border-border text-brand-600 group-open:bg-brand-700 flex size-7 shrink-0 items-center justify-center rounded-full border text-lg leading-none transition-all duration-300 group-open:rotate-45 group-open:border-transparent group-open:text-white"
+            >
               +
             </span>
           </summary>
-          <p className="text-ink-soft mt-3">{item.answer}</p>
+          <p className="text-muted mt-3 max-w-3xl leading-relaxed">{item.answer}</p>
         </details>
       ))}
     </div>

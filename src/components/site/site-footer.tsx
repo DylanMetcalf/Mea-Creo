@@ -55,38 +55,51 @@ export function SiteFooter({
     facebookUrl: undefined,
   };
   return (
-    <footer className="border-border bg-surface mt-auto border-t">
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)]">
-        <div className="space-y-4">
-          <Logo />
-          <p className="text-muted max-w-xs text-sm">
+    <footer className="bg-night text-night-text relative isolate mt-auto overflow-hidden">
+      <div
+        aria-hidden
+        className="bg-grid pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(50%_80%_at_0%_0%,#000,transparent)] opacity-70"
+      />
+      <div className="mx-auto max-w-7xl px-4 pt-16 sm:px-6 lg:px-8">
+        <p className="font-display max-w-3xl text-[2rem] leading-[1.08] text-white sm:text-[2.6rem]">
+          Easier to find. Easier to understand.{" "}
+          <span className="text-gradient-night">Easier to choose.</span>
+        </p>
+      </div>
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)] lg:px-8">
+        <div className="space-y-5">
+          <Logo inverse />
+          <p className="text-night-muted max-w-xs text-sm leading-relaxed">
             Visibility, growth and automation for businesses that want to be easier to find,
             understand and choose.
           </p>
-          <address className="text-ink-soft space-y-1 text-sm not-italic">
-            <a href={`mailto:${c.email}`} className="hover:text-brand-700 block">
+          <address className="space-y-1 text-sm not-italic">
+            <a href={`mailto:${c.email}`} className="hover:text-signal block transition-colors">
               {c.email}
             </a>
-            <a href={`tel:${c.phone.replace(/\s/g, "")}`} className="hover:text-brand-700 block">
+            <a
+              href={`tel:${c.phone.replace(/\s/g, "")}`}
+              className="hover:text-signal block transition-colors"
+            >
               {c.phone}
             </a>
-            <span className="text-muted block">
+            <span className="text-night-muted block">
               {c.locality}, {c.country}
             </span>
           </address>
           <div className="flex gap-3 text-sm">
             {c.linkedinUrl && (
-              <a href={c.linkedinUrl} rel="noopener" className="text-muted hover:text-ink">
+              <a href={c.linkedinUrl} rel="noopener" className="text-night-muted hover:text-white">
                 LinkedIn
               </a>
             )}
             {c.instagramUrl && (
-              <a href={c.instagramUrl} rel="noopener" className="text-muted hover:text-ink">
+              <a href={c.instagramUrl} rel="noopener" className="text-night-muted hover:text-white">
                 Instagram
               </a>
             )}
             {c.facebookUrl && (
-              <a href={c.facebookUrl} rel="noopener" className="text-muted hover:text-ink">
+              <a href={c.facebookUrl} rel="noopener" className="text-night-muted hover:text-white">
                 Facebook
               </a>
             )}
@@ -94,11 +107,14 @@ export function SiteFooter({
         </div>
         {columns.map((col) => (
           <nav key={col.title} aria-label={col.title}>
-            <p className="text-ink text-sm font-semibold">{col.title}</p>
+            <p className="label-mono text-night-muted">{col.title}</p>
             <ul className="mt-3 space-y-2">
               {col.links.map(([href, label]) => (
                 <li key={href}>
-                  <Link href={href} className="text-muted hover:text-ink text-sm">
+                  <Link
+                    href={href}
+                    className="text-night-text/90 text-sm transition-colors hover:text-white"
+                  >
                     {label}
                   </Link>
                 </li>
@@ -107,20 +123,20 @@ export function SiteFooter({
           </nav>
         ))}
       </div>
-      <div className="border-border border-t">
-        <div className="text-muted mx-auto flex max-w-6xl flex-col gap-2 px-4 py-5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div className="border-night-line border-t">
+        <div className="text-night-muted mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <p>
             © {new Date().getFullYear()} {siteConfig.legalName} · Reg.{" "}
             {siteConfig.registrationNumber}. All rights reserved.
           </p>
           <div className="flex gap-4">
-            <Link href="/legal/privacy" className="hover:text-ink">
+            <Link href="/legal/privacy" className="hover:text-white">
               Privacy
             </Link>
-            <Link href="/legal/terms" className="hover:text-ink">
+            <Link href="/legal/terms" className="hover:text-white">
               Terms
             </Link>
-            <Link href="/legal/cookies" className="hover:text-ink">
+            <Link href="/legal/cookies" className="hover:text-white">
               Cookies
             </Link>
           </div>

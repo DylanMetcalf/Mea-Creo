@@ -9,6 +9,7 @@ import {
   SectionIntro,
 } from "@/components/site/marketing";
 import { siteConfig } from "@/config/site";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "About",
@@ -17,18 +18,19 @@ export const metadata: Metadata = {
   alternates: { canonical: "/about" },
 };
 
-// Founder story from the director's handoff. Add a professional photo once supplied
-// (Website content); nothing biographical is invented here.
+// Founder story and photo supplied by the director; nothing biographical is invented here.
 export default function AboutPage() {
   return (
     <>
-      <section className="pt-14 pb-10 sm:pt-20">
+      <section className="relative isolate overflow-hidden pt-14 pb-16 sm:pt-20 sm:pb-24">
+        <div aria-hidden className="bg-aurora absolute inset-0 -z-10 opacity-70" />
         <Container>
           <Eyebrow>About Mea Creo</Eyebrow>
-          <DisplayHeading as="h1" className="mt-3 max-w-3xl sm:text-5xl">
-            We help good businesses become easier to find, understand and choose.
+          <DisplayHeading as="h1" className="mt-4 max-w-4xl sm:text-[3.4rem] lg:text-[3.9rem]">
+            We help good businesses become easier to find, understand and{" "}
+            <span className="text-gradient">choose.</span>
           </DisplayHeading>
-          <p className="text-muted mt-5 max-w-2xl text-lg">
+          <p className="text-muted mt-6 max-w-2xl text-lg leading-relaxed">
             Digital visibility, search, content, lead generation and automation, built around how
             your buyers actually think and planned as one system for long-term growth.
           </p>
@@ -36,24 +38,41 @@ export default function AboutPage() {
       </section>
 
       <Section tone="surface">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.2fr]">
-          <SectionIntro eyebrow="The founder" title="Dylan Metcalf" />
-          <div className="text-ink-soft space-y-4 text-lg leading-relaxed">
-            <p>
-              Dylan started Mea Creo to take his creativity and analytical thinking and build
-              something meaningful from them. His strength is understanding both how people think
-              and how businesses need to communicate.
-            </p>
-            <p>
-              He enjoys meeting a business where it is today and helping it become a stronger, more
-              successful version of itself. He wants clients to feel proud of what&apos;s created
-              for them, proud enough to show people their brand, their content, their photography,
-              their website and their business.
-            </p>
-            <p>
-              His approach is personal and ownership-driven. He isn&apos;t interested in simply
-              being paid to perform a task; he wants to genuinely improve the business.
-            </p>
+        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+          <div className="relative lg:sticky lg:top-28">
+            <Image
+              src="/images/dylan-metcalf.jpg"
+              alt="Dylan Metcalf, founder of Mea Creo, on the Mpumalanga escarpment"
+              width={1600}
+              height={1600}
+              priority
+              sizes="(min-width: 1024px) 520px, 92vw"
+              className="shadow-lifted aspect-[4/5] w-full rounded-[24px] object-cover object-[50%_30%]"
+            />
+            <div className="bg-night/70 absolute bottom-4 left-4 rounded-xl border border-white/15 px-4 py-3 text-white backdrop-blur-md">
+              <p className="font-semibold">Dylan Metcalf</p>
+              <p className="text-xs text-white/75">Founder and director</p>
+            </div>
+          </div>
+          <div>
+            <SectionIntro eyebrow="The founder" title="Dylan Metcalf" />
+            <div className="text-ink-soft mt-6 space-y-4 text-lg leading-relaxed">
+              <p>
+                Dylan started Mea Creo to take his creativity and analytical thinking and build
+                something meaningful from them. His strength is understanding both how people think
+                and how businesses need to communicate.
+              </p>
+              <p>
+                He enjoys meeting a business where it is today and helping it become a stronger,
+                more successful version of itself. He wants clients to feel proud of what&apos;s
+                created for them, proud enough to show people their brand, their content, their
+                photography, their website and their business.
+              </p>
+              <p>
+                His approach is personal and ownership-driven. He isn&apos;t interested in simply
+                being paid to perform a task; he wants to genuinely improve the business.
+              </p>
+            </div>
           </div>
         </div>
       </Section>

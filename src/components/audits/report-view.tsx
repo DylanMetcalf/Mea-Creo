@@ -34,30 +34,26 @@ function FindingRow({ finding }: { finding: AuditFinding }) {
   const isIssue = finding.status === "warn" || finding.status === "fail";
   return (
     <details
-      className="group border-border border-t py-3 first:border-0"
+      className="group border-border/70 border-t py-3.5 first:border-0"
       open={finding.status === "fail"}
     >
-      <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
+      <summary className="hover:text-brand-700 flex cursor-pointer list-none items-start gap-3 transition-colors [&::-webkit-details-marker]:hidden">
         <Icon className={cn("mt-0.5 size-4 shrink-0", className)} aria-label={label} />
         <span className="text-ink flex-1 text-sm font-medium">{finding.title}</span>
         {isIssue && <Badge tone={IMPACT_TONE[finding.impact]}>{finding.impact} impact</Badge>}
       </summary>
-      <dl className="mt-3 ml-7 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+      <dl className="bg-surface-2 mt-3 ml-7 grid grid-cols-1 gap-4 rounded-xl p-4 text-sm sm:grid-cols-3">
         <div>
-          <dt className="text-muted text-xs font-semibold tracking-wide uppercase">
-            What&apos;s happening
-          </dt>
-          <dd className="text-ink-soft mt-1">{finding.whatIsHappening}</dd>
+          <dt className="label-mono text-muted">What&apos;s happening</dt>
+          <dd className="text-ink-soft mt-1.5 leading-relaxed">{finding.whatIsHappening}</dd>
         </div>
         <div>
-          <dt className="text-muted text-xs font-semibold tracking-wide uppercase">
-            Why it matters
-          </dt>
-          <dd className="text-ink-soft mt-1">{finding.whyItMatters}</dd>
+          <dt className="label-mono text-muted">Why it matters</dt>
+          <dd className="text-ink-soft mt-1.5 leading-relaxed">{finding.whyItMatters}</dd>
         </div>
         <div>
-          <dt className="text-muted text-xs font-semibold tracking-wide uppercase">What to do</dt>
-          <dd className="text-ink-soft mt-1">{finding.whatToDo}</dd>
+          <dt className="label-mono text-brand-600">What to do</dt>
+          <dd className="text-ink mt-1.5 leading-relaxed">{finding.whatToDo}</dd>
         </div>
       </dl>
     </details>
@@ -69,12 +65,12 @@ function CategoryCard({ category }: { category: AuditCategory }) {
   const sorted = [...category.findings].sort((a, b) => order(a.status) - order(b.status));
   return (
     <section
-      className="rounded-card border-border bg-surface shadow-card border p-5"
+      className="rounded-card border-border/80 bg-surface shadow-card border p-5 sm:p-6"
       aria-labelledby={`cat-${category.key}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 id={`cat-${category.key}`} className="text-ink font-semibold">
+          <h3 id={`cat-${category.key}`} className="font-display text-ink text-[1.15rem]">
             {category.label}
           </h3>
           <p className="text-muted mt-0.5 text-sm">{category.summary}</p>
@@ -107,10 +103,14 @@ export function ReportSummary({ result }: { result: AuditResult }) {
       ].map(([value, label, color]) => (
         <div
           key={label as string}
-          className="rounded-card border-border bg-surface shadow-card border px-4 py-3"
+          className="rounded-card border-border/80 bg-surface shadow-card border px-4 py-3.5"
         >
-          <div className={cn("text-2xl font-semibold tabular-nums", color as string)}>{value}</div>
-          <div className="text-muted text-xs">{label}</div>
+          <div
+            className={cn("font-display text-[1.8rem] leading-none tabular-nums", color as string)}
+          >
+            {value}
+          </div>
+          <div className="text-muted mt-1.5 text-xs">{label}</div>
         </div>
       ))}
     </div>
@@ -137,13 +137,19 @@ export function ReportView({
             {result.opportunities.map((o, i) => (
               <li
                 key={o.title}
-                className="rounded-card border-border bg-surface shadow-card flex gap-4 border p-4"
+                className={cn(
+                  "rounded-card shadow-card hover:shadow-raised flex gap-4 border p-5 transition-shadow",
+                  i === 0
+                    ? "border-brand-300 bg-brand-50/60 md:col-span-2"
+                    : "border-border/80 bg-surface",
+                )}
               >
-                <span className="bg-brand-700 flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white">
-                  {i + 1}
+                <span className="bg-signal flex size-8 shrink-0 items-center justify-center rounded-full font-mono text-xs font-medium text-white">
+                  {String(i + 1).padStart(2, "0")}
                 </span>
                 <div className="min-w-0">
-                  <p className="text-ink font-medium">{o.title}</p>
+                  {i === 0 && <p className="label-mono text-brand-600 mb-1">Start here</p>}
+                  <p className="text-ink font-semibold">{o.title}</p>
                   <p className="text-muted mt-1 text-sm">{o.description}</p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     <Badge tone={IMPACT_TONE[o.impact]}>{o.impact} impact</Badge>

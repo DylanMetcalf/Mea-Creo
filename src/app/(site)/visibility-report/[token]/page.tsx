@@ -2,12 +2,14 @@ import { CalendarCheck, Loader2 } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ReportView } from "@/components/audits/report-view";
-import { Container, DisplayHeading, Eyebrow } from "@/components/site/marketing";
+import { IndexPanel } from "@/components/audits/index-panel";
+import { Container, CtaBand, DisplayHeading, Eyebrow } from "@/components/site/marketing";
 import { AutoRefresh } from "@/components/ui/auto-refresh";
 import { LinkButton } from "@/components/ui/button";
 import { getDb } from "@/db";
 import { kickJobs } from "@/jobs/kick";
 import { getAuditByToken } from "@/modules/audits/service";
+import { visibilityIndex } from "@/modules/audits/visibility-index";
 
 export const dynamic = "force-dynamic";
 
@@ -78,44 +80,53 @@ export default async function ReportPage({ params }: PageProps<"/visibility-repo
   }
 
   const result = audit.result;
+  const index = visibilityIndex(result);
   return (
     <>
-      <section className="border-border bg-surface border-b py-12 sm:py-16">
-        <Container>
-          <Eyebrow>Initial Visibility Snapshot</Eyebrow>
-          <DisplayHeading as="h1" className="mt-3 sm:text-5xl">
-            {audit.companyName ?? host}
-          </DisplayHeading>
-          <p className="text-muted mt-2 font-mono text-sm">{result.finalUrl}</p>
-          <p className="text-ink-soft mt-6 max-w-3xl text-lg">{result.headline}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <LinkButton href={`/book?report=${token}`} size="lg">
-              <CalendarCheck className="size-4" aria-hidden /> Book your free visibility review
-            </LinkButton>
-            <LinkButton href="#opportunities" variant="secondary" size="lg">
-              See your biggest opportunities
-            </LinkButton>
-          </div>
-        </Container>
-      </section>
-      <section className="py-12 sm:py-16">
-        <Container>
-          <ReportView result={result} />
-          <div className="bg-brand-900 mt-12 rounded-2xl p-8 text-white sm:p-10">
-            <DisplayHeading className="text-white">Want to talk it through?</DisplayHeading>
-            <p className="text-brand-100 mt-3 max-w-2xl">
-              In a free 30-minute visibility review we&apos;ll walk through these findings, explain
-              which ones matter most for your business, and outline what we&apos;d do first. No
-              pressure, no obligation.
+      <section className="bg-night text-night-text relative isolate overflow-hidden py-14 sm:py-20">
+        <div aria-hidden className="bg-horizon absolute inset-0 -z-10 opacity-80" />
+        <div
+          aria-hidden
+          className="bg-grid absolute inset-0 -z-10 [mask-image:radial-gradient(70%_70%_at_20%_0%,#000,transparent)]"
+        />
+        <Container className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-center">
+          <div>
+            <Eyebrow inverse>Initial Visibility Snapshot</Eyebrow>
+            <DisplayHeading as="h1" className="mt-4 text-white sm:text-[3.2rem]">
+              {audit.companyName ?? host}
+            </DisplayHeading>
+            <p className="text-night-muted mt-2 font-mono text-sm">{result.finalUrl}</p>
+            <p className="text-night-text/90 mt-6 max-w-xl text-lg leading-relaxed">
+              {result.headline}
             </p>
-            <div className="mt-6">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <LinkButton href={`/book?report=${token}`} variant="inverse" size="lg">
-                Book your visibility review
+                <CalendarCheck className="size-4" aria-hidden /> Book your free visibility review
+              </LinkButton>
+              <LinkButton href="#opportunities" variant="glass" size="lg">
+                See your biggest opportunities
               </LinkButton>
             </div>
           </div>
+          {index && (
+            <div className="edge-glow rounded-[24px] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-md sm:p-8">
+              <IndexPanel index={index} inverse />
+            </div>
+          )}
         </Container>
       </section>
+      <section className="py-14 sm:py-20">
+        <Container>
+          <ReportView result={result} />
+        </Container>
+      </section>
+      <CtaBand
+        bookHref={`/book?report=${token}`}
+        showReport={false}
+        title="Want to talk it through?"
+        body="In a free 30-minute visibility review we'll walk through these findings, explain which ones matter most for your business, and outline what we'd do first. No pressure, no obligation."
+      />
+      <div className="h-4" />
     </>
   );
 }

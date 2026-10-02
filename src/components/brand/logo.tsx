@@ -3,45 +3,49 @@ import Link from "next/link";
 import { cn } from "@/components/ui/cn";
 
 /**
- * Mea Creo monogram + wordmark. The monogram is the existing hand-drawn "M" logo.
+ * Mea Creo logo: the hand-drawn "M" signature mark with a Manrope wordmark.
+ * The mark is the original monogram, cut out to transparent ink and white versions
+ * (public/brand/mark-*.png) so it sits cleanly on any surface.
  * TODO(owner): supply the original vector logo so it can replace the PNG.
  */
 export function Logo({
   href = "/",
   inverse = false,
   compact = false,
+  size = "md",
   className,
 }: {
   href?: string;
   inverse?: boolean;
   compact?: boolean;
+  size?: "sm" | "md" | "lg";
   className?: string;
 }) {
+  const h = { sm: 24, md: 30, lg: 38 }[size];
+  const w = Math.round((h * 238) / 146);
   return (
     <Link
       href={href}
-      className={cn("inline-flex items-center gap-2.5", className)}
+      className={cn(
+        "group/logo inline-flex items-center gap-2.5 rounded-lg outline-offset-4",
+        className,
+      )}
       aria-label="Mea Creo home"
     >
-      <span
-        className={cn(
-          "inline-flex size-9 items-center justify-center rounded-full",
-          inverse ? "bg-white" : "bg-surface ring-border ring-1",
-        )}
-      >
-        <Image
-          src="/brand/mea-creo-monogram.png"
-          alt=""
-          width={30}
-          height={30}
-          priority
-          className="size-7"
-        />
-      </span>
+      <Image
+        src={inverse ? "/brand/mark-white.png" : "/brand/mark-ink.png"}
+        alt=""
+        width={w}
+        height={h}
+        priority
+        style={{ width: w, height: h }}
+        className="transition-transform duration-300 ease-out group-hover/logo:-rotate-3"
+      />
       {!compact && (
         <span
           className={cn(
-            "text-[1.05rem] font-semibold tracking-tight",
+            "font-display leading-none",
+            size === "sm" ? "text-[1.05rem]" : size === "lg" ? "text-[1.6rem]" : "text-[1.3rem]",
             inverse ? "text-white" : "text-ink",
           )}
         >

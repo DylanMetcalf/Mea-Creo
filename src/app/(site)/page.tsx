@@ -2,7 +2,6 @@ import {
   ArrowRight,
   BadgeCheck,
   Bot,
-  Brain,
   Camera,
   Compass,
   Cpu,
@@ -10,17 +9,17 @@ import {
   HeartHandshake,
   LineChart,
   MessagesSquare,
-  Palette,
   Search,
   Sparkles,
   TrendingUp,
   UserRound,
 } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { PackageCards } from "@/components/site/package-cards";
 import { CtaBand, Container, Eyebrow, Section, SectionIntro } from "@/components/site/marketing";
-import { ReportPreview } from "@/components/site/report-preview";
+import { HeroVisual } from "@/components/site/hero-visual";
 import { LinkButton } from "@/components/ui/button";
 import { HOW_IT_WORKS } from "@/content/pillars";
 import { getDb } from "@/db";
@@ -112,222 +111,308 @@ const problems = [
   },
 ];
 
-const approach = [
-  [LineChart, "Data", "to see what's really happening"],
-  [Brain, "Psychology", "to understand what people actually want"],
-  [Palette, "Creativity", "to be remembered and chosen"],
-  [Cpu, "Technology", "to make it repeatable"],
-  [Compass, "Business strategy", "to make it pay"],
+const formula = [
+  ["Data", "to see what's really happening"],
+  ["Psychology", "to understand what people want"],
+  ["Creativity", "to be remembered and chosen"],
+  ["Technology", "to make it repeatable"],
+  ["Strategy", "to make it pay"],
 ] as const;
 
 export default async function HomePage() {
   const packages = await getPublicPackages(await getDb());
+  const [feature, ...rest] = areas;
   return (
     <>
-      {/* Hero */}
-      <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24">
-        <Container className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.15fr_1fr]">
+      {/* Hero: light, lit by the aurora, with the signal visual */}
+      <section className="relative isolate overflow-hidden pt-10 pb-16 sm:pt-16 lg:pt-20 lg:pb-24">
+        <div aria-hidden className="bg-aurora absolute inset-0 -z-10 opacity-80" />
+        <div
+          aria-hidden
+          className="bg-grid-light absolute inset-0 -z-10 [mask-image:radial-gradient(70%_60%_at_30%_20%,#000,transparent)]"
+        />
+        <Container className="grid grid-cols-1 items-center gap-14 lg:grid-cols-[1.25fr_1fr] lg:gap-14">
           <div>
             <Eyebrow>Visibility · Growth · Automation</Eyebrow>
-            <h1 className="font-display mt-4 text-[2.6rem] leading-[1.05] tracking-tight text-balance sm:text-6xl">
-              Become easier to find.{" "}
-              <span className="text-brand-700 italic">Easier to understand.</span> Easier to choose.
+            <h1 className="font-display text-ink mt-5 text-[2.5rem] leading-[1.03] tracking-[-0.045em] sm:text-[3.5rem] lg:text-[3.3rem] xl:text-[3.7rem]">
+              Become easier to find.
+              <br />
+              Easier to understand.
+              <br />
+              <span className="text-gradient">Easier to choose.</span>
             </h1>
-            <p className="text-muted mt-6 max-w-xl text-lg leading-relaxed">
+            <p className="text-muted mt-7 max-w-xl text-[1.13rem] leading-relaxed">
               Mea Creo helps businesses get found on Google and in AI search, explain clearly what
               they do, and turn that attention into enquiries, with the systems to keep growth
               moving.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <LinkButton href="/book" size="lg">
-                Book a strategy conversation <ArrowRight className="size-4" aria-hidden />
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <LinkButton href="/book" variant="cta" size="xl">
+                Book a strategy call
+                <ArrowRight
+                  className="size-4 transition-transform group-hover/btn:translate-x-0.5"
+                  aria-hidden
+                />
               </LinkButton>
-              <LinkButton href="/visibility-report" variant="secondary" size="lg">
+              <LinkButton href="/visibility-report" variant="secondary" size="xl">
                 Get a free Visibility Report
               </LinkButton>
             </div>
-            <p className="text-muted mt-4 text-sm">
+            <p className="text-muted mt-5 flex items-center gap-2 text-sm">
+              <span className="bg-brand-500 size-1.5 rounded-full" aria-hidden />
               30 minutes with Dylan. No obligation, no pitch deck.
             </p>
           </div>
-          <ReportPreview />
+          <HeroVisual />
         </Container>
       </section>
 
-      {/* Who we help */}
-      <Section tone="surface">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.3fr]">
+      {/* Sectors */}
+      <section aria-label="Sectors we work with" className="border-border/60 border-y py-6">
+        <Container className="flex flex-col gap-4 md:flex-row md:items-center md:gap-10">
+          <p className="label-mono text-muted shrink-0">Built for businesses in</p>
+          <div className="relative min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]">
+            <ul className="flex w-max gap-8 pr-8 motion-safe:animate-[marquee_45s_linear_infinite] motion-safe:hover:[animation-play-state:paused]">
+              {[...sectors, ...sectors].map((s, i) => (
+                <li
+                  key={`${s}-${i}`}
+                  aria-hidden={i >= sectors.length || undefined}
+                  className="font-display text-ink-soft text-[1.05rem] whitespace-nowrap"
+                >
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Container>
+      </section>
+
+      {/* Problem */}
+      <Section>
+        <div className="grid grid-cols-1 gap-14 lg:grid-cols-[0.9fr_1.1fr]">
           <SectionIntro
-            eyebrow="Who we help"
-            title="Businesses with real substance and a story that isn't being told well online."
+            eyebrow="The problem"
+            title="Good businesses are often invisible, or misunderstood, online."
           >
-            We work across industries. The real fit isn&apos;t the sector: it&apos;s a business that
-            understands the value of professional visibility, growth and digital systems, and is
-            ready to invest in them.
+            Strong products and services lose to competitors who are simply easier to find,
+            understand and choose. We work with businesses that have real substance and a story that
+            isn&apos;t being told well yet.
           </SectionIntro>
-          <ul className="flex flex-wrap content-start gap-2" aria-label="Sectors we work with">
-            {sectors.map((s) => (
-              <li
-                key={s}
-                className="border-border bg-paper text-ink-soft rounded-full border px-4 py-2 text-sm"
-              >
-                {s}
+          <ul className="grid grid-cols-1 gap-x-10 sm:grid-cols-2">
+            {problems.map(({ icon: Icon, title, body }) => (
+              <li key={title} className="reveal border-border border-t py-7">
+                <Icon className="text-brand-600 size-5" aria-hidden />
+                <h3 className="font-display mt-4 text-[1.3rem]">{title}</h3>
+                <p className="text-muted mt-2 leading-relaxed">{body}</p>
               </li>
             ))}
           </ul>
         </div>
       </Section>
 
-      {/* Problems */}
-      <Section>
-        <SectionIntro
-          eyebrow="The problem"
-          title="Good businesses are often invisible, or misunderstood, online."
-        >
-          Strong products and services lose to competitors who are simply easier to find, understand
-          and choose.
-        </SectionIntro>
-        <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {problems.map(({ icon: Icon, title, body }) => (
-            <div key={title} className="rounded-card border-border bg-surface border p-6">
-              <Icon className="text-brand-600 size-6" aria-hidden />
-              <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-              <p className="text-muted mt-2 text-sm">{body}</p>
-            </div>
-          ))}
+      {/* What we do: dark technology section, bento layout */}
+      <Section tone="night">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <SectionIntro
+            inverse
+            eyebrow="What we do"
+            title="Visibility first. Then everything that turns it into growth."
+          />
+          <LinkButton href="/services" variant="glass" className="self-start md:self-auto">
+            All services
+          </LinkButton>
         </div>
-      </Section>
-
-      {/* What we do */}
-      <Section tone="surface">
-        <SectionIntro
-          eyebrow="What we do"
-          title="Visibility first. Then everything that turns it into growth."
-        />
-        <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {areas.map(({ href, icon: Icon, name, body, primary }) => (
+        <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Link
+            href={feature.href}
+            className="group edge-glow bg-night-3 relative isolate flex min-h-[340px] flex-col overflow-hidden rounded-[22px] p-7 md:row-span-2"
+          >
+            <div aria-hidden className="bg-horizon absolute inset-0 -z-10 opacity-70" />
+            <div
+              aria-hidden
+              className="bg-signal/25 absolute -top-24 -right-24 -z-10 size-72 rounded-full blur-3xl transition-opacity duration-500 group-hover:opacity-100 md:opacity-60"
+            />
+            <feature.icon className="text-signal size-6" aria-hidden />
+            <p className="label-mono text-signal mt-8">Where most engagements start</p>
+            <h3 className="font-display mt-3 text-[2.2rem] text-white">{feature.name}</h3>
+            <p className="text-night-text/85 mt-3 max-w-sm text-[1.05rem] leading-relaxed">
+              {feature.body}
+            </p>
+            <ul className="text-night-muted mt-6 space-y-2 text-sm">
+              {["SEO", "GEO: AI search visibility", "AEO: answer readiness", "Google & local"].map(
+                (t) => (
+                  <li key={t} className="flex items-center gap-2.5">
+                    <span className="bg-signal size-1 rounded-full" aria-hidden /> {t}
+                  </li>
+                ),
+              )}
+            </ul>
+            <span className="mt-auto inline-flex items-center gap-1.5 pt-8 text-sm font-semibold text-white">
+              Explore visibility
+              <ArrowRight
+                className="size-4 transition-transform group-hover:translate-x-1"
+                aria-hidden
+              />
+            </span>
+          </Link>
+          {rest.map(({ href, icon: Icon, name, body }, i) => (
             <Link
               key={href}
               href={href}
-              className={`group rounded-card flex flex-col border p-6 transition-colors ${primary ? "border-brand-700 bg-brand-900 text-white" : "border-border bg-paper hover:border-brand-300"}`}
+              className={`group border-night-line bg-night-2 relative isolate flex flex-col overflow-hidden rounded-[22px] border p-6 transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-white/20 ${i === rest.length - 1 ? "md:col-span-2 lg:col-span-3" : ""}`}
             >
-              <Icon
-                className={`size-6 ${primary ? "text-brand-300" : "text-brand-600"}`}
+              <div
                 aria-hidden
+                className="absolute inset-0 -z-10 bg-[radial-gradient(80%_70%_at_100%_0%,rgb(127_224_178/0.12),transparent_60%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100"
               />
-              <h3 className="font-display mt-4 text-2xl">{name}</h3>
-              <p className={`mt-2 text-sm ${primary ? "text-brand-100" : "text-muted"}`}>{body}</p>
-              <span
-                className={`mt-auto inline-flex items-center gap-1 pt-6 text-sm font-medium ${primary ? "text-white" : "text-brand-700"}`}
-              >
-                Explore {name.toLowerCase()}{" "}
+              <div className="flex items-center justify-between">
+                <span className="border-night-line text-signal flex size-10 items-center justify-center rounded-xl border bg-white/[0.03]">
+                  <Icon className="size-5" aria-hidden />
+                </span>
                 <ArrowRight
-                  className="size-4 transition-transform group-hover:translate-x-0.5"
+                  className="text-night-muted size-4 -translate-x-1 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
                   aria-hidden
                 />
-              </span>
+              </div>
+              <h3 className="font-display mt-6 text-[1.35rem] text-white">{name}</h3>
+              <p className="text-night-muted mt-2 text-[0.93rem] leading-relaxed">{body}</p>
             </Link>
           ))}
         </div>
       </Section>
 
-      {/* Approach */}
-      <Section>
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.2fr]">
-          <SectionIntro
-            eyebrow="How we think"
-            title="Data informs the strategy. It doesn't replace it."
+      {/* How we think: the formula */}
+      <Section tone="surface">
+        <SectionIntro
+          eyebrow="How we think"
+          title="Data informs the strategy. It doesn't replace it."
+        >
+          Many businesses lean so hard on analytics that they forget what real people want to see.
+          We combine the numbers with how buyers think, feel and decide, because people choose
+          businesses, not dashboards.
+        </SectionIntro>
+        <ol className="mt-14 grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(5,1fr)_auto_1.1fr]">
+          {formula.map(([title, body], i) => (
+            <li key={title} className="reveal relative flex">
+              <div className="border-border bg-paper flex w-full flex-col rounded-2xl border p-5">
+                <span className="label-mono text-subtle">{i === 0 ? "\u00a0" : "+"}</span>
+                <p className="font-display mt-3 text-[1.2rem]">{title}</p>
+                <p className="text-muted mt-1 text-sm leading-snug">{body}</p>
+              </div>
+            </li>
+          ))}
+          <li
+            aria-hidden
+            className="font-display text-subtle hidden items-center justify-center px-1 text-3xl lg:flex"
           >
-            Many businesses lean so hard on analytics that they forget what real people want to see.
-            We combine the numbers with how buyers think, feel and decide, because people choose
-            businesses, not dashboards.
-          </SectionIntro>
-          <ol className="space-y-3">
-            {approach.map(([Icon, title, body], i) => (
-              <li
-                key={title}
-                className="rounded-card border-border bg-surface flex items-center gap-4 border p-4"
-              >
-                <span className="text-brand-600 font-mono text-xs">{i === 0 ? "" : "+"}</span>
-                <Icon className="text-brand-600 size-5 shrink-0" aria-hidden />
-                <p>
-                  <span className="font-semibold">{title}</span>{" "}
-                  <span className="text-muted">{body}</span>
-                </p>
-              </li>
-            ))}
-          </ol>
-        </div>
+            =
+          </li>
+          <li className="reveal flex">
+            <div className="bg-signal shadow-glow flex w-full flex-col justify-between rounded-2xl p-5 text-white">
+              <span className="label-mono text-white/70">The result</span>
+              <p className="font-display mt-3 text-[1.45rem] leading-tight">
+                A business people choose.
+              </p>
+            </div>
+          </li>
+        </ol>
       </Section>
 
-      {/* Promise */}
-      <Section tone="brand">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.2fr_1fr]">
-          <div>
-            <Eyebrow inverse>Our promise</Eyebrow>
-            <p className="font-display mt-3 text-4xl text-white sm:text-5xl">
-              Clients are not numbers.
-            </p>
-            <p className="text-brand-100 mt-5 max-w-xl text-lg">
-              We treat your business as if it were our own: highly involved, direct, honest about
-              what will and won&apos;t work, and focused on your long-term growth. You should feel
-              seen, understood and proud of what we build together.
-            </p>
-            <LinkButton href="/about" variant="inverse" className="mt-8">
-              Meet Dylan
-            </LinkButton>
+      {/* Promise: the human side, with real photography */}
+      <section className="px-3 sm:px-4">
+        <div className="bg-horizon relative isolate overflow-hidden rounded-[28px] text-white">
+          <div
+            aria-hidden
+            className="bg-grid absolute inset-0 -z-10 [mask-image:radial-gradient(60%_80%_at_100%_0%,#000,transparent)]"
+          />
+          <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-6 py-14 sm:px-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16 lg:py-20">
+            <div className="relative">
+              <Image
+                src="/images/dylan-metcalf.jpg"
+                alt="Dylan Metcalf, founder of Mea Creo, on the Mpumalanga escarpment"
+                width={1600}
+                height={1600}
+                sizes="(min-width: 1024px) 460px, 90vw"
+                className="aspect-[4/5] w-full rounded-[22px] object-cover object-[50%_30%] shadow-[0_30px_80px_-30px_rgb(0_0_0/0.7)]"
+              />
+              <div className="absolute bottom-4 left-4 rounded-xl border border-white/15 bg-black/35 px-3.5 py-2.5 backdrop-blur-md">
+                <p className="text-sm font-semibold">Dylan Metcalf</p>
+                <p className="text-xs text-white/75">Founder · Dullstroom, Mpumalanga</p>
+              </div>
+            </div>
+            <div>
+              <Eyebrow inverse>Our promise</Eyebrow>
+              <p className="font-display mt-5 text-[2.6rem] leading-[1.02] sm:text-[3.6rem]">
+                Clients are
+                <br />
+                <span className="text-gradient-night">not numbers.</span>
+              </p>
+              <p className="text-night-text/85 mt-6 max-w-xl text-lg leading-relaxed">
+                We treat your business as if it were our own: highly involved, direct, honest about
+                what will and won&apos;t work, and focused on your long-term growth. You should feel
+                seen, understood and proud of what we build together.
+              </p>
+              <ul className="mt-8 grid max-w-xl grid-cols-2 gap-x-6 gap-y-3 text-[0.95rem]">
+                {[
+                  [HeartHandshake, "Personally involved"],
+                  [Eye, "Honest and direct"],
+                  [Sparkles, "Quality driven"],
+                  [UserRound, "Adaptable to your business"],
+                ].map(([Icon, label]) => {
+                  const I = Icon as typeof Eye;
+                  return (
+                    <li key={label as string} className="flex items-center gap-2.5">
+                      <I className="text-signal size-4 shrink-0" aria-hidden /> {label as string}
+                    </li>
+                  );
+                })}
+              </ul>
+              <LinkButton href="/about" variant="inverse" size="lg" className="mt-10">
+                Meet Dylan
+                <ArrowRight
+                  className="size-4 transition-transform group-hover/btn:translate-x-0.5"
+                  aria-hidden
+                />
+              </LinkButton>
+            </div>
           </div>
-          <ul className="text-brand-50 grid grid-cols-1 gap-3 self-center sm:grid-cols-2">
-            {[
-              [HeartHandshake, "Personally involved"],
-              [Eye, "Honest and direct"],
-              [Sparkles, "Quality driven"],
-              [UserRound, "Adaptable to your business"],
-            ].map(([Icon, label]) => {
-              const I = Icon as typeof Eye;
-              return (
-                <li
-                  key={label as string}
-                  className="flex items-center gap-3 rounded-lg bg-white/5 p-4"
-                >
-                  <I className="text-brand-300 size-5" aria-hidden /> {label as string}
-                </li>
-              );
-            })}
-          </ul>
         </div>
-      </Section>
+      </section>
 
-      {/* How it works */}
+      {/* How it works: a real sequence */}
       <Section>
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.5fr]">
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <SectionIntro eyebrow="How it works" title="A system, not a one-off project.">
             Every engagement follows the same loop, so work stays focused on what moves the needle
             and nothing disappears into a black box.
-            <div className="mt-6">
-              <LinkButton href="/how-it-works" variant="secondary">
-                See how we work
-              </LinkButton>
-            </div>
           </SectionIntro>
-          <ol className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {HOW_IT_WORKS.map((step, index) => (
-              <li key={step.name} className="rounded-card border-border bg-surface border p-5">
-                <span className="text-brand-600 font-mono text-xs">0{index + 1}</span>
-                <h3 className="mt-1 text-lg font-semibold">{step.name}</h3>
-                <p className="text-muted mt-1 text-sm">{step.description}</p>
-              </li>
-            ))}
-          </ol>
+          <LinkButton href="/how-it-works" variant="secondary" className="self-start md:self-auto">
+            See how we work
+          </LinkButton>
         </div>
+        <ol className="relative mt-14 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-6">
+          <div
+            aria-hidden
+            className="from-brand-500 via-dusk-300 to-ember-500 absolute top-[19px] right-0 left-0 hidden h-px bg-gradient-to-r opacity-60 lg:block"
+          />
+          {HOW_IT_WORKS.map((step, index) => (
+            <li key={step.name} className="reveal relative">
+              <span className="border-brand-300 bg-paper text-brand-700 relative flex size-10 items-center justify-center rounded-full border font-mono text-sm font-medium">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <h3 className="font-display mt-5 text-[1.2rem]">{step.name}</h3>
+              <p className="text-muted mt-1.5 text-sm leading-relaxed">{step.description}</p>
+            </li>
+          ))}
+        </ol>
       </Section>
 
       {/* Packages */}
       {packages && packages.length > 0 && (
         <Section tone="surface">
-          <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <SectionIntro eyebrow="Packages" title="Clear programmes. Clear prices." />
-            <LinkButton href="/pricing" variant="secondary">
+            <LinkButton href="/pricing" variant="secondary" className="self-start md:self-auto">
               See full pricing
             </LinkButton>
           </div>
@@ -335,18 +420,20 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {/* Visibility report */}
-      <Section>
-        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+      {/* Visibility report showcase */}
+      <Section tone="night">
+        <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-2">
           <div>
             <SectionIntro
+              inverse
               eyebrow="Free Visibility Report"
               title="Find out what's helping, and what's holding you back."
             >
-              Enter your website and get a structured snapshot across search, AI discoverability,
-              content, local presence and conversion. Every finding explains:
+              Enter your website and get a structured diagnosis across search, AI discoverability,
+              content, local presence and conversion, with the Mea Creo Visibility Index and the
+              most valuable first steps.
             </SectionIntro>
-            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {[
                 [Eye, "What's happening"],
                 [LineChart, "Why it matters"],
@@ -354,58 +441,59 @@ export default async function HomePage() {
               ].map(([Icon, label]) => {
                 const I = Icon as typeof Eye;
                 return (
-                  <div
+                  <li
                     key={label as string}
-                    className="rounded-card border-border bg-surface border p-4"
+                    className="border-night-line flex items-center gap-2.5 rounded-xl border bg-white/[0.03] px-4 py-3 text-sm text-white"
                   >
-                    <I className="text-brand-600 size-5" aria-hidden />
-                    <p className="mt-2 text-sm font-medium">{label as string}</p>
-                  </div>
+                    <I className="text-signal size-4" aria-hidden /> {label as string}
+                  </li>
                 );
               })}
-            </div>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <LinkButton href="/visibility-report" size="lg">
+            </ul>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <LinkButton href="/visibility-report" variant="inverse" size="xl">
                 Get your free report
+                <ArrowRight
+                  className="size-4 transition-transform group-hover/btn:translate-x-0.5"
+                  aria-hidden
+                />
               </LinkButton>
             </div>
-            <p className="text-muted mt-3 text-xs">
-              An initial snapshot based on your public website, not a full audit. No meaningless
-              scores.
+            <p className="text-night-muted mt-4 text-xs">
+              An initial snapshot of your public website, not a full audit. The Index is Mea
+              Creo&apos;s own measure, not a Google score.
             </p>
           </div>
-          <div className="border-border bg-brand-950 text-brand-50 rounded-2xl border p-8">
-            <p className="text-brand-300 text-xs font-semibold tracking-[0.14em] uppercase">
-              Example finding
-            </p>
-            <p className="font-display mt-4 text-2xl text-white">
+          <div className="edge-glow bg-night-2 relative rounded-[24px] p-7 sm:p-8">
+            <p className="label-mono text-signal">Example finding</p>
+            <p className="font-display mt-4 text-[1.6rem] leading-snug text-white">
               &ldquo;Main heading is a slogan, not a description.&rdquo;
             </p>
-            <dl className="mt-6 space-y-4 text-sm">
-              <div>
-                <dt className="text-brand-300 font-semibold">What&apos;s happening</dt>
-                <dd className="mt-1">The page&apos;s main heading is a three-word slogan.</dd>
-              </div>
-              <div>
-                <dt className="text-brand-300 font-semibold">Why it matters</dt>
-                <dd className="mt-1">
-                  Slogans carry no search meaning. Searchers and AI systems can&apos;t tell what you
-                  offer.
-                </dd>
-              </div>
-              <div>
-                <dt className="text-brand-300 font-semibold">What to do</dt>
-                <dd className="mt-1">
-                  Keep the slogan as a supporting line and make the heading describe the service and
-                  audience.
-                </dd>
-              </div>
+            <dl className="mt-7 space-y-5 text-[0.95rem]">
+              {[
+                ["What's happening", "The page's main heading is a three-word slogan."],
+                [
+                  "Why it matters",
+                  "Slogans carry no search meaning. Searchers and AI systems can't tell what you offer.",
+                ],
+                [
+                  "What to do",
+                  "Keep the slogan as a supporting line and make the heading describe the service and audience.",
+                ],
+              ].map(([k, v]) => (
+                <div key={k} className="border-night-line border-l-2 pl-4">
+                  <dt className="label-mono text-night-muted">{k}</dt>
+                  <dd className="text-night-text mt-1.5">{v}</dd>
+                </div>
+              ))}
             </dl>
           </div>
         </div>
       </Section>
 
-      <CtaBand />
+      <div className="pt-16 sm:pt-20">
+        <CtaBand />
+      </div>
     </>
   );
 }

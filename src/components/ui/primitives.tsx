@@ -4,7 +4,7 @@ import { cn } from "./cn";
 export function Card({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
-      className={cn("rounded-card border-border bg-surface shadow-card border", className)}
+      className={cn("rounded-card border-border/80 bg-surface shadow-card border", className)}
       {...props}
     />
   );
@@ -24,12 +24,12 @@ export function CardHeader({
   return (
     <div
       className={cn(
-        "border-border flex items-start justify-between gap-4 border-b px-5 py-4",
+        "border-border/70 flex items-start justify-between gap-4 border-b px-5 py-4",
         className,
       )}
     >
       <div className="min-w-0">
-        <h2 className="text-ink text-[0.95rem] font-semibold">{title}</h2>
+        <h2 className="text-ink text-[0.95rem] font-semibold tracking-[-0.01em]">{title}</h2>
         {description && <p className="text-muted mt-0.5 text-sm">{description}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
@@ -92,15 +92,13 @@ export function PageHeader({
   children?: ReactNode;
 }) {
   return (
-    <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <header className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        {eyebrow && (
-          <div className="text-muted mb-1 text-xs font-medium tracking-wide uppercase">
-            {eyebrow}
-          </div>
-        )}
-        <h1 className="text-ink text-2xl font-semibold tracking-tight text-balance">{title}</h1>
-        {description && <p className="text-muted mt-1 max-w-3xl text-sm">{description}</p>}
+        {eyebrow && <div className="label-mono text-brand-600 mb-2">{eyebrow}</div>}
+        <h1 className="font-display text-ink text-[1.7rem] leading-tight sm:text-[2rem]">
+          {title}
+        </h1>
+        {description && <p className="text-muted mt-1.5 max-w-3xl text-[0.95rem]">{description}</p>}
         {children}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
@@ -124,14 +122,22 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "rounded-card border-border-strong bg-surface-2 flex flex-col items-center justify-center border border-dashed px-6 py-10 text-center",
+        "rounded-card border-border/80 bg-surface relative flex flex-col items-center justify-center overflow-hidden border px-6 py-12 text-center",
         className,
       )}
     >
-      {icon && <div className="text-brand-600 mb-3">{icon}</div>}
-      <p className="text-ink font-medium">{title}</p>
-      {description && <p className="text-muted mt-1 max-w-md text-sm">{description}</p>}
-      {action && <div className="mt-4">{action}</div>}
+      <div
+        aria-hidden
+        className="bg-grid-light pointer-events-none absolute inset-0 [mask-image:radial-gradient(60%_70%_at_50%_40%,#000,transparent)]"
+      />
+      {icon && (
+        <div className="from-brand-50 to-dusk-100 text-brand-700 ring-brand-100 relative mb-4 flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br ring-1">
+          {icon}
+        </div>
+      )}
+      <p className="text-ink relative font-semibold">{title}</p>
+      {description && <p className="text-muted relative mt-1 max-w-md text-sm">{description}</p>}
+      {action && <div className="relative mt-5">{action}</div>}
     </div>
   );
 }
@@ -151,10 +157,10 @@ export function Stat({
 }) {
   const content = (
     <>
-      <div className="text-muted text-xs font-medium tracking-wide uppercase">{label}</div>
+      <div className="text-muted text-[0.78rem] font-medium">{label}</div>
       <div
         className={cn(
-          "mt-1 text-2xl font-semibold tabular-nums",
+          "font-display mt-1.5 text-[1.65rem] leading-none tabular-nums",
           tone === "warning" && "text-warning-700",
           tone === "danger" && "text-danger-700",
           tone === "success" && "text-success-700",
@@ -165,9 +171,15 @@ export function Stat({
       {hint && <div className="text-muted mt-1 text-xs">{hint}</div>}
     </>
   );
-  const cls = "block rounded-card border border-border bg-surface px-4 py-3 shadow-card";
+  const cls = "block rounded-card border border-border/80 bg-surface px-4 py-3.5 shadow-card";
   return href ? (
-    <a href={href} className={cn(cls, "hover:border-brand-300 transition-colors")}>
+    <a
+      href={href}
+      className={cn(
+        cls,
+        "hover:border-brand-300 hover:shadow-raised transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5",
+      )}
+    >
       {content}
     </a>
   ) : (
@@ -217,7 +229,7 @@ export function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md"
     <span
       aria-hidden
       className={cn(
-        "bg-brand-100 text-brand-800 inline-flex shrink-0 items-center justify-center rounded-full font-semibold",
+        "from-brand-100 to-dusk-100 text-brand-800 ring-brand-300/40 inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br font-semibold ring-1",
         size === "sm" ? "size-7 text-[0.7rem]" : "size-9 text-xs",
       )}
     >
@@ -270,7 +282,7 @@ export function Progress({ value, label }: { value: number; label?: string }) {
         aria-valuemax={100}
         aria-label={label}
       >
-        <div className="bg-brand-600 h-full rounded-full" style={{ width: `${clamped}%` }} />
+        <div className="bg-signal h-full rounded-full" style={{ width: `${clamped}%` }} />
       </div>
     </div>
   );
@@ -279,7 +291,7 @@ export function Progress({ value, label }: { value: number; label?: string }) {
 export function SectionTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
     <div className="mb-3 flex items-center justify-between gap-3">
-      <h2 className="text-muted text-sm font-semibold tracking-wide uppercase">{children}</h2>
+      <h2 className="label-mono text-muted">{children}</h2>
       {action}
     </div>
   );

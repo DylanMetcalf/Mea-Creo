@@ -1,7 +1,8 @@
-import { Menu } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { LinkButton } from "@/components/ui/button";
+import { MobileMenu, SiteNav } from "./site-nav";
 
 export const SITE_NAV = [
   { href: "/services", label: "Services" },
@@ -15,67 +16,44 @@ export const SITE_NAV = [
 
 export function SiteHeader() {
   return (
-    <header className="border-border/70 bg-paper/90 supports-[backdrop-filter]:bg-paper/75 sticky top-0 z-40 border-b backdrop-blur">
+    <header className="border-border/60 bg-paper/80 supports-[backdrop-filter]:bg-paper/65 sticky top-0 z-40 border-b backdrop-blur-xl backdrop-saturate-150">
       <a
         href="#main"
-        className="focus:bg-surface sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-4 focus:rounded focus:px-3 focus:py-2"
+        className="focus:bg-surface sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-4 focus:z-50 focus:rounded focus:px-3 focus:py-2"
       >
         Skip to content
       </a>
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-4 sm:px-6">
+      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:h-20 lg:px-8">
         <Logo />
-        <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
-          {SITE_NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-ink-soft hover:bg-brand-50 hover:text-ink rounded-md px-3 py-2 text-sm transition-colors"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="hidden items-center gap-2 lg:flex">
-          <Link href="/login" className="text-muted hover:text-ink px-2 text-sm">
+        <SiteNav items={SITE_NAV} />
+        <div className="hidden items-center gap-3 lg:flex">
+          <Link
+            href="/login"
+            className="text-ink-soft hover:text-ink rounded-md px-2 py-1 text-sm transition-colors"
+          >
             Client sign in
           </Link>
-          <LinkButton href="/book" size="sm">
+          <LinkButton href="/book" variant="cta">
             Book a strategy call
+            <ArrowRight
+              className="size-4 transition-transform group-hover/btn:translate-x-0.5"
+              aria-hidden
+            />
           </LinkButton>
         </div>
-        <details className="group relative lg:hidden">
-          <summary
-            className="hover:bg-brand-50 flex size-10 cursor-pointer list-none items-center justify-center rounded-md [&::-webkit-details-marker]:hidden"
-            aria-label="Open menu"
-          >
-            <Menu className="size-5" aria-hidden />
-          </summary>
-          <div className="rounded-card border-border bg-surface shadow-raised absolute right-0 mt-2 w-64 border p-2">
-            <nav aria-label="Mobile" className="flex flex-col">
-              {SITE_NAV.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="hover:bg-brand-50 rounded-md px-3 py-2.5 text-sm"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <Link
-                href="/login"
-                className="text-muted hover:bg-brand-50 rounded-md px-3 py-2.5 text-sm"
-              >
-                Client sign in
-              </Link>
-              <LinkButton href="/book" className="mt-2">
-                Book a strategy call
-              </LinkButton>
-              <LinkButton href="/visibility-report" variant="secondary" className="mt-2">
-                Free Visibility Report
-              </LinkButton>
-            </nav>
+        <MobileMenu items={SITE_NAV}>
+          <div className="mt-8 grid gap-3">
+            <LinkButton href="/book" variant="cta" size="lg">
+              Book a strategy call
+            </LinkButton>
+            <LinkButton href="/visibility-report" variant="secondary" size="lg">
+              Get a free Visibility Report
+            </LinkButton>
+            <Link href="/login" className="text-muted mt-2 py-2 text-center text-sm">
+              Client sign in
+            </Link>
           </div>
-        </details>
+        </MobileMenu>
       </div>
     </header>
   );

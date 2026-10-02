@@ -1,47 +1,104 @@
 @import "tailwindcss";
 
 /*
- * Mea Creo design tokens.
- * Built from the existing identity: the hand-drawn monogram, sage green (#6B8971),
- * near-black ink and warm off-white paper. Deepened for accessible contrast.
- * See docs/DESIGN_SYSTEM.md.
+ * Mea Creo design tokens: the single source of truth for colour, gradient, depth,
+ * radius, type and motion. Components use these through Tailwind (bg-brand-700,
+ * text-muted, shadow-raised, bg-signal …); nothing hard-codes a colour.
+ *
+ * The palette evolves the original sage monogram into "escarpment light": deep
+ * forest greens, a luminous mint signal, dusk blue and a golden-hour ember,
+ * taken from the Mpumalanga landscape Mea Creo works from. See docs/DESIGN_SYSTEM.md.
  */
 :root {
-  --ink: #191717;
-  --ink-soft: #3a3633;
-  --muted: #6b6560;
-  --subtle: #8f8881;
-  --paper: #f6f3ee;
+  /* Text */
+  --ink: #0e1915;
+  --ink-soft: #2c3a34;
+  --muted: #56655e;
+  --subtle: #7f8c86;
+
+  /* Surfaces: a cool sage-tinted mist, never plain grey */
+  --paper: #f1f4f0;
   --surface: #ffffff;
-  --surface-2: #faf8f5;
-  --border: #e6e0d7;
-  --border-strong: #d4ccc0;
+  --surface-2: #f6f8f5;
+  --elevated: #ffffff;
+  --border: #dde4de;
+  --border-strong: #c5d0c8;
 
-  --brand-950: #16241c;
-  --brand-900: #1f3328;
-  --brand-800: #2c4637;
-  --brand-700: #3b5a48;
-  --brand-600: #4a6b58;
-  --brand-500: #6b8971;
-  --brand-300: #a9bfae;
-  --brand-100: #e4ece5;
-  --brand-50: #f1f5f1;
+  /* Brand: evolved from the original sage #4a6b58 */
+  --brand-950: #08130f;
+  --brand-900: #0f241b;
+  --brand-800: #163628;
+  --brand-700: #1f4a37;
+  --brand-600: #2d6449;
+  --brand-500: #43835f;
+  --brand-400: #62a67f;
+  --brand-300: #93ceac;
+  --brand-100: #d9eee1;
+  --brand-50: #edf6f0;
 
-  --clay-600: #a55a36;
-  --clay-100: #f6e7df;
+  /* Accents */
+  --signal: #7fe0b2; /* luminous mint: highlights on dark surfaces only */
+  --dusk-700: #284a66;
+  --dusk-300: #9db7d3;
+  --dusk-100: #e4ecf5;
+  --ember-500: #e2a05c; /* golden hour: decorative light, never text on white */
+  --clay-600: #a2522e;
+  --clay-100: #f8e8de;
 
-  --success-700: #1f6b45;
-  --success-100: #e2f1e8;
-  --warning-700: #8a5000;
-  --warning-100: #fbefd9;
-  --danger-700: #a1261b;
-  --danger-100: #fbe4e1;
-  --info-700: #2b5672;
-  --info-100: #e3edf4;
+  /* Night: dark sections, workspace sidebar */
+  --night: #07110d;
+  --night-2: #0d1a15;
+  --night-3: #14251e;
+  --night-line: rgb(255 255 255 / 0.09);
+  --night-text: #e8f0eb;
+  --night-muted: #9fb3a8;
 
-  --radius: 10px;
-  --shadow-sm: 0 1px 2px rgb(25 23 23 / 0.05);
-  --shadow-md: 0 4px 16px -4px rgb(25 23 23 / 0.1), 0 1px 3px rgb(25 23 23 / 0.06);
+  /* Status */
+  --success-700: #17694a;
+  --success-100: #ddf2e7;
+  --warning-700: #8a4f00;
+  --warning-100: #fcefd8;
+  --danger-700: #b0261c;
+  --danger-100: #fde3df;
+  --info-700: #23557a;
+  --info-100: #e1edf7;
+
+  /* Gradients */
+  --gradient-signal: linear-gradient(115deg, #1a4533 0%, #2b6a4c 48%, #4f9c74 100%);
+  --gradient-signal-hover: linear-gradient(115deg, #1f5039 0%, #33785a 48%, #5cae84 100%);
+  --gradient-horizon: linear-gradient(
+    140deg,
+    #07110d 0%,
+    #0f2a22 38%,
+    #1d4552 68%,
+    #3b6684 88%,
+    #c58b55 130%
+  );
+  --gradient-aurora:
+    radial-gradient(60% 55% at 85% 10%, rgb(157 183 211 / 0.45), transparent 70%),
+    radial-gradient(45% 50% at 12% 30%, rgb(147 206 172 / 0.4), transparent 70%),
+    radial-gradient(40% 40% at 70% 85%, rgb(226 160 92 / 0.18), transparent 70%);
+  --gradient-text: linear-gradient(100deg, #1f4a37 0%, #2d6f6a 55%, #3b6684 100%);
+  --gradient-text-night: linear-gradient(100deg, #b9f0d3 0%, #7fe0b2 45%, #9db7d3 100%);
+  --gradient-edge: linear-gradient(
+    135deg,
+    rgb(127 224 178 / 0.7),
+    rgb(157 183 211 / 0.25) 45%,
+    transparent 70%
+  );
+
+  /* Depth */
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 22px;
+  --shadow-sm: 0 1px 2px rgb(14 25 21 / 0.05), 0 0 0 1px rgb(14 25 21 / 0.02);
+  --shadow-md: 0 12px 32px -12px rgb(14 25 21 / 0.18), 0 2px 6px -2px rgb(14 25 21 / 0.06);
+  --shadow-lg: 0 30px 70px -24px rgb(8 19 15 / 0.35), 0 8px 20px -10px rgb(8 19 15 / 0.15);
+  --glow-signal: 0 8px 28px -8px rgb(45 100 73 / 0.55);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration: 220ms;
 }
 
 @theme inline {
@@ -52,6 +109,7 @@
   --color-paper: var(--paper);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-elevated: var(--elevated);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-brand-950: var(--brand-950);
@@ -60,11 +118,23 @@
   --color-brand-700: var(--brand-700);
   --color-brand-600: var(--brand-600);
   --color-brand-500: var(--brand-500);
+  --color-brand-400: var(--brand-400);
   --color-brand-300: var(--brand-300);
   --color-brand-100: var(--brand-100);
   --color-brand-50: var(--brand-50);
+  --color-signal: var(--signal);
+  --color-dusk-700: var(--dusk-700);
+  --color-dusk-300: var(--dusk-300);
+  --color-dusk-100: var(--dusk-100);
+  --color-ember-500: var(--ember-500);
   --color-clay-600: var(--clay-600);
   --color-clay-100: var(--clay-100);
+  --color-night: var(--night);
+  --color-night-2: var(--night-2);
+  --color-night-3: var(--night-3);
+  --color-night-line: var(--night-line);
+  --color-night-text: var(--night-text);
+  --color-night-muted: var(--night-muted);
   --color-success-700: var(--success-700);
   --color-success-100: var(--success-100);
   --color-warning-700: var(--warning-700);
@@ -75,10 +145,87 @@
   --color-info-100: var(--info-100);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-newsreader);
+  --font-display: var(--font-manrope);
   --radius-card: var(--radius);
+  --radius-sm: var(--radius-sm);
+  --radius-lg: var(--radius-lg);
   --shadow-card: var(--shadow-sm);
   --shadow-raised: var(--shadow-md);
+  --shadow-lifted: var(--shadow-lg);
+  --shadow-glow: var(--glow-signal);
+  --ease-out: var(--ease-out);
+}
+
+/* Gradient and surface utilities, so gradients are tokens too. */
+@utility bg-signal {
+  background-image: var(--gradient-signal);
+}
+@utility bg-horizon {
+  background-image: var(--gradient-horizon);
+}
+@utility bg-aurora {
+  background-image: var(--gradient-aurora);
+}
+@utility text-gradient {
+  background-image: var(--gradient-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@utility text-gradient-night {
+  background-image: var(--gradient-text-night);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* A 1px luminous gradient border on dark or light cards. */
+@utility edge-glow {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: var(--gradient-edge);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+/* Fine grid used behind technical visuals. */
+@utility bg-grid {
+  background-image:
+    linear-gradient(var(--night-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--night-line) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+@utility bg-grid-light {
+  background-image:
+    linear-gradient(rgb(14 25 21 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(14 25 21 / 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+@layer components {
+  /* Display type: Manrope, tight and confident. Sizes come from utilities. */
+  .font-display {
+    font-weight: 700;
+    letter-spacing: -0.032em;
+    font-feature-settings: "ss01";
+  }
+  /* Technical labels: mono, small caps-like tracking. */
+  .label-mono {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
 }
 
 html {
@@ -88,18 +235,103 @@ html {
 body {
   background: var(--paper);
   color: var(--ink);
-  font-feature-settings: "ss01", "cv11";
+  font-feature-settings: "cv11";
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
 :focus-visible {
-  outline: 2px solid var(--brand-600);
+  outline: 2px solid var(--brand-500);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 ::selection {
   background: var(--brand-100);
   color: var(--brand-950);
+}
+
+/* Scroll reveal: content is visible by default and only animates where supported. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+  .float-slow {
+    animation: float 9s ease-in-out infinite;
+  }
+  .flow-dash {
+    stroke-dasharray: 6 10;
+    animation: flow 2.6s linear infinite;
+  }
+  .pulse-node {
+    animation: pulse-node 3.2s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .draw-in {
+    animation: draw 1.6s var(--ease-out) both;
+  }
+}
+@keyframes reveal {
+  from {
+    opacity: 0.001;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes flow {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+@keyframes pulse-node {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.35);
+  }
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: var(--len, 300);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Readable long-form content (insights, reports, proposals). */
@@ -110,8 +342,10 @@ body {
 }
 .prose-mc h2 {
   color: var(--ink);
-  font-family: var(--font-newsreader), serif;
-  font-size: 1.75rem;
+  font-family: var(--font-manrope), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  font-size: 1.6rem;
   line-height: 1.25;
   margin: 2.5rem 0 0.75rem;
 }
@@ -152,5 +386,10 @@ body {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
   }
 }
