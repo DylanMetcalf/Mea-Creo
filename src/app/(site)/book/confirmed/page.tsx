@@ -7,7 +7,11 @@ export const metadata: Metadata = { title: "Call booked", robots: { index: false
 
 export default function BookedPage() {
   return (
-    <section className="py-20">
+    <section className="relative isolate overflow-hidden py-20">
+      <div
+        aria-hidden
+        className="bg-aurora pointer-events-none absolute inset-0 -z-10 opacity-60"
+      />
       <Container className="max-w-2xl text-center">
         <CalendarCheck className="text-brand-600 mx-auto size-10" aria-hidden />
         <DisplayHeading as="h1" className="mt-6">

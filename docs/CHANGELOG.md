@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 — Premium redesign and acquisition loop (2026-10-02)
+
+- Design system rebuilt as a premium technology brand: escarpment palette, gradient
+  tokens, Manrope/Geist/Geist Mono, depth and motion tokens (docs/DESIGN_SYSTEM.md).
+- Website: new home page rhythm, hero signal visual, dark sections, founder photography,
+  aurora page headers, dark footer, premium package cards, split sign-in page.
+- Visibility Report: Mea Creo Visibility Index (own measure, method explained).
+- Workspace: night sidebar, breadcrumb, ⌘K command palette, redesigned Command Centre.
+- Portal: personalised welcome with Index and trust signals; Ask Mea Creo suggestions.
+- Component library additions and /workspace/design-system showcase.
+- Prospect research, intelligence brief, nine-dimension qualification and
+  permission-based outreach (POPIA s69) with opt-out suppression.
+
 ## 0.1.0 — V1 build (2026-10-01)
 
 First complete version, not yet deployed.

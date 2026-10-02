@@ -37,7 +37,7 @@ export default async function PortalMeetings() {
         <h1 className="font-display text-ink text-3xl">Meetings</h1>
         <p className="text-muted mt-1">Book time with the team whenever you need it.</p>
       </header>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 [&>*]:min-w-0">
         <div className="space-y-6">
           <Card>
             <CardHeader title="Upcoming" />

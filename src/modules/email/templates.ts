@@ -1,3 +1,4 @@
+import { BRAND_HEX as B } from "@/config/brand";
 import { siteConfig } from "@/config/site";
 
 export interface RenderedEmail {
@@ -24,15 +25,15 @@ export function layout(input: {
     .map((p) => `<p style="margin:0 0 16px;line-height:1.6">${escape(p)}</p>`)
     .join("");
   const cta = input.cta
-    ? `<p style="margin:24px 0"><a href="${escape(input.cta.url)}" style="background:#4a6b58;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;display:inline-block">${escape(input.cta.label)}</a></p>`
+    ? `<p style="margin:24px 0"><a href="${escape(input.cta.url)}" style="background-color:${B.brand700};background-image:linear-gradient(115deg,${B.brand700},${B.brand600} 48%,${B.brand400});color:#ffffff;padding:13px 22px;border-radius:10px;text-decoration:none;font-weight:600;display:inline-block">${escape(input.cta.label)}</a></p>`
     : "";
-  return `<!doctype html><html lang="en"><body style="margin:0;background:#f4f1ec;font-family:Helvetica,Arial,sans-serif;color:#191717">
+  return `<!doctype html><html lang="en"><body style="margin:0;background:${B.paper};font-family:Helvetica,Arial,sans-serif;color:${B.ink}">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
-<table role="presentation" width="100%" style="max-width:560px;background:#ffffff;border-radius:10px;padding:32px" cellpadding="0" cellspacing="0"><tr><td>
-<p style="margin:0 0 24px;font-weight:700;letter-spacing:0.02em;color:#4a6b58">${escape(siteConfig.name)}</p>
+<table role="presentation" width="100%" style="max-width:560px;background:${B.surface};border:1px solid ${B.border};border-radius:16px;padding:32px" cellpadding="0" cellspacing="0"><tr><td>
+<p style="margin:0 0 24px;font-weight:800;font-size:18px;letter-spacing:-0.02em;color:${B.ink}">${escape(siteConfig.name)}<span style="display:inline-block;width:6px;height:6px;border-radius:3px;background:${B.signal};margin-left:6px;vertical-align:middle"></span></p>
 <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3">${escape(input.heading)}</h1>
 ${body}${cta}
-<p style="margin:32px 0 0;font-size:12px;color:#6b6560;line-height:1.5">${escape(input.footerNote ?? `${siteConfig.legalName} · ${siteConfig.contact.locality}, ${siteConfig.contact.country}`)}</p>
+<p style="margin:32px 0 0;font-size:12px;color:${B.muted};line-height:1.5">${escape(input.footerNote ?? `${siteConfig.legalName} · ${siteConfig.contact.locality}, ${siteConfig.contact.country}`)}</p>
 </td></tr></table></td></tr></table></body></html>`;
 }
 

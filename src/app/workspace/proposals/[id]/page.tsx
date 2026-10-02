@@ -97,7 +97,7 @@ export default async function ProposalPage({ params }: PageProps<"/workspace/pro
       </header>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
-        <ActionForm action={saveProposalAction} className="space-y-6" id="proposal-form">
+        <ActionForm action={saveProposalAction} className="min-w-0 space-y-6" id="proposal-form">
           <input type="hidden" name="proposalId" value={p.id} />
           <Card>
             <CardHeader
@@ -178,12 +178,12 @@ export default async function ProposalPage({ params }: PageProps<"/workspace/pro
             </div>
             <CardBody className="flex flex-wrap items-end justify-between gap-4">
               {!locked && (
-                <div className="flex items-end gap-2">
-                  <label className="text-sm">
+                <div className="flex min-w-0 items-end gap-2">
+                  <label className="min-w-0 flex-1 text-sm sm:flex-none">
                     <span className="text-muted mb-1 block text-xs">Add a service</span>
                     <select
                       name="serviceId"
-                      className="border-border-strong bg-surface h-9 rounded-md border px-2 text-sm"
+                      className="border-border-strong bg-surface h-9 w-full rounded-md border px-2 text-sm sm:w-auto"
                     >
                       {catalogue.map((s) => (
                         <option key={s.id} value={s.id}>

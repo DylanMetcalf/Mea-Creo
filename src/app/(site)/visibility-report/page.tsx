@@ -50,7 +50,11 @@ export default async function VisibilityReportPage({
   );
 
   return (
-    <section className="py-12 sm:py-20">
+    <section className="relative isolate overflow-hidden py-12 sm:py-20">
+      <div
+        aria-hidden
+        className="bg-aurora pointer-events-none absolute inset-0 -z-10 opacity-70"
+      />
       <Container className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.05fr]">
         <div>
           <Eyebrow>Free Visibility Report</Eyebrow>

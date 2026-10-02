@@ -1,49 +1,93 @@
 # Design system
 
-Calm, editorial and trustworthy: the brand should feel like a careful advisor, not an
-agency shouting. Built from the existing identity (hand-drawn monogram, sage green,
-near-black ink, warm paper), deepened for accessible contrast.
+**Premium technology company, enterprise-grade product design, human and welcoming UX.**
+The website is brand expression, the workspace is operational precision, and the client
+portal is trust and clarity. All three share the same visual DNA.
 
-## Tokens (`src/app/globals.css`)
+The live source of truth is **Workspace → Design system** (`/workspace/design-system`): every
+token and component in each of its states. Tokens live in `src/app/globals.css`; change a
+token there and the whole product follows. Emails and PDFs can't read CSS variables, so they
+use `src/config/brand.ts`, which mirrors the tokens (change both together).
 
-| Token                                   | Value                                  | Use                                       |
-| --------------------------------------- | -------------------------------------- | ----------------------------------------- |
-| `ink`                                   | `#191717`                              | Body text, headings                       |
-| `ink-soft`                              | `#3a3633`                              | Secondary text                            |
-| `muted` / `subtle`                      | `#6b6560` / `#8f8881`                  | Descriptions, metadata                    |
-| `paper`                                 | `#f6f3ee`                              | Page background                           |
-| `surface` / `surface-2`                 | `#ffffff` / `#faf8f5`                  | Cards, hover rows                         |
-| `border` / `border-strong`              | `#e6e0d7` / `#d4ccc0`                  | Dividers, inputs                          |
-| `brand-50…950`                          | sage ramp, `brand-700 #3b5a48` primary | Buttons, links, active states, charts     |
-| `clay-600`                              | `#a55a36`                              | Accent for "needs you" badges, sparingly  |
-| `success/warning/danger/info` 100 + 700 |                                        | Status only, always with a label and icon |
+## Palette: "escarpment light"
 
-Radius 10px; two shadows (`card`, `raised`).
+Evolved from the original sage monogram (`#4a6b58`) and the Mpumalanga landscape Mea Creo
+works from: forest greens, a luminous mint signal, dusk blue and golden-hour ember.
+
+| Role               | Token(s)                                   | Value(s)                          |
+| ------------------ | ------------------------------------------ | --------------------------------- |
+| Text               | `ink`, `ink-soft`, `muted`, `subtle`       | `#0e1915` … `#7f8c86`             |
+| Background         | `paper` (cool sage mist, never plain grey) | `#f1f4f0`                         |
+| Surface / elevated | `surface`, `surface-2`, `elevated`         | `#ffffff`, `#f6f8f5`              |
+| Border             | `border`, `border-strong`                  | `#dde4de`, `#c5d0c8`              |
+| Primary            | `brand-50 … brand-950`                     | `brand-700 #1f4a37` for actions   |
+| Signal (accent)    | `signal`                                   | `#7fe0b2`, on dark surfaces only  |
+| Secondary accent   | `dusk-100/300/700`                         | `#e4ecf5` / `#9db7d3` / `#284a66` |
+| Warm accent        | `ember-500`, `clay-600`                    | decorative light; clay for text   |
+| Dark sections      | `night`, `night-2`, `night-3`, `night-*`   | `#07110d` …                       |
+| Status             | `success/warning/danger/info` 100 + 700    | always with a label and icon      |
+
+### Gradients (tokens and utilities)
+
+| Utility                 | Use                                                         |
+| ----------------------- | ----------------------------------------------------------- |
+| `bg-signal`             | Primary and CTA buttons, progress, "the result" moments     |
+| `bg-horizon`            | Hero panels, CTA band, daily brief, report hero, auth panel |
+| `bg-aurora`             | Soft light behind light page headers                        |
+| `text-gradient(-night)` | One phrase per page at most ("Easier to choose.")           |
+| `edge-glow`             | 1px luminous border on featured cards                       |
+| `bg-grid(-light)`       | Fine grid behind technical visuals, always masked           |
+
+Gradients are never random: three named gradients, each with a job.
+
+### Depth
+
+Radius `card` 14px, `sm` 10px, `lg` 22px. Shadows `card` (resting), `raised` (hover,
+menus), `lifted` (overlays, hero visuals), `glow` (primary actions). Glass (`bg-white/5` +
+blur) only on dark surfaces.
 
 ## Type
 
-- **Newsreader** (serif) for display headings and the portal's greetings and page titles.
-- **Geist** for everything else; tabular numbers for money and counts.
+- **Manrope** (display, 700, tight tracking): headings, prices, metrics. Engineered and
+  precise without being cold. No serif headings anywhere.
+- **Geist** (body, UI): readable at small sizes; tabular numbers for money and counts.
+- **Geist Mono** (`label-mono`): eyebrows, labels, metadata. Uppercase, tracked.
 
-## Components (`src/components/ui`)
+## Rhythm (website)
 
-`Button`/`LinkButton` (primary, secondary, ghost, danger, inverse), `Card` + `CardHeader` +
-`CardBody`, `Badge`, `Callout` (info, warning, danger, success, neutral, brand), `Stat`,
-`EmptyState`, `DescriptionList`, `Progress`, `Tabs`, `PageHeader`, forms (`ActionForm`,
-`TextField`, `TextArea`, `SelectField`, `CheckboxField`, `SubmitButton`), `StatusBadge`,
-`HealthLabel`, `DueLabel`, `BarList`, `Sparkline`, `Prose` (sanitised markdown).
+Light → gradient moment → dark → light → showcase → gradient CTA → dark footer. `Section`
+takes `tone="paper" | "surface" | "night" | "horizon"`.
 
-## Rules
+## Components (`src/components/ui`, `src/components/*`)
 
-- **Status is never colour alone**: every badge has text; health uses an icon + label.
-- **Charts**: one hue (sage) for magnitude, values printed at the bar end (the chart is
-  its own table), no dual axes. Health is a labelled list rather than a coloured chart.
-- **Not connected** is a first-class state: say what's missing and how to connect it.
-- **Demo data** is always labelled ("(Demo)" names, demo badges and banners).
-- **Mobile**: the portal is designed phone-first with a bottom tab bar; every grid is one
-  column by default; nothing scrolls sideways at 375px except tables, which scroll inside
-  their card.
-- **Copy**: plain English, specific, no guarantees, no buzzwords (QC enforces this on
-  client-facing text).
-- **Accessibility**: skip links, labelled form fields with inline errors, visible focus,
-  `aria-live` for async results, sufficient contrast on all text tokens.
+- **Actions**: `Button`/`LinkButton`: `primary`, `cta` (conversion moments, with glow),
+  `secondary`, `ghost`, `danger`, `inverse`, `glass`; sizes `sm`–`xl`; hover lift, focus
+  ring, pressed, disabled, loading (`SubmitButton`).
+- **Inputs**: `TextField`, `TextArea`, `SelectField`, `CheckboxField`, `RadioField`,
+  `FileDropField`, all inside `ActionForm` (errors, kept values, no-JS support).
+- **Feedback**: `Badge`, `Callout`, `Progress`, `Skeleton`, `PageSkeleton`, `Spinner`,
+  `EmptyState`, `ErrorState`, `Tooltip`, `Kbd`, `Toaster` + `toast()`.
+- **Data**: `Stat`, `Metric` (with change), `BarList`, `Sparkline`, `IndexRing`,
+  `IndexPanel`, `Timeline`, `Table`.
+- **Navigation**: `Tabs`, workspace sidebar + `Breadcrumb` + `CommandPalette` (⌘K, `/`),
+  website header with `SiteNav` and full-screen `MobileMenu`, portal nav + bottom tab bar.
+- **Overlays**: `Modal`, `Drawer` (native `<dialog>`), `Dropdown`.
+
+## Motion
+
+Subtle and fast: 150–300ms with `--ease-out`. Buttons lift on hover and press down; nav
+underlines slide; cards light up on hover; bars grow and the Index ring draws in; content
+reveals on scroll where the browser supports scroll timelines. All motion is disabled under
+`prefers-reduced-motion`, and content is visible without it.
+
+## Visibility Index
+
+The Mea Creo Visibility Index (`src/modules/audits/visibility-index.ts`) is always labelled
+as Mea Creo's own measure, never a Google score, and the method is one click away wherever
+it's shown.
+
+## Accessibility
+
+WCAG 2.2 AA: contrast checked for text tokens on `paper`, `surface` and `night`; visible
+focus on every control; keyboard support for the command palette, menus and dialogs;
+status never shown by colour alone.

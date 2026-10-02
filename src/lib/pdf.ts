@@ -1,3 +1,4 @@
+import { BRAND_HEX, pdfRgb } from "@/config/brand";
 /**
  * Tiny dependency-free PDF writer for branded text documents (proposals, invoices,
  * reports). Supports headings, paragraphs, bullets, key/value rows and tables,
@@ -19,7 +20,7 @@ const PAGE_W = 595.28;
 const PAGE_H = 841.89;
 const MARGIN = 56;
 const CONTENT_W = PAGE_W - MARGIN * 2;
-const BRAND = "0.290 0.420 0.345"; // #4a6b58
+const BRAND = pdfRgb(BRAND_HEX.brand600);
 const INK = "0.098 0.090 0.090";
 const MUTED = "0.42 0.40 0.38";
 

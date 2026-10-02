@@ -74,7 +74,11 @@ export default async function PillarPage({ params }: PageProps<"/services/[pilla
           },
         ]}
       />
-      <section className="pt-12 pb-14 sm:pt-20 sm:pb-20">
+      <section className="relative isolate overflow-hidden pt-12 pb-14 sm:pt-20 sm:pb-20">
+        <div
+          aria-hidden
+          className="bg-aurora pointer-events-none absolute inset-0 -z-10 opacity-70"
+        />
         <Container className="grid grid-cols-1 gap-12 lg:grid-cols-[1.4fr_1fr]">
           <div>
             <nav aria-label="Breadcrumb" className="text-muted text-sm">

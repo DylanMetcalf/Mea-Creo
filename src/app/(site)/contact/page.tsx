@@ -17,7 +17,11 @@ export const dynamic = "force-dynamic";
 export default async function ContactPage() {
   const c = await getPlatformSetting(await getDb(), "company");
   return (
-    <section className="py-14 sm:py-20">
+    <section className="relative isolate overflow-hidden py-14 sm:py-20">
+      <div
+        aria-hidden
+        className="bg-aurora pointer-events-none absolute inset-0 -z-10 opacity-55"
+      />
       <Container className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.3fr]">
         <div>
           <Eyebrow>Contact</Eyebrow>

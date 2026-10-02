@@ -20,7 +20,11 @@ export default async function LegalPage({ params }: PageProps<"/legal/[doc]">) {
   const d = getLegalDoc((await params).doc);
   if (!d) notFound();
   return (
-    <section className="py-14 sm:py-20">
+    <section className="relative isolate overflow-hidden py-14 sm:py-20">
+      <div
+        aria-hidden
+        className="bg-aurora pointer-events-none absolute inset-0 -z-10 opacity-35"
+      />
       <Container className="max-w-3xl">
         <h1 className="font-display text-3xl sm:text-5xl">{d.title}</h1>
         {!d.reviewed && (

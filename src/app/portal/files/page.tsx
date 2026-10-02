@@ -1,6 +1,12 @@
 import { Download, FileText } from "lucide-react";
 import type { Metadata } from "next";
-import { ActionForm, SelectField, SubmitButton, TextField } from "@/components/ui/form";
+import {
+  ActionForm,
+  SelectField,
+  SubmitButton,
+  TextField,
+  FileDropField,
+} from "@/components/ui/form";
 import { Card, CardBody, CardHeader, EmptyState } from "@/components/ui/primitives";
 import { getDb } from "@/db";
 import { fmtDate, humanize } from "@/lib/format";
@@ -57,18 +63,7 @@ export default async function PortalFiles() {
             />
             <CardBody>
               <ActionForm action={portalUploadAction} className="space-y-3" resetOnSuccess>
-                <div>
-                  <label htmlFor="file" className="mb-1 block text-sm font-medium">
-                    File
-                  </label>
-                  <input
-                    id="file"
-                    name="file"
-                    type="file"
-                    required
-                    className="file:bg-brand-50 file:text-brand-800 block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-2"
-                  />
-                </div>
+                <FileDropField name="file" label="File" required />
                 <SelectField
                   name="category"
                   label="What is it?"

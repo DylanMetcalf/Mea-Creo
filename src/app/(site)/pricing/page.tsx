@@ -48,7 +48,11 @@ export default async function PricingPage() {
   if (!packages) notFound();
   return (
     <>
-      <section className="pt-14 pb-6 sm:pt-20">
+      <section className="relative isolate overflow-hidden pt-14 pb-6 sm:pt-20">
+        <div
+          aria-hidden
+          className="bg-aurora pointer-events-none absolute inset-0 -z-10 opacity-60"
+        />
         <Container>
           <Eyebrow>Pricing</Eyebrow>
           <DisplayHeading as="h1" className="mt-3 max-w-3xl sm:text-5xl">

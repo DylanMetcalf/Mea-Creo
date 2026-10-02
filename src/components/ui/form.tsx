@@ -388,12 +388,14 @@ export function FileDropField({
   hint,
   accept,
   multiple,
+  required,
 }: {
   name: string;
   label: ReactNode;
   hint?: ReactNode;
   accept?: string;
   multiple?: boolean;
+  required?: boolean;
 }) {
   const id = useId();
   const [files, setFiles] = useState<string[]>([]);
@@ -417,6 +419,7 @@ export function FileDropField({
           name={name}
           accept={accept}
           multiple={multiple}
+          required={required}
           onChange={(e) => setFiles(Array.from(e.target.files ?? []).map((f) => f.name))}
           className="absolute inset-0 cursor-pointer opacity-0"
         />

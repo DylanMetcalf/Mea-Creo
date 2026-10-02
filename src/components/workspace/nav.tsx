@@ -158,14 +158,6 @@ export function Breadcrumb() {
           </Link>
         </>
       )}
-      {deeper && (
-        <>
-          <span className="text-subtle" aria-hidden>
-            /
-          </span>
-          <span className="text-ink truncate font-medium">Details</span>
-        </>
-      )}
     </nav>
   );
 }

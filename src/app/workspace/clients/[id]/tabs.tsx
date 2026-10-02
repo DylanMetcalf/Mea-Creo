@@ -19,6 +19,7 @@ import {
   SubmitButton,
   TextArea,
   TextField,
+  FileDropField,
 } from "@/components/ui/form";
 import {
   Badge,
@@ -1081,18 +1082,7 @@ export async function DocumentsTab({ data }: Props) {
         <CardBody>
           <ActionForm action={uploadDocumentAction} className="space-y-3" resetOnSuccess>
             <Hidden data={data} />
-            <div className="space-y-1.5">
-              <label htmlFor="file" className="block text-sm font-medium">
-                File
-              </label>
-              <input
-                id="file"
-                name="file"
-                type="file"
-                required
-                className="file:bg-brand-50 file:text-brand-800 block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-2"
-              />
-            </div>
+            <FileDropField name="file" label="File" required />
             <SelectField
               name="category"
               label="Category"
