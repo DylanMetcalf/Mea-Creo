@@ -1,8 +1,10 @@
-import { and, asc, desc, eq, gte, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray } from "drizzle-orm";
 import { ArrowRight, CalendarDays, CheckSquare, CreditCard, FileText, Upload } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { IndexRing } from "@/components/audits/index-ring";
 import { AskBox } from "@/components/portal/ask-box";
+import { cn } from "@/components/ui/cn";
 import { Badge, Card, CardBody, CardHeader } from "@/components/ui/primitives";
 import { DueLabel, StatusBadge } from "@/components/ui/status";
 import { getDb } from "@/db";
@@ -18,102 +20,216 @@ import {
 } from "@/db/schema";
 import { fmtDate, fmtDateTime, fmtMoney, fmtRelative } from "@/lib/format";
 import { requireClient } from "@/modules/auth/context";
+import { latestClientAudit } from "@/modules/audits/service";
+import { BAND_LABELS, visibilityIndex } from "@/modules/audits/visibility-index";
 import { portalAskAction } from "./actions";
 
 export const metadata: Metadata = { title: "Home" };
+
+function greetingPart() {
+  const hour = Number(
+    new Date().toLocaleString("en-ZA", {
+      timeZone: "Africa/Johannesburg",
+      hour: "numeric",
+      hour12: false,
+    }),
+  );
+  return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+}
 
 export default async function PortalHome() {
   const ctx = await requireClient();
   const org = ctx.organisationId;
   const db = await getDb();
-  const [pending, waiting, open, plan, [report], upcoming, timeline] = await Promise.all([
-    db
-      .select()
-      .from(approvals)
-      .where(
-        and(
-          eq(approvals.organisationId, org),
-          eq(approvals.status, "pending"),
-          eq(approvals.level, "client"),
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  const [pending, waiting, open, plan, [report], upcoming, timeline, audit, [done]] =
+    await Promise.all([
+      db
+        .select()
+        .from(approvals)
+        .where(
+          and(
+            eq(approvals.organisationId, org),
+            eq(approvals.status, "pending"),
+            eq(approvals.level, "client"),
+          ),
+        )
+        .orderBy(asc(approvals.dueAt)),
+      db
+        .select()
+        .from(tasks)
+        .where(
+          and(
+            eq(tasks.organisationId, org),
+            eq(tasks.visibility, "client"),
+            eq(tasks.status, "waiting_client"),
+          ),
+        )
+        .orderBy(asc(tasks.dueAt)),
+      ctx.can("portal.billing")
+        ? db
+            .select()
+            .from(invoices)
+            .where(
+              and(eq(invoices.organisationId, org), inArray(invoices.status, ["open", "overdue"])),
+            )
+        : Promise.resolve([]),
+      db
+        .select({
+          name: services.name,
+          status: clientServices.status,
+          focus: clientServices.currentFocus,
+          pauseReason: clientServices.pauseReason,
+        })
+        .from(clientServices)
+        .innerJoin(services, eq(services.id, clientServices.serviceId))
+        .where(
+          and(
+            eq(clientServices.organisationId, org),
+            inArray(clientServices.status, ["active", "paused", "pending"]),
+          ),
         ),
-      )
-      .orderBy(asc(approvals.dueAt)),
-    db
-      .select()
-      .from(tasks)
-      .where(
-        and(
-          eq(tasks.organisationId, org),
-          eq(tasks.visibility, "client"),
-          eq(tasks.status, "waiting_client"),
+      db
+        .select()
+        .from(reports)
+        .where(and(eq(reports.organisationId, org), eq(reports.status, "published")))
+        .orderBy(desc(reports.publishedAt))
+        .limit(1),
+      db
+        .select()
+        .from(meetings)
+        .where(
+          and(
+            eq(meetings.organisationId, org),
+            gte(meetings.startsAt, new Date()),
+            inArray(meetings.status, ["scheduled", "requested"]),
+          ),
+        )
+        .orderBy(asc(meetings.startsAt))
+        .limit(3),
+      db
+        .select()
+        .from(timelineEntries)
+        .where(
+          and(eq(timelineEntries.organisationId, org), eq(timelineEntries.visibility, "client")),
+        )
+        .orderBy(desc(timelineEntries.occurredAt))
+        .limit(6),
+      latestClientAudit(db, org),
+      db
+        .select({ n: count() })
+        .from(tasks)
+        .where(
+          and(
+            eq(tasks.organisationId, org),
+            eq(tasks.visibility, "client"),
+            eq(tasks.status, "complete"),
+            gte(tasks.completedAt, monthStart),
+          ),
         ),
-      )
-      .orderBy(asc(tasks.dueAt)),
-    ctx.can("portal.billing")
-      ? db
-          .select()
-          .from(invoices)
-          .where(
-            and(eq(invoices.organisationId, org), inArray(invoices.status, ["open", "overdue"])),
-          )
-      : Promise.resolve([]),
-    db
-      .select({
-        name: services.name,
-        status: clientServices.status,
-        focus: clientServices.currentFocus,
-        pauseReason: clientServices.pauseReason,
-      })
-      .from(clientServices)
-      .innerJoin(services, eq(services.id, clientServices.serviceId))
-      .where(
-        and(
-          eq(clientServices.organisationId, org),
-          inArray(clientServices.status, ["active", "paused", "pending"]),
-        ),
-      ),
-    db
-      .select()
-      .from(reports)
-      .where(and(eq(reports.organisationId, org), eq(reports.status, "published")))
-      .orderBy(desc(reports.publishedAt))
-      .limit(1),
-    db
-      .select()
-      .from(meetings)
-      .where(
-        and(
-          eq(meetings.organisationId, org),
-          gte(meetings.startsAt, new Date()),
-          inArray(meetings.status, ["scheduled", "requested"]),
-        ),
-      )
-      .orderBy(asc(meetings.startsAt))
-      .limit(3),
-    db
-      .select()
-      .from(timelineEntries)
-      .where(and(eq(timelineEntries.organisationId, org), eq(timelineEntries.visibility, "client")))
-      .orderBy(desc(timelineEntries.occurredAt))
-      .limit(6),
-  ]);
-  const first = ctx.user.name.split(" ")[0];
+    ]);
+  const index = audit?.result ? visibilityIndex(audit.result) : null;
+  const lastUpdate = [timeline[0]?.occurredAt, report?.publishedAt, audit?.completedAt]
+    .filter((d): d is Date => Boolean(d))
+    .sort((a, b) => b.getTime() - a.getTime())[0];
   const attention = pending.length + waiting.length + open.length;
+  const company = ctx.organisationName.replace(/\s*\(Demo\)$/, "");
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="font-display text-ink text-3xl">Hello, {first}.</h1>
-        <p className="text-muted mt-1">
-          {attention
-            ? `${attention} thing${attention === 1 ? "" : "s"} need${attention === 1 ? "s" : ""} you. Everything else is in hand.`
-            : "Nothing needs you right now. Here's where things stand."}
-        </p>
+    <div className="space-y-7">
+      <header className="bg-night text-night-text relative isolate overflow-hidden rounded-[24px] p-6 sm:p-8">
+        <div aria-hidden className="bg-horizon absolute inset-0 -z-10 opacity-85" />
+        <div
+          aria-hidden
+          className="bg-grid absolute inset-0 -z-10 [mask-image:radial-gradient(60%_90%_at_100%_0%,#000,transparent)]"
+        />
+        <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+          <div className="max-w-lg">
+            <p className="label-mono text-signal">{greetingPart()}</p>
+            <h1 className="font-display mt-3 text-[1.9rem] leading-tight text-white sm:text-[2.4rem]">
+              {company}.
+            </h1>
+            <p className="text-night-text/85 mt-2 text-[1.02rem]">
+              Here&apos;s what&apos;s happening with your visibility.
+            </p>
+            <p
+              className={cn(
+                "mt-5 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm",
+                attention ? "bg-ember-500/15 text-[#f3c99a]" : "bg-signal/12 text-signal",
+              )}
+            >
+              <span
+                aria-hidden
+                className={cn("size-1.5 rounded-full", attention ? "bg-ember-500" : "bg-signal")}
+              />
+              {attention
+                ? `${attention} thing${attention === 1 ? "" : "s"} need${attention === 1 ? "s" : ""} you. Everything else is in hand.`
+                : "Everything is on track. Nothing needs you right now."}
+            </p>
+          </div>
+          {index && audit && (
+            <Link
+              href={`/visibility-report/${audit.publicToken}`}
+              className="group flex items-center gap-5 rounded-2xl border border-white/10 bg-white/[0.05] p-4 pr-6 backdrop-blur transition-colors hover:bg-white/[0.08]"
+            >
+              <IndexRing
+                value={index.score}
+                size={96}
+                stroke={8}
+                inverse
+                label="Your Mea Creo Visibility Index"
+              />
+              <div>
+                <p className="label-mono text-night-muted">Visibility Index</p>
+                <p className="font-display mt-1 text-white">{BAND_LABELS[index.band]}</p>
+                <p className="text-night-muted mt-1 text-xs">
+                  From your Visibility Report, {fmtDate(audit.completedAt)}
+                </p>
+                <p className="text-signal mt-2 inline-flex items-center gap-1 text-xs font-medium">
+                  See the breakdown
+                  <ArrowRight
+                    className="size-3 transition-transform group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
+                </p>
+              </div>
+            </Link>
+          )}
+        </div>
+        <ul className="border-night-line text-night-muted mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t pt-4 text-xs">
+          <li>
+            Last updated{" "}
+            <span className="text-night-text">
+              {lastUpdate ? fmtRelative(lastUpdate) : "not yet"}
+            </span>
+          </li>
+          <li>
+            <span className="text-night-text tabular-nums">{done?.n ?? 0}</span> task
+            {done?.n === 1 ? "" : "s"} completed this month
+          </li>
+          <li>
+            <span className="text-night-text tabular-nums">{pending.length}</span> approval
+            {pending.length === 1 ? "" : "s"} required
+          </li>
+          {plan.filter((p) => p.status === "active").length > 0 && (
+            <li>
+              <span className="text-night-text tabular-nums">
+                {plan.filter((p) => p.status === "active").length}
+              </span>{" "}
+              active service{plan.filter((p) => p.status === "active").length === 1 ? "" : "s"}
+            </li>
+          )}
+        </ul>
       </header>
 
       {attention > 0 && (
         <Card>
-          <CardHeader title="Needs your attention" />
+          <CardHeader
+            title="Needs your attention"
+            description="The only things waiting on you. Everything else is in hand."
+          />
           <ul className="divide-border divide-y">
             {pending.map((a) => (
               <li key={a.id}>
@@ -171,7 +287,7 @@ export default async function PortalHome() {
 
       <AskBox action={portalAskAction} compact />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader
             title="Your services"

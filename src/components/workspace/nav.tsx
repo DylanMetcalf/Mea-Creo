@@ -11,6 +11,7 @@ import {
   FileText,
   Gauge,
   Layers,
+  Menu,
   type LucideIcon,
   Newspaper,
   Search,
@@ -21,7 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/components/ui/cn";
 
 export interface NavItem {
@@ -73,14 +74,10 @@ export const WORKSPACE_NAV: { title: string; items: NavItem[] }[] = [
 export function NavLinks({ badges = {} }: { badges?: Record<string, number> }) {
   const pathname = usePathname();
   return (
-    <nav aria-label="Workspace" className="space-y-5">
+    <nav aria-label="Workspace" className="space-y-6">
       {WORKSPACE_NAV.map((group, gi) => (
         <div key={gi}>
-          {group.title && (
-            <p className="text-subtle mb-1.5 px-3 text-[0.7rem] font-semibold tracking-wider uppercase">
-              {group.title}
-            </p>
-          )}
+          {group.title && <p className="label-mono text-night-muted/70 mb-2 px-3">{group.title}</p>}
           <ul className="space-y-0.5">
             {group.items.map((item) => {
               const active =
@@ -94,19 +91,28 @@ export function NavLinks({ badges = {} }: { badges?: Record<string, number> }) {
                     href={item.href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+                      "group/item relative flex items-center gap-3 rounded-[10px] px-3 py-2 text-[0.9rem] transition-colors duration-200",
                       active
-                        ? "bg-brand-50 text-brand-900 font-medium"
-                        : "text-ink-soft hover:bg-surface-2 hover:text-ink",
+                        ? "bg-white/[0.08] font-medium text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]"
+                        : "text-night-muted hover:bg-white/[0.04] hover:text-white",
                     )}
                   >
+                    {active && (
+                      <span
+                        aria-hidden
+                        className="bg-signal absolute top-1/2 -left-2 h-5 w-[3px] -translate-y-1/2 rounded-full shadow-[0_0_12px_rgb(127_224_178/0.8)]"
+                      />
+                    )}
                     <item.icon
-                      className={cn("size-4", active ? "text-brand-700" : "text-subtle")}
+                      className={cn(
+                        "size-[18px] transition-colors",
+                        active ? "text-signal" : "text-night-muted group-hover/item:text-white",
+                      )}
                       aria-hidden
                     />
                     <span className="flex-1">{item.label}</span>
                     {badge ? (
-                      <span className="bg-clay-100 text-clay-600 rounded-full px-1.5 text-[0.7rem] font-semibold tabular-nums">
+                      <span className="bg-ember-500 text-night rounded-full px-1.5 text-[0.7rem] font-semibold tabular-nums">
                         {badge}
                       </span>
                     ) : null}
@@ -121,7 +127,91 @@ export function NavLinks({ badges = {} }: { badges?: Record<string, number> }) {
   );
 }
 
-/** Focuses the global search with "/" or Ctrl/Cmd+K. */
+/** Where you are: "Leads & pipeline / Ridgeback Software". Labels come from the nav. */
+export function Breadcrumb() {
+  const pathname = usePathname();
+  const item = WORKSPACE_NAV.flatMap((g) => g.items)
+    .filter((i) => i.href !== "/workspace")
+    .find((i) => pathname.startsWith(i.href));
+  const deeper = item && pathname.length > item.href.length + 1;
+  return (
+    <nav aria-label="Breadcrumb" className="hidden min-w-0 items-center gap-2 text-sm md:flex">
+      <Link href="/workspace" className="text-muted hover:text-ink transition-colors">
+        Workspace
+      </Link>
+      {item && (
+        <>
+          <span className="text-subtle" aria-hidden>
+            /
+          </span>
+          <Link
+            href={item.href}
+            aria-current={deeper ? undefined : "page"}
+            className={cn(
+              "truncate transition-colors",
+              deeper ? "text-muted hover:text-ink" : "text-ink font-medium",
+            )}
+          >
+            {item.label}
+          </Link>
+        </>
+      )}
+      {deeper && (
+        <>
+          <span className="text-subtle" aria-hidden>
+            /
+          </span>
+          <span className="text-ink truncate font-medium">Details</span>
+        </>
+      )}
+    </nav>
+  );
+}
+
+/** Mobile navigation drawer. Closes on navigation, Escape and backdrop click. */
+export function MobileSidebar({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const [last, setLast] = useState(pathname);
+  if (last !== pathname) {
+    setLast(pathname);
+    setOpen(false);
+  }
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+  return (
+    <div className="lg:hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-expanded={open}
+        aria-label="Open navigation"
+        className="hover:bg-surface-2 flex size-9 items-center justify-center rounded-lg"
+      >
+        <Menu className="size-5" aria-hidden />
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Navigation">
+          <button
+            type="button"
+            aria-label="Close navigation"
+            className="bg-night/50 absolute inset-0 backdrop-blur-sm"
+            onClick={() => setOpen(false)}
+          />
+          <div className="bg-night absolute inset-y-0 left-0 w-72 shadow-[20px_0_60px_-20px_rgb(0_0_0/0.5)] motion-safe:animate-[slide-in_.25s_var(--ease-out)]">
+            {children}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Opens the command palette with "/" or Ctrl/Cmd+K. */
 export function SearchShortcut() {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -133,7 +223,7 @@ export function SearchShortcut() {
         (event.key === "/" && !typing)
       ) {
         event.preventDefault();
-        document.getElementById("global-search")?.focus();
+        window.dispatchEvent(new Event("mc:command"));
       }
     };
     window.addEventListener("keydown", onKey);

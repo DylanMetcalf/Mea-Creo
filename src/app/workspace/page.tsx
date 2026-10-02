@@ -10,6 +10,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BarList } from "@/components/ui/charts";
+import { cn } from "@/components/ui/cn";
 import { Card, CardBody, CardHeader, EmptyState, Stat } from "@/components/ui/primitives";
 import { StatusBadge, statusLabel } from "@/components/ui/status";
 import { getDb } from "@/db";
@@ -48,97 +49,152 @@ export default async function CommandCentrePage() {
     month: "long",
   });
 
-  const todayCounts: [string, number, string][] = [
-    ["Meetings today & tomorrow", data.meetingsSoon.length, "/workspace/meetings"],
-    ["Approvals for Mea Creo", data.internalApprovals.length, "/workspace/approvals"],
-    [
-      "Waiting on clients to approve",
-      data.clientApprovalsWaiting.length,
-      "/workspace/approvals?level=client",
-    ],
-    ["Tasks due today", data.dueToday.length, "/workspace/tasks?view=today"],
-    ["Overdue tasks", data.overdueTasks.length, "/workspace/tasks?view=overdue"],
-    ["New leads (7 days)", data.newLeads.length, "/workspace/leads"],
-    ["New clients (30 days)", data.newClients.length, "/workspace/clients"],
-    ["Reports ready for review", data.reportsInReview.length, "/workspace/reports"],
-    ["Content awaiting approval", data.contentAwaiting, "/workspace/clients"],
+  // Attention: things that need a person. Activity: what changed.
+  const attention: [string, number, string, "danger" | "warning" | "brand"][] = [
+    ["Approvals waiting on you", data.internalApprovals.length, "/workspace/approvals", "warning"],
+    ["Overdue tasks", data.overdueTasks.length, "/workspace/tasks?view=overdue", "danger"],
+    ["Due today", data.dueToday.length, "/workspace/tasks?view=today", "brand"],
     [
       "Payments needing attention",
       data.overdueInvoices.length + data.failedPayments,
       "/workspace/billing",
+      "danger",
     ],
     [
       "Automation alerts",
       data.alerts.failedRuns.length + data.alerts.failedJobs,
       "/workspace/runs",
+      "danger",
     ],
-    ["Opportunities discovered", data.openOpportunities, "/workspace/clients"],
+    ["Reports to review", data.reportsInReview.length, "/workspace/reports", "warning"],
   ];
+  const activity: [string, number, string][] = [
+    ["New leads, 7 days", data.newLeads.length, "/workspace/leads"],
+    ["New clients, 30 days", data.newClients.length, "/workspace/clients"],
+    ["Meetings today & tomorrow", data.meetingsSoon.length, "/workspace/meetings"],
+    ["Waiting on clients", data.clientApprovalsWaiting.length, "/workspace/approvals?tab=client"],
+    ["Content awaiting approval", data.contentAwaiting, "/workspace/clients"],
+    ["Opportunities found", data.openOpportunities, "/workspace/clients"],
+  ];
+  const stripe = {
+    danger: "bg-danger-700",
+    warning: "bg-ember-500",
+    brand: "bg-brand-500",
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-9">
       {/* Daily brief */}
-      <section className="bg-brand-900 rounded-2xl p-6 text-white sm:p-8">
-        <p className="text-brand-300 text-sm">{today}</p>
-        <h1 className="font-display mt-1 text-3xl sm:text-4xl">{greeting(ctx.user.name)}</h1>
-        <p className="text-brand-100 mt-2">
-          {data.meetingsSoon.length} meeting{data.meetingsSoon.length === 1 ? "" : "s"} coming up ·{" "}
-          {data.internalApprovals.length} approval{data.internalApprovals.length === 1 ? "" : "s"}{" "}
-          for you · {data.dueToday.length + data.overdueTasks.length} task
-          {data.dueToday.length + data.overdueTasks.length === 1 ? "" : "s"} due ·{" "}
-          {data.newLeads.length} new lead{data.newLeads.length === 1 ? "" : "s"}
-          {data.overdueInvoices.length
-            ? ` · ${data.overdueInvoices.length} payment issue${data.overdueInvoices.length === 1 ? "" : "s"}`
-            : ""}
-        </p>
-        {data.priorities.length > 0 ? (
-          <ol className="mt-6 grid grid-cols-1 gap-2 md:grid-cols-2">
-            {data.priorities.slice(0, 6).map((p, i) => (
-              <li key={p.text}>
-                <Link
-                  href={p.href}
-                  className="flex items-start gap-3 rounded-lg bg-white/5 px-3 py-2.5 text-sm hover:bg-white/10"
-                >
-                  <span className="text-brand-900 flex size-5 shrink-0 items-center justify-center rounded-full bg-white text-xs font-semibold">
-                    {i + 1}
-                  </span>
-                  <span className="flex-1">{p.text}</span>
-                  <ArrowRight className="text-brand-300 mt-0.5 size-4" aria-hidden />
-                </Link>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <p className="text-brand-100 mt-6 flex items-center gap-2 text-sm">
-            <CheckCircle2 className="size-4" aria-hidden /> Nothing urgent. A good day to work on
-            growth.
-          </p>
-        )}
-      </section>
-
-      {/* Today */}
-      <section aria-labelledby="today-heading">
-        <h2
-          id="today-heading"
-          className="text-muted mb-3 text-sm font-semibold tracking-wide uppercase"
-        >
-          Today
-        </h2>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-6">
-          {todayCounts.map(([label, value, href]) => (
-            <Link
-              key={label}
-              href={href}
-              className="rounded-card border-border bg-surface shadow-card hover:border-brand-300 border px-4 py-3 transition-colors"
-            >
-              <div className="text-2xl font-semibold tabular-nums">{value}</div>
-              <div className="text-muted mt-0.5 text-xs leading-snug">{label}</div>
-            </Link>
-          ))}
+      <section className="bg-night text-night-text relative isolate overflow-hidden rounded-[24px] p-6 sm:p-9">
+        <div aria-hidden className="bg-horizon absolute inset-0 -z-10 opacity-85" />
+        <div
+          aria-hidden
+          className="bg-grid absolute inset-0 -z-10 [mask-image:radial-gradient(60%_90%_at_100%_0%,#000,transparent)]"
+        />
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-xl">
+            <p className="label-mono text-signal">{today}</p>
+            <h1 className="font-display mt-3 text-[2.1rem] leading-tight text-white sm:text-[2.6rem]">
+              {greeting(ctx.user.name)}
+            </h1>
+            <p className="text-night-text/80 mt-3 text-[0.95rem] leading-relaxed">
+              {data.meetingsSoon.length} meeting{data.meetingsSoon.length === 1 ? "" : "s"} coming
+              up · {data.internalApprovals.length} approval
+              {data.internalApprovals.length === 1 ? "" : "s"} for you ·{" "}
+              {data.dueToday.length + data.overdueTasks.length} task
+              {data.dueToday.length + data.overdueTasks.length === 1 ? "" : "s"} due ·{" "}
+              {data.newLeads.length} new lead{data.newLeads.length === 1 ? "" : "s"}
+              {data.overdueInvoices.length
+                ? ` · ${data.overdueInvoices.length} payment issue${data.overdueInvoices.length === 1 ? "" : "s"}`
+                : ""}
+            </p>
+          </div>
+          <div className="w-full lg:max-w-[540px]">
+            <p className="label-mono text-night-muted mb-3">Today&apos;s priorities</p>
+            {data.priorities.length > 0 ? (
+              <ol className="space-y-1.5">
+                {data.priorities.slice(0, 6).map((p, i) => (
+                  <li key={p.text}>
+                    <Link
+                      href={p.href}
+                      className="group flex items-start gap-3 rounded-xl border border-white/[0.07] bg-white/[0.05] px-3.5 py-2.5 text-sm backdrop-blur transition-colors hover:border-white/15 hover:bg-white/[0.09]"
+                    >
+                      <span className="text-signal mt-px font-mono text-xs">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="flex-1 text-white">{p.text}</span>
+                      <ArrowRight
+                        className="text-night-muted mt-0.5 size-4 transition-transform group-hover:translate-x-0.5 group-hover:text-white"
+                        aria-hidden
+                      />
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="text-night-text flex items-center gap-2 text-sm">
+                <CheckCircle2 className="text-signal size-4" aria-hidden /> Nothing urgent. A good
+                day to work on growth.
+              </p>
+            )}
+          </div>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+      {/* Attention */}
+      <section aria-labelledby="attention-heading">
+        <h2 id="attention-heading" className="label-mono text-muted mb-3">
+          Needs attention
+        </h2>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+          {attention.map(([label, value, href, tone]) => (
+            <Link
+              key={label}
+              href={href}
+              className={cn(
+                "rounded-card group relative overflow-hidden border px-4 py-3.5 transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5",
+                value
+                  ? "border-border/80 bg-surface shadow-card hover:shadow-raised"
+                  : "border-border/50 bg-surface/50",
+              )}
+            >
+              {value > 0 && (
+                <span
+                  aria-hidden
+                  className={cn("absolute inset-x-0 top-0 h-[3px]", stripe[tone])}
+                />
+              )}
+              <div
+                className={cn(
+                  "font-display text-[1.75rem] leading-none tabular-nums",
+                  !value && "text-subtle",
+                )}
+              >
+                {value}
+              </div>
+              <div
+                className={cn(
+                  "mt-1.5 text-xs leading-snug",
+                  value ? "text-ink-soft" : "text-subtle",
+                )}
+              >
+                {label}
+              </div>
+            </Link>
+          ))}
+        </div>
+        <ul className="border-border/70 bg-surface/60 mt-3 flex flex-wrap gap-x-6 gap-y-2 rounded-xl border px-4 py-3 text-sm">
+          {activity.map(([label, value, href]) => (
+            <li key={label}>
+              <Link href={href} className="text-muted hover:text-ink transition-colors">
+                <span className="text-ink font-semibold tabular-nums">{value}</span> {label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader
             title="Upcoming meetings"
@@ -224,7 +280,7 @@ export default async function CommandCentrePage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader
             title="Overdue & due today"
@@ -317,11 +373,8 @@ export default async function CommandCentrePage() {
 
       {showBusiness && (
         <section aria-labelledby="business-heading" className="space-y-4">
-          <h2
-            id="business-heading"
-            className="text-muted text-sm font-semibold tracking-wide uppercase"
-          >
-            Business overview
+          <h2 id="business-heading" className="label-mono text-muted">
+            How Mea Creo is performing
           </h2>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <Stat

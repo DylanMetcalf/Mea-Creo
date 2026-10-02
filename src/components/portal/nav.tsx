@@ -35,13 +35,19 @@ export function PortalNav({
                 href={href}
                 aria-current={isActive(pathname, href) ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm",
+                  "flex items-center gap-3 rounded-[10px] px-3 py-2 text-[0.9rem] transition-colors",
                   isActive(pathname, href)
-                    ? "bg-brand-50 text-brand-800 font-medium"
-                    : "text-ink-soft hover:bg-surface-2",
+                    ? "bg-surface text-brand-800 shadow-card ring-border/70 font-medium ring-1"
+                    : "text-ink-soft hover:bg-surface/60 hover:text-ink",
                 )}
               >
-                <Icon className="size-4" aria-hidden />
+                <Icon
+                  className={cn(
+                    "size-4",
+                    isActive(pathname, href) ? "text-brand-600" : "text-subtle",
+                  )}
+                  aria-hidden
+                />
                 <span className="flex-1">{label}</span>
                 {badges[href] ? (
                   <span className="bg-clay-600 rounded-full px-1.5 text-[0.7rem] font-semibold text-white">
@@ -63,7 +69,7 @@ export function PortalMobileNav({ badges }: { badges: Record<string, number> }) 
   return (
     <nav
       aria-label="Portal"
-      className="border-border bg-surface fixed inset-x-0 bottom-0 z-30 border-t pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="border-border/70 bg-surface/85 fixed inset-x-0 bottom-0 z-30 border-t pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
     >
       <ul className="grid grid-cols-6">
         {PORTAL_NAV.filter((i) => MOBILE.includes(i.href)).map(({ href, label, icon: Icon }) => (
@@ -72,8 +78,8 @@ export function PortalMobileNav({ badges }: { badges: Record<string, number> }) 
               href={href}
               aria-current={isActive(pathname, href) ? "page" : undefined}
               className={cn(
-                "relative flex flex-col items-center gap-0.5 py-2 text-[0.65rem]",
-                isActive(pathname, href) ? "text-brand-800" : "text-muted",
+                "relative flex flex-col items-center gap-0.5 py-2.5 text-[0.65rem] transition-colors",
+                isActive(pathname, href) ? "text-brand-700 font-medium" : "text-muted",
               )}
             >
               <Icon className="size-5" aria-hidden />

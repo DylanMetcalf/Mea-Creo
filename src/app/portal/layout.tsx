@@ -58,11 +58,13 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
       >
         Skip to content
       </a>
-      <header className="border-border bg-surface/95 sticky top-0 z-20 border-b backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
-          <Logo href="/portal" compact />
-          <span className="text-muted hidden text-sm sm:inline">Client portal</span>
-          <div className="ml-auto flex items-center gap-2">
+      <header className="border-border/70 bg-paper/80 sticky top-0 z-20 border-b backdrop-blur-xl backdrop-saturate-150">
+        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6">
+          <Logo href="/portal" size="sm" wordmarkFrom="sm" />
+          <span className="label-mono border-border text-muted hidden rounded-full border px-2 py-0.5 sm:inline">
+            Client portal
+          </span>
+          <div className="ml-auto flex min-w-0 items-center gap-2">
             {ctx.organisations.length > 1 ? (
               <form action={switchOrganisationAction} className="flex items-center gap-1">
                 <label htmlFor="org-switch" className="sr-only">
@@ -83,7 +85,9 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
                 <button className="border-border h-8 rounded-md border px-2 text-xs">Switch</button>
               </form>
             ) : (
-              <span className="max-w-48 truncate text-sm font-medium">{ctx.organisationName}</span>
+              <span className="min-w-0 truncate text-sm font-medium sm:max-w-56">
+                {ctx.organisationName}
+              </span>
             )}
             <Link
               href="/portal/notifications"
@@ -124,8 +128,8 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
           </Link>
         </div>
       )}
-      <div className="mx-auto flex max-w-6xl gap-8 px-4 py-6 sm:px-6 lg:py-8">
-        <aside className="hidden w-52 shrink-0 lg:block">
+      <div className="mx-auto flex max-w-6xl gap-10 px-4 py-6 sm:px-6 lg:py-9">
+        <aside className="sticky top-24 hidden h-fit w-52 shrink-0 lg:block">
           <PortalNav badges={badges} hideBilling={!canBill} />
         </aside>
         <main id="main" className="min-w-0 flex-1">

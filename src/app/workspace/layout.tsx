@@ -1,11 +1,13 @@
 import { and, count, eq, inArray, isNull } from "drizzle-orm";
-import { Bell, LogOut, Menu, Plus, Search } from "lucide-react";
+import { Bell, LogOut, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { logoutAction } from "@/app/(auth)/actions";
 import { Logo } from "@/components/brand/logo";
 import { Avatar } from "@/components/ui/primitives";
-import { NavLinks, SearchShortcut } from "@/components/workspace/nav";
+import { buttonClass } from "@/components/ui/button";
+import { CommandPalette, CommandTrigger } from "@/components/workspace/command-palette";
+import { Breadcrumb, MobileSidebar, NavLinks, SearchShortcut } from "@/components/workspace/nav";
 import { getDb } from "@/db";
 import { approvals, notifications } from "@/db/schema";
 import { requireStaff } from "@/modules/auth/context";
@@ -18,7 +20,7 @@ export const metadata: Metadata = {
 };
 export const dynamic = "force-dynamic";
 
-const QUICK_ACTIONS = [
+const QUICK_ACTIONS: [string, string][] = [
   ["/workspace/clients/new", "Add client"],
   ["/workspace/leads/new", "Add lead"],
   ["/workspace/tasks?new=1", "Create task"],
@@ -48,24 +50,35 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
   const badges = { "/workspace/approvals": pendingApprovals?.n ?? 0 };
 
   const sidebar = (
-    <div className="flex h-full flex-col">
-      <div className="px-3 py-4">
-        <Logo href="/workspace" />
+    <div className="bg-night text-night-text relative isolate flex h-full flex-col overflow-hidden">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-64 bg-[radial-gradient(90%_70%_at_0%_0%,rgb(127_224_178/0.14),transparent_70%)]"
+      />
+      <div className="px-5 pt-5 pb-4">
+        <Logo href="/workspace" inverse size="sm" />
+        <div className="border-night-line mt-5 flex items-center gap-2.5 rounded-xl border bg-white/[0.03] px-3 py-2.5">
+          <span className="bg-signal size-2 rounded-full shadow-[0_0_10px_rgb(127_224_178/0.9)]" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-white">Mea Creo HQ</p>
+            <p className="text-night-muted text-xs">Workspace</p>
+          </div>
+        </div>
       </div>
-      <div className="flex-1 overflow-y-auto px-2 pb-6">
+      <div className="flex-1 [scrollbar-color:rgb(255_255_255/0.15)_transparent] overflow-y-auto px-3 pb-6">
         <NavLinks badges={badges} />
       </div>
-      <div className="border-border border-t p-3">
-        <div className="flex items-center gap-2.5">
+      <div className="border-night-line border-t p-3">
+        <div className="flex items-center gap-2.5 rounded-xl px-2 py-1.5">
           <Avatar name={ctx.user.name} size="sm" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{ctx.user.name}</p>
-            <p className="text-muted text-xs">{ROLE_LABELS[ctx.role]}</p>
+            <p className="truncate text-sm font-medium text-white">{ctx.user.name}</p>
+            <p className="text-night-muted text-xs">{ROLE_LABELS[ctx.role]}</p>
           </div>
           <form action={logoutAction}>
             <button
               type="submit"
-              className="text-subtle hover:bg-surface-2 hover:text-ink rounded-md p-1.5"
+              className="text-night-muted rounded-lg p-1.5 transition-colors hover:bg-white/10 hover:text-white"
               aria-label="Sign out"
             >
               <LogOut className="size-4" />
@@ -79,9 +92,8 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
   return (
     <div className="bg-paper flex min-h-screen">
       <SearchShortcut />
-      <aside className="border-border bg-surface sticky top-0 hidden h-screen w-60 shrink-0 border-r lg:block">
-        {sidebar}
-      </aside>
+      <CommandPalette actions={QUICK_ACTIONS} />
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 lg:block">{sidebar}</aside>
       <div className="flex min-w-0 flex-1 flex-col">
         {(emergency.pauseAllAutomation ||
           emergency.pauseOutboundEmail ||
@@ -101,55 +113,39 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
             </Link>
           </div>
         )}
-        <header className="border-border bg-surface/90 sticky top-0 z-30 flex h-14 items-center gap-3 border-b px-4 backdrop-blur">
-          <details className="relative lg:hidden">
-            <summary
-              className="hover:bg-surface-2 flex size-9 cursor-pointer list-none items-center justify-center rounded-md [&::-webkit-details-marker]:hidden"
-              aria-label="Open navigation"
-            >
-              <Menu className="size-5" />
-            </summary>
-            <div className="border-border bg-surface shadow-raised fixed inset-y-0 left-0 z-50 w-72 border-r">
-              {sidebar}
-            </div>
-          </details>
-          <form action="/workspace/search" className="relative max-w-md flex-1">
-            <Search
-              className="text-subtle pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
-              aria-hidden
-            />
-            <label htmlFor="global-search" className="sr-only">
-              Search clients, leads, tasks, documents
-            </label>
-            <input
-              id="global-search"
-              name="q"
-              type="search"
-              placeholder="Search clients, leads, tasks…  ( / )"
-              className="border-border bg-surface-2 placeholder:text-subtle focus:border-brand-600 focus:bg-surface h-9 w-full rounded-lg border pr-3 pl-9 text-sm focus:outline-none"
-            />
-          </form>
-          <div className="ml-auto flex items-center gap-1.5">
+        <header className="border-border/70 bg-paper/80 sticky top-0 z-30 flex h-16 items-center gap-3 border-b px-4 backdrop-blur-xl backdrop-saturate-150 sm:px-6 lg:px-8">
+          <MobileSidebar>{sidebar}</MobileSidebar>
+          <Breadcrumb />
+          <div className="flex min-w-0 flex-1 justify-end md:justify-center">
+            <CommandTrigger />
+          </div>
+          <div className="flex items-center gap-1.5">
             {billing.pricesAreDemo && (
               <Link
                 href="/workspace/services"
-                className="bg-warning-100 text-warning-700 hidden rounded-full px-2.5 py-1 text-xs font-medium sm:inline-block"
+                className="bg-warning-100 text-warning-700 hidden rounded-full px-2.5 py-1 text-xs font-medium xl:inline-block"
                 title="Contains fictional demo data and demo prices"
               >
                 Demo data
               </Link>
             )}
             <details className="relative">
-              <summary className="bg-brand-700 hover:bg-brand-800 flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-white [&::-webkit-details-marker]:hidden">
+              <summary
+                className={buttonClass(
+                  "primary",
+                  "sm",
+                  "h-9 cursor-pointer list-none px-3 [&::-webkit-details-marker]:hidden",
+                )}
+              >
                 <Plus className="size-4" aria-hidden />{" "}
                 <span className="hidden sm:inline">New</span>
               </summary>
-              <div className="rounded-card border-border bg-surface shadow-raised absolute right-0 mt-2 w-48 border p-1">
+              <div className="border-border bg-elevated shadow-lifted absolute right-0 mt-2 w-52 rounded-xl border p-1.5 motion-safe:animate-[pop-in_.15s_var(--ease-out)]">
                 {QUICK_ACTIONS.map(([href, label]) => (
                   <Link
                     key={href}
                     href={href}
-                    className="hover:bg-surface-2 block rounded-md px-3 py-2 text-sm"
+                    className="hover:bg-brand-50 hover:text-brand-900 block rounded-lg px-3 py-2 text-sm transition-colors"
                   >
                     {label}
                   </Link>
@@ -158,19 +154,22 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
             </details>
             <Link
               href="/workspace/notifications"
-              className="text-ink-soft hover:bg-surface-2 relative rounded-lg p-2"
+              className="text-ink-soft hover:bg-surface relative rounded-lg p-2 transition-colors"
               aria-label={`Notifications${unread?.n ? `, ${unread.n} unread` : ""}`}
             >
               <Bell className="size-5" />
               {unread?.n ? (
-                <span className="bg-clay-600 absolute top-1 right-1 flex size-4 items-center justify-center rounded-full text-[0.6rem] font-semibold text-white">
+                <span className="bg-clay-600 ring-paper absolute top-1 right-1 flex size-4 items-center justify-center rounded-full text-[0.6rem] font-semibold text-white ring-2">
                   {Math.min(unread.n, 9)}
                 </span>
               ) : null}
             </Link>
           </div>
         </header>
-        <main id="main" className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        <main
+          id="main"
+          className="mx-auto w-full max-w-7xl flex-1 px-4 py-7 sm:px-6 lg:px-8 lg:py-9"
+        >
           {children}
         </main>
       </div>

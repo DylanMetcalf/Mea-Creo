@@ -15,6 +15,8 @@ import {
 import { runAgent } from "@/agents/runtime";
 import { isEnabled } from "@/config/flags";
 import { formatMoney, isCurrency, money } from "@/lib/money";
+import { latestClientAudit } from "@/modules/audits/service";
+import { BAND_LABELS, INDEX_METHOD, visibilityIndex } from "@/modules/audits/visibility-index";
 
 export interface AssistantAnswer {
   answer: string;
@@ -34,6 +36,7 @@ type Intent =
   | "billing"
   | "meeting"
   | "upload"
+  | "visibility"
   | "unknown";
 
 const INTENTS: [Intent, RegExp][] = [
@@ -41,6 +44,7 @@ const INTENTS: [Intent, RegExp][] = [
   ["billing", /invoice|pay|bill|owe|balance|account/i],
   ["meeting", /meet|call|book|appointment/i],
   ["upload", /upload|send (you|files)|what should we (upload|send)/i],
+  ["visibility", /visibility (index|score)|\bindex\b|how visible|how (easy|easily) .*found/i],
   ["report", /report|mean|explain/i],
   ["improved", /improv|better|result|progress|working|perform/i],
   ["month", /this month|happen|done|complet|what did you/i],
@@ -54,8 +58,10 @@ export function classifyQuestion(question: string): Intent {
 }
 
 const SUGGESTIONS = [
+  "What changed this month?",
+  "What should we focus on next?",
+  "Explain my Visibility Index",
   "What is Mea Creo doing for us?",
-  "What happened this month?",
   "What needs my approval?",
   "What has improved?",
   "What are our biggest opportunities?",
@@ -160,6 +166,25 @@ export async function askMeaCreo(
       sources.push({ label: report.title, href: `/portal/reports/${report.id}` });
     } else {
       facts.push("No report has been published yet.");
+    }
+  }
+  if (intent === "visibility") {
+    const audit = await latestClientAudit(db, organisationId);
+    const index = audit?.result ? visibilityIndex(audit.result) : null;
+    if (audit?.result && index) {
+      const measured = index.areas.filter((a) => a.score !== null);
+      const strongest = [...measured].sort((a, b) => b.score! - a.score!)[0];
+      const weakest = [...measured].sort((a, b) => a.score! - b.score!)[0];
+      facts.push(
+        `Your Mea Creo Visibility Index is ${index.score} out of 100 (${BAND_LABELS[index.band].toLowerCase()}), from the Visibility Report checked on ${new Date(audit.result.fetchedAt).toLocaleDateString("en-ZA", { dateStyle: "medium" })}.`,
+        `Strongest area: ${strongest.label} (${strongest.score}). Biggest gap: ${weakest.label} (${weakest.score}).`,
+        INDEX_METHOD,
+      );
+      sources.push({ label: "Visibility Report", href: `/visibility-report/${audit.publicToken}` });
+    } else {
+      facts.push(
+        "There's no completed Visibility Report for your business yet, so there's no Index to explain.",
+      );
     }
   }
   if (intent === "approvals") {

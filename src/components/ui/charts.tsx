@@ -36,9 +36,9 @@ export function BarList({
           >
             <span className="text-ink-soft truncate text-sm">{d.label}</span>
             <span className="flex items-center gap-2">
-              <span className="relative h-2.5 flex-1 rounded-r-[4px] bg-transparent">
+              <span className="bg-brand-50 relative h-2 flex-1 overflow-hidden rounded-full">
                 <span
-                  className="bg-brand-600 group-hover:bg-brand-800 absolute inset-y-0 left-0 rounded-r-[4px] transition-colors"
+                  className="absolute inset-y-0 left-0 origin-left rounded-full bg-[linear-gradient(90deg,var(--brand-600),var(--brand-400))] transition-[filter] group-hover:brightness-110 motion-safe:animate-[grow_.9s_var(--ease-out)_both]"
                   style={{ width: `${width}%` }}
                 />
               </span>
