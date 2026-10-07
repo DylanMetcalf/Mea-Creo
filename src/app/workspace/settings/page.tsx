@@ -45,6 +45,11 @@ import {
   type StaffRole,
 } from "@/modules/auth/permissions";
 import { HARD_LOCKED_ACTIONS, HARD_LOCKED_TYPES, LEVEL_LABELS } from "@/modules/approvals/service";
+import {
+  CALENDAR_ACCOUNT_HINT,
+  googleConnection,
+  googleSetupProblem,
+} from "@/modules/integrations/google";
 import { getPlatformSetting } from "@/modules/settings/service";
 import { WORKFLOW_RULES } from "@/modules/workflows/engine";
 import {
@@ -59,6 +64,7 @@ import {
   saveCompanyAction,
   saveLegalReviewAction,
   saveEmergencyAction,
+  disconnectGoogleAction,
   saveOutreachAction,
   saveQaChecklistAction,
   saveQualificationAction,
@@ -786,52 +792,119 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
       break;
     }
     case "integrations": {
-      const health = await integrationHealth();
+      const [health, google] = await Promise.all([integrationHealth(), googleConnection(db)]);
+      const setupProblem = googleSetupProblem();
+      const googleResult = typeof sp.google === "string" ? sp.google : null;
       body = (
-        <Card>
-          <CardHeader
-            title="Integration health"
-            description="Credentials live in server environment variables, never in the browser. A test (mock) adapter is clearly marked and refused in production."
-          />
-          <ul className="divide-border divide-y">
-            {health.map((h) => {
-              const info = INTEGRATION_LABELS[h.kind] ?? { name: humanize(h.kind), env: "" };
-              const real = h.status === "CONNECTED" && !h.mock;
-              return (
-                <li
-                  key={h.kind}
-                  className="flex flex-col gap-1 px-5 py-3 sm:flex-row sm:items-start sm:justify-between"
-                >
-                  <span className="flex items-start gap-3">
-                    <StatusIcon h={h} />
-                    <span>
-                      <span className="block text-sm font-medium">{info.name}</span>
-                      <span className="text-muted block text-xs">{h.message}</span>
-                      {!real && info.env && (
-                        <span className="text-subtle mt-1 block font-mono text-[0.7rem]">
-                          {info.env}
-                        </span>
-                      )}
-                    </span>
-                  </span>
-                  <Badge
-                    tone={
-                      real
-                        ? "success"
-                        : h.mock
-                          ? "warning"
-                          : h.status === "ERROR"
-                            ? "danger"
-                            : "neutral"
-                    }
-                  >
-                    {real ? "Connected" : h.mock ? "Test mode" : "REQUIRES CONFIGURATION"}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader
+              title="Google Calendar"
+              description={`Bookings check this calendar for busy times, and new meetings are added to it with a Google Meet link and invitations. Connect the calendar account (${CALENDAR_ACCOUNT_HINT}); client emails still come from your business address.`}
+              action={
+                google?.status === "CONNECTED" ? (
+                  <Badge tone="success" dot>
+                    Connected
                   </Badge>
-                </li>
-              );
-            })}
-          </ul>
-        </Card>
+                ) : (
+                  <Badge>Not connected</Badge>
+                )
+              }
+            />
+            <CardBody className="space-y-3 text-sm">
+              {googleResult === "connected" && (
+                <Callout tone="success" title="Connected">
+                  Google Calendar is connected.
+                </Callout>
+              )}
+              {googleResult && googleResult !== "connected" && (
+                <Callout tone="danger" title="Not connected">
+                  {googleResult === "denied"
+                    ? "Access wasn't granted on Google's screen."
+                    : googleResult === "invalid_state"
+                      ? "The sign-in link expired. Try again."
+                      : "Google didn't complete the connection. Try again; if it keeps failing, check the OAuth client's redirect URI."}
+                </Callout>
+              )}
+              {google ? (
+                <p>
+                  Connected as{" "}
+                  <span className="font-medium">{google.email || "your Google account"}</span> since{" "}
+                  {fmtDateTime(google.connectedAt)}.
+                </p>
+              ) : setupProblem ? (
+                <p className="text-muted">
+                  Requires configuration: {setupProblem} See the Integrations guide for the Google
+                  Cloud steps.
+                </p>
+              ) : (
+                <p className="text-muted">
+                  Ready to connect. You&apos;ll sign in on Google&apos;s own page.
+                </p>
+              )}
+              {canManage && (
+                <div className="flex flex-wrap gap-2">
+                  {!setupProblem && (
+                    <LinkButton href="/api/integrations/google/connect" size="sm" prefetch={false}>
+                      {google ? "Reconnect" : "Connect Google Calendar"}
+                    </LinkButton>
+                  )}
+                  {google && (
+                    <form action={disconnectGoogleAction}>
+                      <SubmitButton size="sm" variant="secondary">
+                        Disconnect
+                      </SubmitButton>
+                    </form>
+                  )}
+                </div>
+              )}
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader
+              title="Integration health"
+              description="Credentials live in server environment variables, never in the browser. A test (mock) adapter is clearly marked and refused in production."
+            />
+            <ul className="divide-border divide-y">
+              {health.map((h) => {
+                const info = INTEGRATION_LABELS[h.kind] ?? { name: humanize(h.kind), env: "" };
+                const real = h.status === "CONNECTED" && !h.mock;
+                return (
+                  <li
+                    key={h.kind}
+                    className="flex flex-col gap-1 px-5 py-3 sm:flex-row sm:items-start sm:justify-between"
+                  >
+                    <span className="flex items-start gap-3">
+                      <StatusIcon h={h} />
+                      <span>
+                        <span className="block text-sm font-medium">{info.name}</span>
+                        <span className="text-muted block text-xs">{h.message}</span>
+                        {!real && info.env && (
+                          <span className="text-subtle mt-1 block font-mono text-[0.7rem]">
+                            {info.env}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                    <Badge
+                      tone={
+                        real
+                          ? "success"
+                          : h.mock
+                            ? "warning"
+                            : h.status === "ERROR"
+                              ? "danger"
+                              : "neutral"
+                      }
+                    >
+                      {real ? "Connected" : h.mock ? "Test mode" : "REQUIRES CONFIGURATION"}
+                    </Badge>
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
+        </div>
       );
       break;
     }

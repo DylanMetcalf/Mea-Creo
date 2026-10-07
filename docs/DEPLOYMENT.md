@@ -47,10 +47,10 @@ Run `pnpm db:migrate` before every release that includes new files in `drizzle/`
 1. Import the repository; framework Next.js; install `pnpm install`; build `pnpm build`.
 2. Add the environment variables (Production and Preview separately; Preview uses
    `APP_ENV=staging`, sandbox credentials and a separate database).
-3. Cron (in the project settings or a `vercel.json`): `GET /api/cron/daily` once a day
-   (e.g. 04:00 UTC) and `GET /api/cron/jobs` every 5 minutes, with header
-   `Authorization: Bearer $CRON_SECRET`. Vercel Cron sends this header automatically when
-   `CRON_SECRET` is set. Frequent schedules need a paid plan; without them, jobs still run
+3. Cron: `vercel.json` schedules `GET /api/cron/daily` at 04:00 UTC (06:00 in South
+   Africa), which works on every plan. Vercel Cron sends `Authorization: Bearer
+$CRON_SECRET` automatically when `CRON_SECRET` is set. On a Pro plan, also add
+   `{ "path": "/api/cron/jobs", "schedule": "*/10 * * * *" }`; without it, jobs still run
    right after each request.
 4. Deploy, then open `/api/health`.
 

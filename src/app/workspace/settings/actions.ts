@@ -16,6 +16,7 @@ import { requireStaff } from "@/modules/auth/context";
 import { STAFF_ROLES } from "@/modules/auth/permissions";
 import { sendEmail } from "@/modules/email/service";
 import { emailTemplates } from "@/modules/email/templates";
+import { disconnectGoogle } from "@/modules/integrations/google";
 import { inviteClientUser } from "@/modules/onboarding/service";
 import {
   getPlatformOrganisation,
@@ -461,4 +462,10 @@ export async function saveQaChecklistAction(_p: ActionState, fd: FormData): Prom
     await save("qa", { checks });
     return { ok: true, message: "Checklist saved. New deliverables use it." };
   }, fd);
+}
+
+export async function disconnectGoogleAction(): Promise<void> {
+  const ctx = await requireStaff("settings.manage");
+  await disconnectGoogle(await getDb(), userActor(ctx.user));
+  refresh();
 }

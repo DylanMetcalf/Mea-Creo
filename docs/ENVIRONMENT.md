@@ -58,7 +58,7 @@ Configuration comes from environment variables, validated at startup by
 | `ACCOUNTING_PROVIDER`                                                               | `none`                              | `none`, `mock`, `xero` (adapter not built yet)                              |
 | `XERO_CLIENT_ID` / `XERO_CLIENT_SECRET`                                             | none                                | Xero app credentials                                                        |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`                                         | none                                | Google OAuth app (Calendar, Search Console, Analytics)                      |
-| `CALENDAR_PROVIDER`                                                                 | `mock`                              | `none`, `mock`, `google` (adapter not built yet)                            |
+| `CALENDAR_PROVIDER`                                                                 | `mock`                              | `none`, `mock`, `google` (connect in Settings → Integrations)               |
 | `ANALYTICS_PROVIDER`                                                                | `mock`                              | `none`, `mock`, `google` (adapter not built yet)                            |
 | `SEARCH_PROVIDER`                                                                   | `mock`                              | `none`, `mock`, `google` (adapter not built yet)                            |
 | `CRM_PROVIDER`                                                                      | `none`                              | `none`, `mock`, `sales_scout`                                               |
@@ -67,8 +67,8 @@ Configuration comes from environment variables, validated at startup by
 
 ## Website analytics
 
-| Variable            | Default | Purpose                                                                                                     |
-| ------------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
+| Variable            | Default | Purpose                                                                                                        |
+| ------------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
 | `GA_MEASUREMENT_ID` | none    | GA4 id (`G-…`). Loaded only when `FEATURE_GOOGLE_ANALYTICS=true` **and** the visitor accepts analytics cookies |
 
 ## Feature flags

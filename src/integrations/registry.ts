@@ -7,6 +7,7 @@ import { MockAIProvider } from "./ai/mock";
 import type { AIProvider } from "./ai/types";
 import { MockAnalyticsProvider } from "./analytics/mock";
 import type { AnalyticsProvider } from "./analytics/types";
+import { GoogleCalendarProvider } from "./calendar/google";
 import { MockCalendarProvider } from "./calendar/mock";
 import type { CalendarProvider } from "./calendar/types";
 import { MockCRMProvider } from "./crm/mock";
@@ -60,7 +61,18 @@ const factories: { [K in IntegrationKind]: Partial<Record<string, Factory<K>>> }
       }),
   },
   accounting: { mock: () => new MockAccountingProvider() },
-  calendar: { mock: () => new MockCalendarProvider() },
+  calendar: {
+    mock: () => new MockCalendarProvider(),
+    google: (env) =>
+      new GoogleCalendarProvider({
+        clientId: env.GOOGLE_CLIENT_ID!,
+        clientSecret: env.GOOGLE_CLIENT_SECRET!,
+        // The refresh token is stored encrypted per organisation; the module that owns
+        // that storage is loaded lazily so adapters stay free of database code.
+        loadRefreshToken: async () =>
+          (await import("@/modules/integrations/google")).loadGoogleRefreshToken(),
+      }),
+  },
   analytics: { mock: () => new MockAnalyticsProvider() },
   search: { mock: () => new MockSearchProvider() },
   ai: {
