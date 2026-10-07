@@ -10,6 +10,7 @@ import {
   Section,
 } from "@/components/site/marketing";
 import { getDb } from "@/db";
+import { getPlatformSetting } from "@/modules/settings/service";
 import { getPublicPackages } from "@/modules/website/packages";
 
 export const metadata: Metadata = {
@@ -44,7 +45,11 @@ const FAQ = [
 ];
 
 export default async function PricingPage() {
-  const packages = await getPublicPackages(await getDb());
+  const db = await getDb();
+  const [packages, billing] = await Promise.all([
+    getPublicPackages(db),
+    getPlatformSetting(db, "billing"),
+  ]);
   if (!packages) notFound();
   return (
     <>
@@ -66,6 +71,17 @@ export default async function PricingPage() {
       </section>
       <Section className="pt-6 sm:pt-8">
         <PackageCards packages={packages} />
+        <div className="border-border/80 bg-surface shadow-card mt-6 flex flex-col gap-2 rounded-2xl border p-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-ink-soft">
+            <span className="text-ink font-semibold">Terms:</span> monthly programmes run for a{" "}
+            {billing.standardTermMonths}-month minimum, then month to month.
+          </p>
+          {billing.annualDiscountPercent > 0 && (
+            <p className="bg-brand-50 text-brand-800 ring-brand-100 rounded-full px-3 py-1 text-sm font-medium ring-1">
+              Commit to 12 months and save {billing.annualDiscountPercent}% on monthly fees
+            </p>
+          )}
+        </div>
       </Section>
       <Section tone="surface">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_1.5fr]">

@@ -93,3 +93,60 @@ export const caseStudies = pgTable("case_studies", {
   sortOrder: integer("sort_order").notNull().default(0),
   ...timestamps(),
 });
+
+/**
+ * Private share links for the photography portfolio. Each link shows chosen categories,
+ * can expire, and counts views. The portfolio is never listed publicly or indexed.
+ */
+export const portfolioLinks = pgTable(
+  "portfolio_links",
+  {
+    id: id(),
+    token: text("token").notNull(),
+    /** Who it's for, e.g. "Kloof Lodge (Sarah)". Shown only in the workspace. */
+    label: text("label").notNull(),
+    /** Optional note shown at the top of the shared page. */
+    message: text("message"),
+    categories: jsonb("categories").$type<string[]>().notNull().default([]),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    viewCount: integer("view_count").notNull().default(0),
+    lastViewedAt: timestamp("last_viewed_at", { withTimezone: true }),
+    createdById: text("created_by_id"),
+    ...timestamps(),
+  },
+  (t) => [index("portfolio_links_token_idx").on(t.token)],
+);
+
+export const TESTIMONIAL_STATUSES = ["requested", "submitted", "approved", "hidden"] as const;
+
+/**
+ * Client testimonials, collected with consent through a private link. Only real quotes,
+ * attributed the way the client chose, and only published after Mea Creo approves them.
+ */
+export const testimonials = pgTable(
+  "testimonials",
+  {
+    id: id(),
+    token: text("token").notNull(),
+    organisationId: text("organisation_id"),
+    /** Who we asked (workspace only). */
+    requestedFrom: text("requested_from").notNull(),
+    status: text("status", { enum: TESTIMONIAL_STATUSES }).notNull().default("requested"),
+    quote: text("quote"),
+    name: text("name"),
+    role: text("role"),
+    company: text("company"),
+    industry: text("industry"),
+    /** named: name, role and company. anonymous: role and industry only. */
+    attribution: text("attribution", { enum: ["named", "anonymous"] }),
+    consentAt: timestamp("consent_at", { withTimezone: true }),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+    sortOrder: integer("sort_order").notNull().default(0),
+    ...timestamps(),
+  },
+  (t) => [
+    index("testimonials_token_idx").on(t.token),
+    index("testimonials_status_idx").on(t.status),
+  ],
+);

@@ -4,13 +4,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LinkButton } from "@/components/ui/button";
-import { ActionForm, SubmitButton, TextArea, TextField } from "@/components/ui/form";
+import { ActionForm, SelectField, SubmitButton, TextArea, TextField } from "@/components/ui/form";
 import { Callout, Card, CardBody, CardHeader, DescriptionList } from "@/components/ui/primitives";
 import { StatusBadge } from "@/components/ui/status";
 import { getDb } from "@/db";
 import { services } from "@/db/schema";
 import { fmtDateTime } from "@/lib/format";
 import { requireStaff } from "@/modules/auth/context";
+import { getPlatformSetting } from "@/modules/settings/service";
 import {
   formatProposalMoney,
   getProposal,
@@ -32,7 +33,10 @@ export default async function ProposalPage({ params }: PageProps<"/workspace/pro
   const ctx = await requireStaff("leads.read");
   const { id } = await params;
   const db = await getDb();
-  const data = await getProposal(db, id);
+  const [data, billingSettings] = await Promise.all([
+    getProposal(db, id),
+    getPlatformSetting(db, "billing"),
+  ]);
   if (!data) notFound();
   const { proposal: p, items } = data;
   const [issues, catalogue] = await Promise.all([
@@ -298,12 +302,23 @@ export default async function ProposalPage({ params }: PageProps<"/workspace/pro
                   defaultValue={p.contactEmail ?? ""}
                   disabled={locked}
                 />
-                <TextField
+                <SelectField
                   name="contractMonths"
-                  type="number"
-                  label="Minimum term (months)"
+                  label="Minimum term"
                   defaultValue={String(p.contractMonths)}
-                  disabled={locked}
+                  options={[
+                    ...(![6, 12].includes(p.contractMonths)
+                      ? [{ value: String(p.contractMonths), label: `${p.contractMonths} months` }]
+                      : []),
+                    { value: "6", label: "6 months (standard)" },
+                    {
+                      value: "12",
+                      label: billingSettings.annualDiscountPercent
+                        ? `12 months (${billingSettings.annualDiscountPercent}% off monthly fees)`
+                        : "12 months",
+                    },
+                  ]}
+                  hint="Choosing 12 months applies the annual discount if no discount is set."
                 />
                 <TextField
                   name="discountPercent"

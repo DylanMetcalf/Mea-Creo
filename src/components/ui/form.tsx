@@ -263,12 +263,15 @@ export function CheckboxField({
   label,
   hint,
   defaultChecked,
+  value,
   className,
 }: {
   name: string;
   label: ReactNode;
   hint?: ReactNode;
   defaultChecked?: boolean;
+  /** For checkbox groups sharing one name; defaults to "on". */
+  value?: string;
   className?: string;
 }) {
   const { id, errors } = useField(name);
@@ -278,6 +281,7 @@ export function CheckboxField({
         id={id}
         type="checkbox"
         name={name}
+        value={value}
         defaultChecked={defaultChecked}
         aria-invalid={errors ? true : undefined}
         className="border-border-strong accent-brand-700 mt-0.5 size-4 rounded"

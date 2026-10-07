@@ -41,6 +41,10 @@ export const settingsSchemas = {
     pricesAreDemo: z.boolean(),
     /** Show the package prices on the public website (/pricing and the home page). */
     showPricesPublicly: z.boolean().default(true),
+    /** Standard minimum term for monthly programmes. */
+    standardTermMonths: z.number().int().min(1).max(36).default(6),
+    /** Discount on monthly fees for a 12-month commitment. 0 = no annual option. */
+    annualDiscountPercent: z.number().int().min(0).max(30).default(5),
   }),
   booking: z.object({
     timezone: z.string(),
@@ -156,6 +160,9 @@ export const settingsDefaults: { [K in SettingsKey]: Settings<K> } = {
     proposalPrefix: "MCP",
     pricesAreDemo: false,
     showPricesPublicly: true,
+    standardTermMonths: 6,
+    // Director asked for "a small discount" for a 12-month commitment; 5% to confirm.
+    annualDiscountPercent: 5,
   },
   booking: {
     timezone: "Africa/Johannesburg",

@@ -309,6 +309,27 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
                     defaultValue={b.proposalPrefix}
                   />
                 </div>
+                <TextField
+                  name="standardTermMonths"
+                  type="number"
+                  label="Standard minimum term (months)"
+                  defaultValue={String(b.standardTermMonths)}
+                />
+                <TextField
+                  name="annualDiscountPercent"
+                  type="number"
+                  label="12-month commitment discount (%)"
+                  hint="Applied to monthly fees on 12-month proposals and shown on the pricing page. 0 hides the option."
+                  defaultValue={String(b.annualDiscountPercent)}
+                />
+                <div className="md:col-span-2">
+                  <CheckboxField
+                    name="showPricesPublicly"
+                    label="Show package prices on the public website"
+                    hint="Recommended: clear prices qualify enquiries before the first call."
+                    defaultChecked={b.showPricesPublicly}
+                  />
+                </div>
 
                 {ctx.can("billing.manage") && <SubmitButton>Save</SubmitButton>}
               </ActionForm>

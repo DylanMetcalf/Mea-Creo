@@ -263,6 +263,12 @@ export async function updateProposal(
   if (!existing) throw new AppError("NOT_FOUND");
   if (existing.status === "accepted")
     throw new AppError("CONFLICT", { userMessage: "Accepted proposals can't be edited." });
+  // A 12-month commitment gets the configured annual discount unless one was set by hand.
+  let discountPercent = input.discountPercent;
+  if (input.contractMonths >= 12 && discountPercent === 0) {
+    const billing = await getPlatformSetting(db, "billing");
+    discountPercent = billing.annualDiscountPercent;
+  }
   await db
     .update(proposals)
     .set({
@@ -276,7 +282,7 @@ export async function updateProposal(
       assumptions: input.assumptions,
       terms: input.terms,
       contractMonths: input.contractMonths,
-      discountPercent: input.discountPercent,
+      discountPercent,
       contactName: input.contactName || null,
       contactEmail: input.contactEmail || null,
     })

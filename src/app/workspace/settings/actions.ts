@@ -88,6 +88,9 @@ export async function saveBillingAction(_p: ActionState, fd: FormData): Promise<
         reminderDaysAfterDue: z.string().max(40),
         invoicePrefix: z.string().trim().min(1).max(8),
         proposalPrefix: z.string().trim().min(1).max(8),
+        standardTermMonths: z.coerce.number().int().min(1).max(36),
+        annualDiscountPercent: z.coerce.number().int().min(0).max(30),
+        showPricesPublicly: checkbox,
       }),
       fd,
     );

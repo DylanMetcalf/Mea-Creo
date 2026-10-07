@@ -20,9 +20,11 @@ import Link from "next/link";
 import { PackageCards } from "@/components/site/package-cards";
 import { CtaBand, Container, Eyebrow, Section, SectionIntro } from "@/components/site/marketing";
 import { HeroVisual } from "@/components/site/hero-visual";
+import { TestimonialsSection } from "@/components/site/testimonials";
 import { LinkButton } from "@/components/ui/button";
 import { HOW_IT_WORKS } from "@/content/pillars";
 import { getDb } from "@/db";
+import { publishedTestimonials } from "@/modules/testimonials/service";
 import { getPublicPackages } from "@/modules/website/packages";
 
 export const metadata: Metadata = {
@@ -120,7 +122,8 @@ const formula = [
 ] as const;
 
 export default async function HomePage() {
-  const packages = await getPublicPackages(await getDb());
+  const db = await getDb();
+  const [packages, quotes] = await Promise.all([getPublicPackages(db), publishedTestimonials(db)]);
   const [feature, ...rest] = areas;
   return (
     <>
@@ -378,6 +381,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <TestimonialsSection items={quotes} />
 
       {/* How it works: a real sequence */}
       <Section>
