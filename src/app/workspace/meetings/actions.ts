@@ -1,16 +1,24 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getDb } from "@/db";
-import { leadActivities, leads, MEETING_STATUSES, MEETING_TYPES, meetings } from "@/db/schema";
+import {
+  leadActivities,
+  leads,
+  MEETING_STATUSES,
+  MEETING_TYPES,
+  meetings,
+  proposals,
+} from "@/db/schema";
 import { type ActionState, optionalText, parseForm, runAction } from "@/lib/actions";
 import { AppError } from "@/lib/errors";
 import { requireStaff } from "@/modules/auth/context";
 import { generateMeetingBriefing, processMeetingNotes } from "@/modules/meetings/briefing";
 import { MEETING_TYPE_LABELS } from "@/modules/meetings/service";
+import { createProposalFromLead } from "@/modules/proposals/service";
 
 const scheduleSchema = z.object({
   type: z.enum(MEETING_TYPES),
@@ -103,14 +111,52 @@ export async function saveNotesAction(
   }, formData);
 }
 
+/**
+ * "Meeting complete" (handoff §30): summary, requirements, tasks, follow-up email for
+ * approval, CRM update and, for a sales call, a proposal draft priced from the catalogue.
+ * Nothing is sent to the prospect from here.
+ */
 export async function processNotesAction(meetingId: string): Promise<void> {
   const ctx = await requireStaff("meetings.write");
-  const outcome = await processMeetingNotes(await getDb(), meetingId, {
-    id: ctx.user.id,
-    name: ctx.user.name,
-  });
+  const db = await getDb();
+  const actor = { id: ctx.user.id, name: ctx.user.name };
+  const outcome = await processMeetingNotes(db, meetingId, actor);
   if (!outcome) throw new AppError("VALIDATION", { userMessage: "Add notes before processing." });
+  const [meeting] = await db
+    .select({ leadId: meetings.leadId })
+    .from(meetings)
+    .where(eq(meetings.id, meetingId));
+  if (meeting?.leadId && ctx.can("proposals.write")) {
+    const [existing] = await db
+      .select({ id: proposals.id })
+      .from(proposals)
+      .where(eq(proposals.leadId, meeting.leadId))
+      .limit(1);
+    if (!existing) await createProposalFromLead(db, meeting.leadId, actor);
+  }
   refresh();
+}
+
+/** Drafts (or opens) the proposal for this meeting's lead. */
+export async function draftProposalAction(meetingId: string): Promise<void> {
+  const ctx = await requireStaff("proposals.write");
+  const db = await getDb();
+  const [meeting] = await db
+    .select({ leadId: meetings.leadId })
+    .from(meetings)
+    .where(eq(meetings.id, meetingId));
+  if (!meeting?.leadId)
+    throw new AppError("VALIDATION", { userMessage: "Only sales calls can become proposals." });
+  const [existing] = await db
+    .select({ id: proposals.id })
+    .from(proposals)
+    .where(and(eq(proposals.leadId, meeting.leadId), eq(proposals.status, "draft")))
+    .orderBy(desc(proposals.createdAt))
+    .limit(1);
+  const id =
+    existing?.id ??
+    (await createProposalFromLead(db, meeting.leadId, { id: ctx.user.id, name: ctx.user.name }));
+  redirect(`/workspace/proposals/${id}`);
 }
 
 export async function briefingAction(meetingId: string): Promise<void> {

@@ -3,7 +3,7 @@ import { fmtDate } from "@/lib/format";
 import { generatePdf, type PdfBlock } from "@/lib/pdf";
 import { clientLogoForPdf } from "@/modules/clients/logo";
 import { getPlatformSetting } from "@/modules/settings/service";
-import { formatProposalMoney, getProposal, proposalTotals } from "./service";
+import { formatProposalMoney, getProposal, PROPOSAL_NEXT_STEPS, proposalTotals } from "./service";
 
 /** Renders a proposal as a branded PDF. */
 export async function proposalPdf(
@@ -27,13 +27,14 @@ export async function proposalPdf(
     },
     { type: "rule" },
   ];
-  if (p.summary) blocks.push({ type: "h2", text: "Summary" }, { type: "p", text: p.summary });
   const section = (title: string, list: string[]) => {
     if (list.length) blocks.push({ type: "h2", text: title }, { type: "bullets", items: list });
   };
-  section("What we found", p.problems);
-  section("Goals", p.goals);
-  section("What we will do", p.activities);
+  section("Current situation", p.problems);
+  section("Goals and opportunity", p.goals);
+  if (p.summary)
+    blocks.push({ type: "h2", text: "Recommended solution" }, { type: "p", text: p.summary });
+  section("Scope and deliverables", p.activities);
   section("How we will measure progress", p.kpis);
   blocks.push(
     { type: "h2", text: "Investment" },
@@ -72,6 +73,7 @@ export async function proposalPdf(
     },
   );
   if (p.terms) blocks.push({ type: "h2", text: "Terms" }, { type: "p", text: p.terms });
+  if (!p.acceptedAt) section("Next steps", PROPOSAL_NEXT_STEPS);
   if (p.acceptedAt)
     blocks.push(
       { type: "rule" },

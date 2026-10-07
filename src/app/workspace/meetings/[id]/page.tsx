@@ -1,5 +1,5 @@
-import { eq } from "drizzle-orm";
-import { Sparkles } from "lucide-react";
+import { desc, eq } from "drizzle-orm";
+import { FileText, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -7,12 +7,13 @@ import { ActionForm, SubmitButton, TextArea } from "@/components/ui/form";
 import { Card, CardBody, CardHeader, DescriptionList } from "@/components/ui/primitives";
 import { StatusBadge, statusLabel } from "@/components/ui/status";
 import { getDb } from "@/db";
-import { leads, MEETING_STATUSES, meetings, organisations } from "@/db/schema";
+import { leads, MEETING_STATUSES, meetings, organisations, proposals } from "@/db/schema";
 import { fmtDateTime, fmtTime } from "@/lib/format";
 import { assertStaffClientAccess, requireStaff } from "@/modules/auth/context";
 import { MEETING_TYPE_LABELS } from "@/modules/meetings/service";
 import {
   briefingAction,
+  draftProposalAction,
   meetingStatusAction,
   processNotesAction,
   saveNotesAction,
@@ -51,6 +52,19 @@ export default async function MeetingPage({ params }: PageProps<"/workspace/meet
         .where(eq(organisations.id, m.organisationId))
     : [];
   const canWrite = ctx.can("meetings.write");
+  const [proposal] = m.leadId
+    ? await db
+        .select({
+          id: proposals.id,
+          number: proposals.number,
+          status: proposals.status,
+          title: proposals.title,
+        })
+        .from(proposals)
+        .where(eq(proposals.leadId, m.leadId))
+        .orderBy(desc(proposals.createdAt))
+        .limit(1)
+    : [];
 
   return (
     <>
@@ -180,7 +194,11 @@ export default async function MeetingPage({ params }: PageProps<"/workspace/meet
           <Card>
             <CardHeader
               title="Agenda & notes"
-              description="After the call, process the notes: Mea Creo drafts a summary, next-step tasks and a follow-up email for your approval."
+              description={
+                m.leadId
+                  ? "After the call, mark it complete: Mea Creo drafts the summary, next-step tasks, a follow-up email for your approval and a proposal draft priced from your catalogue."
+                  : "After the call, mark it complete: Mea Creo drafts the summary, next-step tasks and a follow-up email for your approval."
+              }
             />
             <CardBody>
               <ActionForm action={saveNotesAction} className="space-y-3">
@@ -208,7 +226,8 @@ export default async function MeetingPage({ params }: PageProps<"/workspace/meet
                         formAction={processNotesAction.bind(null, m.id)}
                         className="bg-signal hover:shadow-glow inline-flex h-10 items-center gap-1.5 rounded-lg px-4 text-sm font-medium text-white"
                       >
-                        <Sparkles className="size-4" aria-hidden /> Process notes
+                        <Sparkles className="size-4" aria-hidden />{" "}
+                        {m.outcome ? "Process again" : "Meeting complete"}
                       </button>
                     )}
                   </div>
@@ -216,6 +235,39 @@ export default async function MeetingPage({ params }: PageProps<"/workspace/meet
               </ActionForm>
             </CardBody>
           </Card>
+          {m.leadId && (m.outcome || proposal) && (
+            <Card>
+              <CardHeader
+                title="Proposal"
+                description={
+                  proposal
+                    ? `${proposal.number} · ${statusLabel(proposal.status)}`
+                    : "No proposal yet for this prospect."
+                }
+              />
+              <CardBody className="flex flex-wrap items-center gap-3">
+                {proposal ? (
+                  <Link
+                    href={`/workspace/proposals/${proposal.id}`}
+                    className="text-brand-700 inline-flex items-center gap-1.5 text-sm font-medium underline decoration-current/30 underline-offset-2 hover:decoration-current"
+                  >
+                    <FileText className="size-4" aria-hidden /> {proposal.title}
+                  </Link>
+                ) : (
+                  ctx.can("proposals.write") && (
+                    <form action={draftProposalAction.bind(null, m.id)}>
+                      <SubmitButton pendingLabel="Drafting…">
+                        <FileText className="size-4" aria-hidden /> Draft proposal
+                      </SubmitButton>
+                    </form>
+                  )
+                )}
+                <p className="text-muted w-full text-xs">
+                  Drafts are never sent automatically. Review the scope and pricing, then send.
+                </p>
+              </CardBody>
+            </Card>
+          )}
           {m.outcome && (
             <Card>
               <CardHeader

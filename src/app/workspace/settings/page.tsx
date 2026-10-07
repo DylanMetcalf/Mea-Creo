@@ -7,6 +7,7 @@ import {
   CheckboxField,
   SelectField,
   SubmitButton,
+  TextArea,
   TextField,
 } from "@/components/ui/form";
 import {
@@ -58,6 +59,8 @@ import {
   saveCompanyAction,
   saveLegalReviewAction,
   saveEmergencyAction,
+  saveOutreachAction,
+  saveQualificationAction,
   saveTargetsAction,
   updateStaffAction,
 } from "./actions";
@@ -77,6 +80,7 @@ const TABS = [
   ["email", "Email log"],
   ["activity", "Activity log"],
   ["business", "Targets"],
+  ["prospecting", "Prospecting"],
   ["data", "Data"],
 ] as const;
 type Tab = (typeof TABS)[number][0];
@@ -1037,6 +1041,105 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
             </ActionForm>
           </CardBody>
         </Card>
+      );
+      break;
+    }
+    case "prospecting": {
+      const [q, o] = await Promise.all([
+        getPlatformSetting(db, "qualification"),
+        getPlatformSetting(db, "outreach"),
+      ]);
+      const list = (v: string[]) => v.join("\n");
+      body = (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader
+              title="Qualification rules"
+              description="Who counts as an ideal client. Every prospect score explains itself against these rules. One per line; matching is case-insensitive."
+            />
+            <CardBody>
+              <ActionForm
+                action={saveQualificationAction}
+                className="grid grid-cols-1 gap-4 md:grid-cols-2"
+              >
+                <TextArea
+                  name="targetIndustries"
+                  label="Target industries"
+                  defaultValue={list(q.targetIndustries)}
+                  rows={8}
+                  disabled={!canManage}
+                />
+                <TextArea
+                  name="decisionMakerRoles"
+                  label="Decision-maker roles"
+                  defaultValue={list(q.decisionMakerRoles)}
+                  rows={8}
+                  disabled={!canManage}
+                />
+                <TextArea
+                  name="idealEmployeeRanges"
+                  label="Ideal company sizes (employees)"
+                  defaultValue={list(q.idealEmployeeRanges)}
+                  rows={4}
+                  hint="Ranges like 11-50 or 51-200."
+                  disabled={!canManage}
+                />
+                <TextArea
+                  name="poorFitSignals"
+                  label="Poor-fit signals"
+                  defaultValue={list(q.poorFitSignals)}
+                  rows={4}
+                  hint="Phrases in an enquiry that suggest a poor fit, such as 'lowest price'."
+                  disabled={!canManage}
+                />
+                {canManage && (
+                  <div className="md:col-span-2">
+                    <SubmitButton>Save rules</SubmitButton>
+                  </div>
+                )}
+              </ActionForm>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader
+              title="Outreach limits"
+              description="Outreach stays personal and POPIA-compliant: every message needs approval, opt-outs are suppressed on every channel, and the daily cap applies across all channels."
+            />
+            <CardBody>
+              <ActionForm
+                action={saveOutreachAction}
+                className="grid grid-cols-1 gap-4 md:grid-cols-3"
+              >
+                <TextField
+                  name="maxPerDay"
+                  type="number"
+                  min={1}
+                  max={50}
+                  label="Maximum messages per day"
+                  defaultValue={String(o.maxPerDay)}
+                  disabled={!canManage}
+                />
+                <TextField
+                  name="senderName"
+                  label="Sender name"
+                  defaultValue={o.senderName}
+                  disabled={!canManage}
+                />
+                <TextField
+                  name="senderTitle"
+                  label="Sender title"
+                  defaultValue={o.senderTitle}
+                  disabled={!canManage}
+                />
+                {canManage && (
+                  <div className="md:col-span-3">
+                    <SubmitButton>Save limits</SubmitButton>
+                  </div>
+                )}
+              </ActionForm>
+            </CardBody>
+          </Card>
+        </div>
       );
       break;
     }

@@ -14,6 +14,7 @@ import {
   getProposalByToken,
   markProposalViewed,
   proposalTotals,
+  PROPOSAL_NEXT_STEPS,
 } from "@/modules/proposals/service";
 import { acceptProposalAction, declineProposalAction, payProposalInvoiceAction } from "./actions";
 
@@ -90,10 +91,15 @@ export default async function PublicProposalPage({
         <Download className="size-4" aria-hidden /> Download PDF
       </a>
 
-      {p.summary && <p className="text-ink-soft mt-8 text-lg leading-relaxed">{p.summary}</p>}
-      <List title="What we found" items={p.problems} />
-      <List title="Goals" items={p.goals} />
-      <List title="What we'll do" items={p.activities} />
+      <List title="Current situation" items={p.problems} />
+      <List title="Goals and opportunity" items={p.goals} />
+      {p.summary && (
+        <section className="mt-10">
+          <h2 className="font-display text-ink text-2xl">Recommended solution</h2>
+          <p className="text-ink-soft mt-3 text-lg leading-relaxed">{p.summary}</p>
+        </section>
+      )}
+      <List title="Scope and deliverables" items={p.activities} />
       <List title="How we'll measure progress" items={p.kpis} />
 
       <section className="mt-10">
@@ -189,6 +195,21 @@ export default async function PublicProposalPage({
           <summary className="cursor-pointer font-medium">Terms</summary>
           <p className="text-ink-soft mt-3 whitespace-pre-line">{p.terms}</p>
         </details>
+      )}
+      {p.status !== "accepted" && (
+        <section className="mt-10">
+          <h2 className="font-display text-ink text-2xl">Next steps</h2>
+          <ol className="mt-4 space-y-3">
+            {PROPOSAL_NEXT_STEPS.map((step, i) => (
+              <li key={step} className="flex gap-3">
+                <span className="bg-signal/15 text-brand-700 flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold tabular-nums">
+                  {i + 1}
+                </span>
+                <span className="text-ink-soft pt-0.5">{step}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
       )}
 
       <div className="mt-10">

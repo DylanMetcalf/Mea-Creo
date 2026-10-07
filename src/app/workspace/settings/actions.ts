@@ -372,3 +372,50 @@ export async function saveLegalReviewAction(_p: ActionState, fd: FormData): Prom
     return { ok: true, message: "Saved. Pages you ticked no longer show the draft notice." };
   }, fd);
 }
+
+const lines = (v: FormDataEntryValue | null) =>
+  [
+    ...new Set(
+      String(v ?? "")
+        .split(/\n|,/)
+        .map((l) => l.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  ].slice(0, 80);
+
+/** Ideal-client rules used to qualify prospects (Settings → Prospecting). */
+export async function saveQualificationAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const value = {
+      targetIndustries: lines(fd.get("targetIndustries")),
+      poorFitSignals: lines(fd.get("poorFitSignals")),
+      idealEmployeeRanges: lines(fd.get("idealEmployeeRanges")),
+      decisionMakerRoles: lines(fd.get("decisionMakerRoles")),
+    };
+    if (!value.targetIndustries.length)
+      throw new AppError("VALIDATION", { userMessage: "Add at least one target industry." });
+    await save("qualification", value);
+    return { ok: true, message: "Qualification rules saved. New scores use them straight away." };
+  }, fd);
+}
+
+/** Outreach safety limits (Settings → Prospecting). */
+export async function saveOutreachAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const parsed = parseForm(
+      z.object({
+        maxPerDay: z.coerce
+          .number()
+          .int()
+          .min(1, "At least 1.")
+          .max(50, "Keep it to 50 or fewer a day: outreach must stay personal."),
+        senderName: z.string().trim().min(2, "Add the sender's name.").max(120),
+        senderTitle: z.string().trim().max(120),
+      }),
+      fd,
+    );
+    if (!parsed.success) return parsed.state;
+    await save("outreach", parsed.data);
+    return { ok: true, message: "Outreach limits saved." };
+  }, fd);
+}

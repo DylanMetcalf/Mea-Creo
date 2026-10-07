@@ -1,7 +1,8 @@
 import type { Role } from "@/modules/auth/permissions";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import type { DbOrTx } from "@/db";
 import {
+  audits,
   clientBrainFacts,
   clientGoals,
   clients,
@@ -13,6 +14,7 @@ import {
   projects,
   proposalItems,
   proposals,
+  services,
   tasks,
   timelineEntries,
   users,
@@ -21,6 +23,7 @@ import { AppError } from "@/lib/errors";
 import { slugify } from "@/lib/ids";
 import { absoluteUrl } from "@/lib/urls";
 import { queueClientAudit } from "@/modules/audits/service";
+import { visibilityIndex } from "@/modules/audits/visibility-index";
 import { createAuthToken } from "@/modules/auth/tokens";
 import { createInvoice } from "@/modules/billing/service";
 import { sendEmail } from "@/modules/email/service";
@@ -288,6 +291,79 @@ export async function onboardFromProposal(
       assigneeId: proposal.createdById,
     },
   ]);
+
+  // Delivery plan (handoff §32): the first deliverables of each agreed service, as client-
+  // visible tasks in their own project, so the portal shows what is coming from day one.
+  const agreed = core.length
+    ? await db
+        .select({ id: services.id, name: services.name, activities: services.includedActivities })
+        .from(services)
+        .where(
+          inArray(
+            services.id,
+            core.map((i) => i.serviceId!),
+          ),
+        )
+    : [];
+  const plan = agreed.flatMap((s) =>
+    s.activities.slice(0, 4).map((activity, i) => ({ service: s.name, activity, week: i + 2 })),
+  );
+  if (plan.length) {
+    const [delivery] = await db
+      .insert(projects)
+      .values({
+        organisationId,
+        name: "Delivery plan",
+        description: `First deliverables for ${agreed.map((s) => s.name).join(", ")}`,
+      })
+      .returning({ id: projects.id });
+    await db.insert(tasks).values(
+      plan.slice(0, 16).map((step) => ({
+        organisationId,
+        projectId: delivery.id,
+        title: `${step.service}: ${step.activity}`.slice(0, 180),
+        status: "backlog" as const,
+        dueAt: day(step.week * 7),
+        source: "onboarding" as const,
+        visibility: "client" as const,
+        assigneeId: proposal.createdById,
+      })),
+    );
+  }
+
+  // Reporting baseline: where they started, so later reports compare like with like.
+  const [baselineAudit] = lead
+    ? await db
+        .select({ result: audits.result, completedAt: audits.completedAt })
+        .from(audits)
+        .where(and(eq(audits.leadId, lead.id), eq(audits.status, "complete")))
+        .orderBy(desc(audits.completedAt))
+        .limit(1)
+    : [];
+  const baseline = baselineAudit?.result ? visibilityIndex(baselineAudit.result) : null;
+  if (baseline && baselineAudit?.completedAt) {
+    await db.insert(clientBrainFacts).values({
+      organisationId,
+      category: "strategy",
+      label: "Reporting baseline",
+      value: `Mea Creo Visibility Index ${baseline.score}/100 on ${baselineAudit.completedAt.toISOString().slice(0, 10)} (${baseline.measuredAreas} areas measured).`,
+      sourceType: "agent",
+      sourceRef: "audit:baseline",
+      verification: "verified",
+    });
+  }
+  await db.insert(tasks).values({
+    organisationId,
+    projectId: project.id,
+    title: baseline
+      ? "Record the analytics and Search Console baseline alongside the Visibility Index"
+      : "Record the reporting baseline (Visibility Index, analytics, Search Console)",
+    status: "backlog",
+    dueAt: day(7),
+    source: "onboarding",
+    visibility: "internal",
+    assigneeId: proposal.createdById,
+  });
 
   // Initial audit (runs in the background).
   if (lead?.website) await queueClientAudit(db, { organisationId, kind: "visibility" });

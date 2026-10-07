@@ -13,8 +13,11 @@ import {
   tasks,
 } from "@/db/schema";
 import { runAgent } from "@/agents/runtime";
+import { BAND_LABELS, visibilityIndex } from "@/modules/audits/visibility-index";
 import { requestApproval } from "@/modules/approvals/service";
 import { emitEvent } from "@/modules/notifications/service";
+import { packageName } from "@/modules/prospects/brief";
+import { formatProposalMoney } from "@/modules/proposals/service";
 import { getPlatformOrganisation } from "@/modules/settings/service";
 
 /**
@@ -52,86 +55,172 @@ export async function generateMeetingBriefing(
       ...(history.length ? ["Activity history"] : []),
     );
 
-    sections.push({
-      heading: "Company",
-      items: [
-        `${lead.company}${lead.industry ? `: ${lead.industry}` : ""}${lead.location ? `, ${lead.location}` : ""}`,
-        lead.website ? `Website: ${lead.website}` : "No website on file",
-        lead.employeeRange ? `Size: ${lead.employeeRange} employees` : "Size unknown",
-        `Contact: ${lead.contactName ?? "unknown"}${lead.contactRole ? ` (${lead.contactRole})` : ""}`,
-        lead.goal ? `Stated goal: "${lead.goal}"` : "No goal stated",
-      ],
-    });
-    if (lead.score?.budgetLikelihood) {
-      sections.push({
-        heading: "Qualification",
-        items: [
-          `Fit: ${lead.score.fit.level}. ${lead.score.fit.reasons.join(" ")}`,
-          `Visibility opportunity: ${lead.score.visibilityOpportunity.level}`,
-          `Budget likelihood: ${lead.score.budgetLikelihood.level}. ${lead.score.budgetLikelihood.reasons.join(" ")}`,
-          `Decision-maker access: ${lead.score.decisionMakerAccess.level}`,
-          `Confidence: ${lead.score.confidence.level}`,
-        ],
-      });
-    }
-    if (audit?.result) {
-      const r = audit.result;
-      sections.push({
-        heading: "Existing visibility",
-        items: [
-          r.headline,
-          ...r.categories
+    // Handoff §29: one screen that explains the company before the call. Every line comes
+    // from the lead record, its Visibility Report, website research or the stored brief;
+    // where something isn't known the brief says so.
+    const brief = lead.brief;
+    const r = audit?.result;
+    const index = r ? visibilityIndex(r) : null;
+    const unknown = (items: (string | null | undefined | false)[], fallback: string) => {
+      const list = items.filter((i): i is string => Boolean(i));
+      return list.length ? list : [fallback];
+    };
+    const pkg = lead.recommendedPackage ?? brief?.likelyPackage?.ongoing ?? null;
+    sections.push(
+      {
+        heading: "Company",
+        items: unknown(
+          [
+            lead.company,
+            lead.industry && `Industry: ${lead.industry}`,
+            (lead.location || brief?.location) && `Location: ${lead.location || brief?.location}`,
+            lead.employeeRange && `Size: ${lead.employeeRange} employees`,
+            lead.website && `Website: ${lead.website}`,
+          ],
+          lead.company,
+        ),
+      },
+      {
+        heading: "Contact",
+        items: unknown(
+          [
+            lead.contactName &&
+              `${lead.contactName}${lead.contactRole ? `, ${lead.contactRole}` : ""}`,
+            lead.email && `Email: ${lead.email}`,
+            lead.phone && `Phone: ${lead.phone}`,
+            ...(brief?.decisionMakers ?? []).filter((d) => !d.startsWith(lead.contactName ?? "\0")),
+          ],
+          "No named contact on record.",
+        ),
+      },
+      {
+        heading: "Business",
+        items: unknown(
+          [
+            lead.goal && `Stated goal: "${lead.goal}"`,
+            lead.message && `Their message: "${lead.message.slice(0, 280)}"`,
+            brief?.likelyBusinessProblem,
+          ],
+          "Not known yet: ask how the business wins clients.",
+        ),
+      },
+      {
+        heading: "Services",
+        items: unknown(
+          [...(lead.research?.services ?? []).slice(0, 8)],
+          "Their services weren't captured. Check the website before the call.",
+        ),
+      },
+      {
+        heading: "Current digital presence",
+        items: unknown(
+          [
+            brief?.currentVisibility ?? r?.headline,
+            index && `Mea Creo Visibility Index: ${index.score}/100 (${BAND_LABELS[index.band]})`,
+          ],
+          "Not assessed yet. Run a Visibility Report before the call.",
+        ),
+      },
+      {
+        heading: "What we found",
+        items: unknown(
+          (r?.categories ?? [])
             .filter((c) => c.status === "critical" || c.status === "needs_attention")
             .map((c) => `${c.label}: ${c.summary}`),
+          r ? "No critical gaps in the public scan." : "No Visibility Report yet.",
+        ),
+      },
+      {
+        heading: "Problems",
+        items: unknown(
+          [
+            ...(brief?.leadGenerationOpportunities ?? []).slice(0, 3),
+            ...(r?.categories ?? [])
+              .filter((c) => c.status === "critical")
+              .map((c) => `${c.label} is weak.`),
+          ],
+          "To be uncovered in the call.",
+        ),
+      },
+      {
+        heading: "Opportunities",
+        items: unknown(
+          (r?.opportunities ?? []).slice(0, 5).map((o) => `${o.title} (${o.impact} impact)`),
+          "To be identified: a Visibility Report will list them.",
+        ),
+      },
+      {
+        heading: "Competitors",
+        items: unknown(
+          brief?.competitorObservations ?? [],
+          "No competitors on record. Ask who they lose work to.",
+        ),
+      },
+      {
+        heading: "Likely requirements",
+        items: unknown(
+          [
+            ...(brief?.seoOpportunities ?? []).slice(0, 2),
+            ...(brief?.geoOpportunities ?? []).slice(0, 1),
+            ...(brief?.automationOpportunities ?? []).slice(0, 2),
+          ],
+          "Confirm in the call.",
+        ),
+      },
+      {
+        heading: "What Mea Creo can provide",
+        items: unknown(
+          lead.recommendedServices.map((slug) => packageName(slug) ?? slug),
+          "To be confirmed in the call.",
+        ),
+      },
+      {
+        heading: "Recommended package",
+        items: unknown(
+          [
+            brief?.likelyPackage?.entry && `Start: ${brief.likelyPackage.entry}`,
+            pkg && `Ongoing: ${packageName(pkg) ?? pkg}`,
+            brief?.likelyPackage?.reason,
+          ],
+          "Not determined yet.",
+        ),
+      },
+      {
+        heading: "Estimated value",
+        items: [
+          lead.estimatedMonthlyMinor
+            ? `${formatProposalMoney(lead.estimatedMonthlyMinor, lead.currency)} per month (estimate on the lead record)`
+            : "Not estimated: depends on the package agreed.",
         ],
-      });
-      sections.push({
-        heading: "Biggest opportunities",
-        items: r.opportunities.slice(0, 5).map((o) => `${o.title} (${o.impact} impact)`),
-      });
-    } else {
-      sections.push({
-        heading: "Existing visibility",
-        items: ["No Visibility Report yet. Consider running one before the call."],
-      });
-    }
-    sections.push({
-      heading: "Recommended services",
-      items: lead.recommendedServices.length
-        ? lead.recommendedServices
-        : ["To be confirmed in the call"],
-    });
-    sections.push({
-      heading: "Questions to ask",
-      items: [
-        "How do most of your new clients find you today?",
-        "What is a new client worth to you (first year)?",
-        "Who decides on marketing spend, and what's the budget range?",
-        "Have you worked with an agency before? What worked, and what didn't?",
-        "What would make the next 6 months a success?",
-        ...(lead.score?.budgetLikelihood?.level === "high"
-          ? ["Who handles marketing internally today?"]
-          : []),
-      ],
-    });
-    sections.push({
-      heading: "Likely objections",
-      items: [
-        '"We tried SEO before and saw nothing." Show the measurement plan and monthly reporting.',
-        '"Most work comes from referrals." Visibility supports referrals: people check you online first.',
-        '"It\'s expensive." Anchor on the value of one new client.',
-      ],
-    });
-    sections.push({
-      heading: "Previous interactions",
-      items: history.length
-        ? history.map((h) => `${h.createdAt.toISOString().slice(0, 10)}: ${h.summary}`)
-        : ["None"],
-    });
-    sections.push({
-      heading: "Suggested next step",
-      items: ["Agree priorities, then send a proposal within 3 working days."],
-    });
+      },
+      {
+        heading: "Questions to ask",
+        items: [
+          "How do most of your new clients find you today?",
+          "What is a new client worth to you (first year)?",
+          "Who decides on marketing spend, and what's the budget range?",
+          "Have you worked with an agency before? What worked, and what didn't?",
+          "What would make the next 6 months a success?",
+          ...(brief?.competitorObservations?.length ? [] : ["Who do you most often lose work to?"]),
+        ],
+      },
+      {
+        heading: "Previous communication",
+        items: history.length
+          ? history.map((h) => `${h.createdAt.toISOString().slice(0, 10)}: ${h.summary}`)
+          : ["None on record."],
+      },
+      {
+        heading: "Objective for the call",
+        items: [
+          "Understand how they win work and what a new client is worth.",
+          pkg
+            ? `Test whether ${packageName(pkg) ?? pkg} fits, and agree the priorities.`
+            : "Agree the priorities and the right package.",
+          "Agree the next step: a proposal within 3 working days.",
+        ],
+      },
+    );
   } else if (meeting.organisationId) {
     const [client] = await db
       .select()

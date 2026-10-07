@@ -86,7 +86,14 @@ export async function createProposalFromLead(
   const billing = await getPlatformSetting(db, "billing");
   const currency = billing.defaultCurrency;
 
-  const slugs = lead.recommendedServices.length ? lead.recommendedServices : ["seo"];
+  // Lead with the recommended package (priced from the approved catalogue); fall back to the
+  // individual services the qualification found. CUSTOM has no list price: it's added at
+  // zero and proposalReadiness() blocks sending until it's quoted.
+  const slugs = lead.recommendedPackage
+    ? [lead.recommendedPackage]
+    : lead.recommendedServices.length
+      ? lead.recommendedServices
+      : ["seo"];
   const catalogue = await db.select().from(services).where(eq(services.status, "active"));
   const chosen = slugs
     .map((slug) => catalogue.find((s) => s.slug === slug))
@@ -474,6 +481,14 @@ export async function declineProposal(db: DbOrTx, token: string, reason?: string
     body: reason,
   });
 }
+
+/** What happens after acceptance. Mirrors onboardFromProposal(), so keep the two in step. */
+export const PROPOSAL_NEXT_STEPS = [
+  "Accept online using the link to this proposal.",
+  "Your client portal opens straight away, with an onboarding checklist for access, brand assets and objectives.",
+  "We send the setup invoice; services start once it's paid.",
+  "We book the onboarding session, agree priorities and present the first-month plan.",
+];
 
 export function formatProposalMoney(minor: number, currency: string): string {
   return formatMoney(money(minor, isCurrency(currency) ? currency : "ZAR"));
