@@ -26,6 +26,7 @@ import { type ActionState, optionalText, parseForm, runAction } from "@/lib/acti
 import { AppError } from "@/lib/errors";
 import { absoluteUrl } from "@/lib/urls";
 import { logActivity, userActor } from "@/modules/activity/log";
+import { setClientLogo } from "@/modules/clients/logo";
 import { assertStaffClientAccess, requireStaff, type StaffContext } from "@/modules/auth/context";
 import type { Permission } from "@/modules/auth/permissions";
 import { recomputeHealth } from "@/modules/clients/health";
@@ -695,4 +696,23 @@ export async function archiveClientAction(formData: FormData): Promise<void> {
   });
   revalidatePath("/workspace/clients");
   redirect("/workspace/clients");
+}
+
+export async function uploadClientLogoAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  return runAction(async () => {
+    const organisationId = str(formData, "organisationId");
+    const ctx = await staffFor(organisationId, "documents.write");
+    const file = formData.get("logo");
+    if (!(file instanceof File) || file.size === 0)
+      return { ok: false, fieldErrors: { logo: ["Choose the logo file."] } };
+    await setClientLogo(await getDb(), organisationId, file, {
+      ...userActor(ctx.user),
+      userId: ctx.user.id,
+    });
+    refresh();
+    return { ok: true, message: "Logo updated." };
+  }, formData);
 }

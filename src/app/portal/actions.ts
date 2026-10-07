@@ -14,6 +14,7 @@ import { askMeaCreo } from "@/modules/assistant/service";
 import { enforceRateLimit } from "@/modules/auth/rate-limit";
 import { requireClient } from "@/modules/auth/context";
 import { startCheckout } from "@/modules/billing/service";
+import { setClientLogo } from "@/modules/clients/logo";
 import { uploadDocument } from "@/modules/documents/service";
 import { sendEmail } from "@/modules/email/service";
 import { emailTemplates } from "@/modules/email/templates";
@@ -258,5 +259,22 @@ export async function portalInviteAction(_p: ActionState, fd: FormData): Promise
     });
     refresh();
     return { ok: true, message: `Invitation sent to ${parsed.data.email}.` };
+  }, fd);
+}
+
+export async function portalLogoAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const ctx = await requireClient("portal.members");
+    const file = fd.get("logo");
+    if (!(file instanceof File) || file.size === 0)
+      return { ok: false, fieldErrors: { logo: ["Choose your logo file."] } };
+    await setClientLogo(await getDb(), ctx.organisationId, file, {
+      type: "client",
+      id: ctx.user.id,
+      label: ctx.user.name,
+      userId: ctx.user.id,
+    });
+    refresh();
+    return { ok: true, message: "Logo updated. It now appears on your reports and documents." };
   }, fd);
 }

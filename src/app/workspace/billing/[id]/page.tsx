@@ -62,7 +62,7 @@ export default async function InvoicePage({ params }: PageProps<"/workspace/bill
           <p className="text-muted mt-1 text-sm">
             <Link
               href={`/workspace/clients/${i.organisationId}?tab=billing`}
-              className="text-brand-700 hover:underline"
+              className="text-brand-700 decoration-brand-300 underline underline-offset-[3px] hover:decoration-current"
             >
               {org}
             </Link>{" "}

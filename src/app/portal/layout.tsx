@@ -6,6 +6,7 @@ import Link from "next/link";
 import { logoutAction, switchOrganisationAction } from "@/app/(auth)/actions";
 import { Logo } from "@/components/brand/logo";
 import { Toaster } from "@/components/ui/overlay";
+import { ClientLogo } from "@/components/workspace/client-logo";
 import { PortalMobileNav, PortalNav } from "@/components/portal/nav";
 import { Avatar } from "@/components/ui/primitives";
 import { getDb } from "@/db";
@@ -37,7 +38,11 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
       .from(notifications)
       .where(and(eq(notifications.userId, ctx.user.id), isNull(notifications.readAt))),
     db
-      .select({ billingState: clients.billingState, isDemo: organisations.isDemo })
+      .select({
+        billingState: clients.billingState,
+        isDemo: organisations.isDemo,
+        logo: clients.logoDocumentId,
+      })
       .from(clients)
       .innerJoin(organisations, eq(organisations.id, clients.organisationId))
       .where(eq(clients.organisationId, ctx.organisationId)),
@@ -87,8 +92,16 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
                 <button className="border-border h-8 rounded-md border px-2 text-xs">Switch</button>
               </form>
             ) : (
-              <span className="min-w-0 truncate text-sm font-medium sm:max-w-56">
-                {ctx.organisationName}
+              <span className="flex min-w-0 items-center gap-2">
+                <ClientLogo
+                  organisationId={ctx.organisationId}
+                  name={ctx.organisationName}
+                  hasLogo={Boolean(client?.logo)}
+                  size="xs"
+                />
+                <span className="min-w-0 truncate text-sm font-medium sm:max-w-56">
+                  {ctx.organisationName}
+                </span>
               </span>
             )}
             <ThemeToggle compact />

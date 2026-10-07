@@ -1,21 +1,31 @@
 import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ActionForm, SelectField, SubmitButton, TextField } from "@/components/ui/form";
+import {
+  ActionForm,
+  FileDropField,
+  SelectField,
+  SubmitButton,
+  TextField,
+} from "@/components/ui/form";
+import { ClientLogo } from "@/components/workspace/client-logo";
 import { Card, CardBody, CardHeader, DescriptionList } from "@/components/ui/primitives";
 import { getDb } from "@/db";
-import { memberships, users } from "@/db/schema";
+import { clients, memberships, users } from "@/db/schema";
 import { requireClient } from "@/modules/auth/context";
 import { ROLE_LABELS, type Role } from "@/modules/auth/permissions";
-import { portalInviteAction } from "../actions";
+import { portalInviteAction, portalLogoAction } from "../actions";
 
 export const metadata: Metadata = { title: "Account" };
 
 export default async function PortalSettings() {
   const ctx = await requireClient();
-  const team = await (
-    await getDb()
-  )
+  const db = await getDb();
+  const [client] = await db
+    .select({ logo: clients.logoDocumentId, name: clients.name })
+    .from(clients)
+    .where(eq(clients.organisationId, ctx.organisationId));
+  const team = await db
     .select({ id: users.id, name: users.name, email: users.email, role: memberships.role })
     .from(memberships)
     .innerJoin(users, eq(users.id, memberships.userId))
@@ -23,6 +33,33 @@ export default async function PortalSettings() {
   return (
     <div className="space-y-6">
       <h1 className="font-display text-ink text-3xl">Account & team</h1>
+      <Card>
+        <CardHeader
+          title="Your logo"
+          description="Shown on your reports, proposals and documents, and in your workspace."
+        />
+        <CardBody className="flex flex-col gap-5 sm:flex-row sm:items-start">
+          <ClientLogo
+            organisationId={ctx.organisationId}
+            name={client?.name ?? ctx.organisationName}
+            hasLogo={Boolean(client?.logo)}
+            size="lg"
+          />
+          {ctx.can("portal.members") ? (
+            <ActionForm action={portalLogoAction} className="min-w-0 flex-1 space-y-3">
+              <FileDropField
+                name="logo"
+                label={client?.logo ? "Replace logo" : "Upload logo"}
+                hint="PNG, JPG or WebP. A transparent PNG works best."
+                accept="image/png,image/jpeg,image/webp"
+              />
+              <SubmitButton size="sm">Save logo</SubmitButton>
+            </ActionForm>
+          ) : (
+            <p className="text-muted text-sm">Ask an account admin to change the logo.</p>
+          )}
+        </CardBody>
+      </Card>
       <Card>
         <CardHeader title="You" />
         <CardBody>

@@ -26,7 +26,7 @@
   --ink: #0e1915;
   --ink-soft: #2c3a34;
   --muted: #56655e;
-  --subtle: #7f8c86;
+  --subtle: #61706a;
 
   /* Surfaces: a cool sage-tinted mist, never plain grey */
   --paper: #f1f4f0;
@@ -50,6 +50,7 @@
 
   /* Solid accent fill that stays deep green in both themes (selected pills, chat bubbles). */
   --accent-solid: #1f4a37;
+  --danger-solid: #b0261c;
 
   /* Accents */
   --signal: #7fe0b2; /* luminous mint: highlights on dark surfaces only */
@@ -124,7 +125,7 @@
   --ink: #e8efeb;
   --ink-soft: #c5d1ca;
   --muted: #93a39b;
-  --subtle: #6c7c75;
+  --subtle: #869590;
   --paper: #09110e;
   --surface: #0f1a16;
   --surface-2: #13211c;
@@ -174,7 +175,7 @@
     --ink: #e8efeb;
     --ink-soft: #c5d1ca;
     --muted: #93a39b;
-    --subtle: #6c7c75;
+    --subtle: #869590;
     --paper: #09110e;
     --surface: #0f1a16;
     --surface-2: #13211c;
@@ -243,6 +244,7 @@
   --color-brand-100: var(--brand-100);
   --color-brand-50: var(--brand-50);
   --color-accent: var(--accent-solid);
+  --color-danger-solid: var(--danger-solid);
   --color-signal: var(--signal);
   --color-dusk-700: var(--dusk-700);
   --color-dusk-300: var(--dusk-300);
@@ -540,4 +542,14 @@ h3 {
   from {
     transform: translateX(100%);
   }
+}
+/* JS fallback for scroll reveal (see components/site/reveal.tsx). */
+.reveal-js .reveal {
+  transition:
+    opacity 0.7s var(--ease-out),
+    transform 0.7s var(--ease-out);
+}
+.reveal-js .reveal:not(.is-visible) {
+  opacity: 0.001;
+  transform: translateY(28px);
 }

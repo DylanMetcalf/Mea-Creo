@@ -105,6 +105,11 @@ export class LocalStorageProvider implements StorageProvider {
     }
   }
 
+  async getObject(key: string) {
+    const found = await this.readObject(key);
+    return found ? { body: new Uint8Array(found.body), contentType: found.contentType } : null;
+  }
+
   async deleteObject(key: string) {
     const full = this.resolve(key);
     await rm(full, { force: true });

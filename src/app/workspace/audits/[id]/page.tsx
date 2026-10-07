@@ -67,12 +67,15 @@ export default async function AuditPage({ params }: PageProps<"/workspace/audits
             {org ? (
               <Link
                 href={`/workspace/clients/${org.id}?tab=visibility`}
-                className="text-brand-700 hover:underline"
+                className="text-brand-700 decoration-brand-300 underline underline-offset-[3px] hover:decoration-current"
               >
                 Client: {org.name}
               </Link>
             ) : lead ? (
-              <Link href={`/workspace/leads/${lead.id}`} className="text-brand-700 hover:underline">
+              <Link
+                href={`/workspace/leads/${lead.id}`}
+                className="text-brand-700 decoration-brand-300 underline underline-offset-[3px] hover:decoration-current"
+              >
                 Lead: {lead.company}
               </Link>
             ) : (

@@ -1,5 +1,10 @@
 import { cn } from "@/components/ui/cn";
-import { BAND_LABELS, INDEX_METHOD, type VisibilityIndex } from "@/modules/audits/visibility-index";
+import {
+  BAND_LABELS,
+  INDEX_METHOD,
+  NOT_MEASURED_REASONS,
+  type VisibilityIndex,
+} from "@/modules/audits/visibility-index";
 import { IndexRing } from "./index-ring";
 
 const barColour = (score: number) =>
@@ -85,6 +90,30 @@ export function IndexPanel({
             </li>
           ))}
         </ul>
+        {index.areas.some((a) => a.score === null) && (
+          <details
+            className={cn("group mt-5 text-sm", inverse ? "text-night-muted" : "text-muted")}
+          >
+            <summary
+              className={cn(
+                "cursor-pointer list-none font-medium underline-offset-4 hover:underline [&::-webkit-details-marker]:hidden",
+                inverse ? "text-night-text" : "text-ink",
+              )}
+            >
+              Why some areas aren&apos;t measured
+            </summary>
+            <ul className="mt-2 space-y-2 leading-relaxed">
+              {index.areas
+                .filter((a) => a.score === null)
+                .map((a) => (
+                  <li key={a.key}>
+                    <span className={inverse ? "text-night-text" : "text-ink"}>{a.label}:</span>{" "}
+                    {NOT_MEASURED_REASONS[a.key] ?? "This needs access a public scan doesn't have."}
+                  </li>
+                ))}
+            </ul>
+          </details>
+        )}
         <details className={cn("group mt-5 text-sm", inverse ? "text-night-muted" : "text-muted")}>
           <summary
             className={cn(

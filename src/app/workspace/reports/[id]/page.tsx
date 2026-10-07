@@ -61,7 +61,7 @@ export default async function ReportPage({
           <p className="text-muted mt-1 text-sm">
             <Link
               href={`/workspace/clients/${r.organisationId}?tab=reports`}
-              className="text-brand-700 hover:underline"
+              className="text-brand-700 decoration-brand-300 underline underline-offset-[3px] hover:decoration-current"
             >
               {org}
             </Link>

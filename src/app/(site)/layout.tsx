@@ -1,4 +1,5 @@
 import { JsonLd } from "@/components/site/marketing";
+import { RevealFallback } from "@/components/site/reveal";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { siteConfig } from "@/config/site";
@@ -46,6 +47,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
           },
         ]}
       />
+      <RevealFallback />
       <SiteHeader />
       <main id="main" className="flex-1">
         {children}

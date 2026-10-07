@@ -124,7 +124,7 @@ const DOT = {
   brand: "bg-brand-500 ring-brand-100",
   success: "bg-success-700 ring-success-100",
   warning: "bg-ember-500 ring-warning-100",
-  danger: "bg-danger-700 ring-danger-100",
+  danger: "bg-danger-solid ring-danger-100",
   neutral: "bg-subtle ring-surface-2",
 };
 

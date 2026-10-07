@@ -69,3 +69,27 @@ export function visibilityIndex(result: AuditResult): VisibilityIndex | null {
   const score = Math.round(measured.reduce((s, a) => s + a.score, 0) / measured.length);
   return { score, band: bandFor(score), areas, measuredAreas: measured.length };
 }
+
+/**
+ * Why an area can't be scored from a public scan. A Visibility Report reads only what any
+ * visitor or search engine can see; some signals live behind logins or in other companies'
+ * data, so they need the business's permission (or don't exist publicly at all).
+ */
+export const NOT_MEASURED_REASONS: Partial<Record<AuditCategoryKey, string>> = {
+  search:
+    "Real rankings, impressions and clicks are only in Google Search Console, which only the site owner can share. Connect it and we measure them every month.",
+  technical: "We couldn't fetch the pages needed for these checks (the site may block crawlers).",
+  website: "The website didn't respond reliably enough during the scan to check its foundations.",
+  content: "We couldn't read enough of the page text to assess content.",
+  ai_discoverability:
+    "We check what AI systems can read on your site. How often assistants actually mention you isn't published by any AI company, so it can't be measured directly.",
+  answer_readiness:
+    "We couldn't read the page structure needed to check for answers to buyer questions.",
+  local:
+    "Your Google Business Profile's reviews, categories and calls aren't public data we can read reliably. With your permission we connect it and measure them.",
+  social:
+    "LinkedIn and Facebook block automated reading, so we only check the profiles your website links to. Engagement needs access to your accounts.",
+  conversion:
+    "Enquiry numbers live in your analytics, forms or CRM. A public scan can only see whether the website makes it easy to get in touch.",
+  competitors: "Needs named competitors to compare against. We add them during your Foundation.",
+};

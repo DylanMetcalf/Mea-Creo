@@ -27,7 +27,7 @@ const variants: Record<ButtonVariant, string> = {
     "bg-surface text-ink border border-border-strong shadow-card hover:border-brand-400 hover:text-brand-800 hover:-translate-y-px",
   ghost: "text-ink-soft hover:bg-brand-50 hover:text-ink",
   danger:
-    "bg-danger-700 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.15)] hover:bg-[#981f17] hover:-translate-y-px",
+    "bg-danger-solid text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.15)] hover:bg-[#981f17] hover:-translate-y-px",
   inverse:
     "bg-white text-[#0f241b] font-semibold shadow-[0_10px_30px_-12px_rgb(0_0_0/0.5)] hover:-translate-y-0.5 hover:bg-[#edf6f0]",
   glass:

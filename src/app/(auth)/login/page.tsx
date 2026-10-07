@@ -51,7 +51,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <p className="text-muted mt-1 mb-6 text-sm">For Mea Creo clients and team members.</p>
         <LoginForm next={next} />
         <div className="mt-6 flex justify-between text-sm">
-          <Link href="/forgot-password" className="text-brand-700 hover:underline">
+          <Link
+            href="/forgot-password"
+            className="text-brand-700 decoration-brand-300 underline underline-offset-[3px] hover:decoration-current"
+          >
             Forgot your password?
           </Link>
           <Link href="/" className="text-muted hover:text-ink">

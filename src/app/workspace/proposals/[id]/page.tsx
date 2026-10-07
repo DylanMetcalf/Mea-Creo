@@ -66,7 +66,7 @@ export default async function ProposalPage({ params }: PageProps<"/workspace/pro
                 {" · "}
                 <Link
                   href={`/workspace/leads/${p.leadId}`}
-                  className="text-brand-700 hover:underline"
+                  className="text-brand-700 decoration-brand-300 underline underline-offset-[3px] hover:decoration-current"
                 >
                   lead
                 </Link>
@@ -77,7 +77,7 @@ export default async function ProposalPage({ params }: PageProps<"/workspace/pro
                 {" · "}
                 <Link
                   href={`/workspace/clients/${p.organisationId}`}
-                  className="text-brand-700 hover:underline"
+                  className="text-brand-700 decoration-brand-300 underline underline-offset-[3px] hover:decoration-current"
                 >
                   client
                 </Link>

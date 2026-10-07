@@ -28,6 +28,11 @@ export class MockStorageProvider implements StorageProvider {
     return { key: found.key, size: found.size, contentType: found.contentType, etag: found.etag };
   }
 
+  async getObject(key: string) {
+    const found = this.objects.get(key);
+    return found ? { body: found.body, contentType: found.contentType } : null;
+  }
+
   async deleteObject(key: string) {
     this.objects.delete(key);
   }

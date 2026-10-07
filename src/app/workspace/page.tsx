@@ -77,7 +77,7 @@ export default async function CommandCentrePage() {
     ["Opportunities found", data.openOpportunities, "/workspace/clients"],
   ];
   const stripe = {
-    danger: "bg-danger-700",
+    danger: "bg-danger-solid",
     warning: "bg-ember-500",
     brand: "bg-brand-500",
   };

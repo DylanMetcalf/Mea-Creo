@@ -1,4 +1,4 @@
-import { and, count, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNull, ne } from "drizzle-orm";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Bell, LogOut, Plus } from "lucide-react";
 import type { Metadata } from "next";
@@ -9,10 +9,11 @@ import { Toaster } from "@/components/ui/overlay";
 import { Avatar } from "@/components/ui/primitives";
 import { buttonClass } from "@/components/ui/button";
 import { CommandPalette, CommandTrigger } from "@/components/workspace/command-palette";
+import { WorkspaceSwitcher } from "@/components/workspace/workspace-switcher";
 import { Breadcrumb, MobileSidebar, NavLinks, SearchShortcut } from "@/components/workspace/nav";
 import { getDb } from "@/db";
-import { approvals, notifications } from "@/db/schema";
-import { requireStaff } from "@/modules/auth/context";
+import { approvals, clients, notifications } from "@/db/schema";
+import { requireStaff, staffClientScope } from "@/modules/auth/context";
 import { ROLE_LABELS } from "@/modules/auth/permissions";
 import { getPlatformSetting } from "@/modules/settings/service";
 
@@ -35,7 +36,8 @@ const QUICK_ACTIONS: [string, string][] = [
 export default async function WorkspaceLayout({ children }: LayoutProps<"/workspace">) {
   const ctx = await requireStaff("workspace.access");
   const db = await getDb();
-  const [[unread], [pendingApprovals], emergency, billing] = await Promise.all([
+  const scope = await staffClientScope(ctx);
+  const [[unread], [pendingApprovals], emergency, billing, workspaceRows] = await Promise.all([
     db
       .select({ n: count() })
       .from(notifications)
@@ -48,7 +50,29 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
       ),
     getPlatformSetting(db, "emergency"),
     getPlatformSetting(db, "billing"),
+    db
+      .select({
+        organisationId: clients.organisationId,
+        name: clients.name,
+        logo: clients.logoDocumentId,
+        isInternal: clients.isInternal,
+      })
+      .from(clients)
+      .where(
+        and(
+          ne(clients.lifecycle, "offboarded"),
+          scope === "all" ? undefined : inArray(clients.organisationId, scope),
+        ),
+      )
+      .orderBy(desc(clients.isInternal), asc(clients.name))
+      .limit(100),
   ]);
+  const workspaces = workspaceRows.map((w) => ({
+    organisationId: w.organisationId,
+    name: w.name,
+    hasLogo: Boolean(w.logo),
+    isInternal: w.isInternal,
+  }));
   const badges = { "/workspace/approvals": pendingApprovals?.n ?? 0 };
 
   const sidebar = (
@@ -59,12 +83,8 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
       />
       <div className="px-5 pt-5 pb-4">
         <Logo href="/workspace" inverse size="sm" />
-        <div className="border-night-line mt-5 flex items-center gap-2.5 rounded-xl border bg-white/[0.03] px-3 py-2.5">
-          <span className="bg-signal size-2 rounded-full shadow-[0_0_10px_rgb(127_224_178/0.9)]" />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-white">Mea Creo HQ</p>
-            <p className="text-night-muted text-xs">Workspace</p>
-          </div>
+        <div className="mt-5">
+          <WorkspaceSwitcher workspaces={workspaces} />
         </div>
       </div>
       <div className="flex-1 [scrollbar-color:rgb(255_255_255/0.15)_transparent] overflow-y-auto px-3 pb-6">
@@ -101,7 +121,7 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
         {(emergency.pauseAllAutomation ||
           emergency.pauseOutboundEmail ||
           emergency.pausePayments) && (
-          <div role="alert" className="bg-danger-700 px-4 py-2 text-center text-sm text-white">
+          <div role="alert" className="bg-danger-solid px-4 py-2 text-center text-sm text-white">
             Emergency controls active:{" "}
             {[
               emergency.pauseAllAutomation && "automation paused",

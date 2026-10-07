@@ -209,6 +209,12 @@ export function ReportView({
 
       <section className="rounded-card bg-surface-2 text-muted p-5 text-sm">
         <p className="text-ink font-medium">About this report</p>
+        <p className="mt-2">
+          This report reads only what any visitor or search engine can see on your website. Items
+          marked &ldquo;not measured&rdquo; need data that isn&apos;t public, such as Google Search
+          Console, your Google Business Profile, analytics or social accounts. With your permission
+          we connect those and measure them properly.
+        </p>
         <ul className="mt-2 list-disc space-y-1 pl-5">
           {result.limitations.map((l) => (
             <li key={l}>{l}</li>

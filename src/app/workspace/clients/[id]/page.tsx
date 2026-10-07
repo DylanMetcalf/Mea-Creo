@@ -2,16 +2,17 @@ import { ChevronDown, Play } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { SubmitButton } from "@/components/ui/form";
+import { ActionForm, FileDropField, SubmitButton } from "@/components/ui/form";
 import { Badge } from "@/components/ui/primitives";
 import { HealthLabel, StatusBadge } from "@/components/ui/status";
 import { Tabs } from "@/components/ui/tabs";
+import { ClientLogo } from "@/components/workspace/client-logo";
 import { getDb } from "@/db";
 import { fmtDateTime, fmtMoney } from "@/lib/format";
 import { assertStaffClientAccess, requireStaff } from "@/modules/auth/context";
 import { clientDetail } from "@/modules/clients/queries";
 import { RUN_KINDS } from "@/modules/runs/kinds";
-import { runClientAction } from "../actions";
+import { runClientAction, uploadClientLogoAction } from "../actions";
 import {
   ActivityTab,
   BillingTab,
@@ -87,67 +88,97 @@ export default async function ClientPage({
         / {client.name}
       </div>
       <header className="mb-6 flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">{client.name}</h1>
-            {client.isInternal && <Badge tone="brand">Mea Creo&apos;s own account</Badge>}
-            {data.org.isDemo && <Badge tone="warning">Demo</Badge>}
-            {client.automationPaused && <Badge tone="danger">Automation paused</Badge>}
+        <div className="flex min-w-0 gap-4">
+          <div className="shrink-0">
+            <ClientLogo
+              organisationId={client.organisationId}
+              name={client.name}
+              hasLogo={Boolean(client.logoDocumentId)}
+              size="lg"
+            />
+            {ctx.can("documents.write") && (
+              <details className="relative mt-1.5">
+                <summary className="text-brand-700 cursor-pointer text-xs">
+                  {client.logoDocumentId ? "Change logo" : "Add logo"}
+                </summary>
+                <ActionForm
+                  action={uploadClientLogoAction}
+                  className="bg-surface border-border shadow-lifted absolute z-20 mt-2 w-72 space-y-3 rounded-xl border p-4"
+                >
+                  <input type="hidden" name="organisationId" value={client.organisationId} />
+                  <FileDropField
+                    name="logo"
+                    label="Logo"
+                    hint="PNG, JPG or WebP"
+                    accept="image/png,image/jpeg,image/webp"
+                  />
+                  <SubmitButton size="sm">Upload</SubmitButton>
+                </ActionForm>
+              </details>
+            )}
           </div>
-          <p className="text-muted mt-1 text-sm">
-            {[client.industry, client.location, client.website?.replace(/^https?:\/\//, "")]
-              .filter(Boolean)
-              .join(" · ") || "Profile incomplete"}
-          </p>
-          <dl className="mt-4 grid grid-cols-2 gap-x-8 gap-y-3 text-sm sm:grid-cols-3 lg:grid-cols-6">
-            <div>
-              <dt className="text-muted text-xs">Health</dt>
-              <dd className="mt-0.5">
-                <HealthLabel value={client.health} />
-              </dd>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="font-display text-[1.75rem] leading-tight">{client.name}</h1>
+              {client.isInternal && <Badge tone="brand">Mea Creo&apos;s own account</Badge>}
+              {data.org.isDemo && <Badge tone="warning">Demo</Badge>}
+              {client.automationPaused && <Badge tone="danger">Automation paused</Badge>}
             </div>
-            <div>
-              <dt className="text-muted text-xs">Monthly value</dt>
-              <dd className="mt-0.5 font-medium tabular-nums">
-                {client.isInternal
-                  ? "Internal"
-                  : fmtMoney(client.monthlyValueMinor, client.currency)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted text-xs">Services</dt>
-              <dd className="mt-0.5">{activeServices.length} active</dd>
-            </div>
-            <div>
-              <dt className="text-muted text-xs">Owner</dt>
-              <dd className="mt-0.5">{data.managerName ?? "Unassigned"}</dd>
-            </div>
-            <div>
-              <dt className="text-muted text-xs">Billing</dt>
-              <dd className="mt-0.5">
-                {client.isInternal ? (
-                  "-"
-                ) : (
-                  <StatusBadge kind="billing" value={client.billingState} />
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted text-xs">Next meeting</dt>
-              <dd className="mt-0.5">
-                {data.nextMeeting ? (
-                  <Link
-                    href={`/workspace/meetings/${data.nextMeeting.id}`}
-                    className="hover:underline"
-                  >
-                    {fmtDateTime(data.nextMeeting.startsAt)}
-                  </Link>
-                ) : (
-                  "None booked"
-                )}
-              </dd>
-            </div>
-          </dl>
+            <p className="text-muted mt-1 text-sm">
+              {[client.industry, client.location, client.website?.replace(/^https?:\/\//, "")]
+                .filter(Boolean)
+                .join(" · ") || "Profile incomplete"}
+            </p>
+            <dl className="mt-4 grid grid-cols-2 gap-x-8 gap-y-3 text-sm sm:grid-cols-3 lg:grid-cols-6">
+              <div>
+                <dt className="text-muted text-xs">Health</dt>
+                <dd className="mt-0.5">
+                  <HealthLabel value={client.health} />
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted text-xs">Monthly value</dt>
+                <dd className="mt-0.5 font-medium tabular-nums">
+                  {client.isInternal
+                    ? "Internal"
+                    : fmtMoney(client.monthlyValueMinor, client.currency)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted text-xs">Services</dt>
+                <dd className="mt-0.5">{activeServices.length} active</dd>
+              </div>
+              <div>
+                <dt className="text-muted text-xs">Owner</dt>
+                <dd className="mt-0.5">{data.managerName ?? "Unassigned"}</dd>
+              </div>
+              <div>
+                <dt className="text-muted text-xs">Billing</dt>
+                <dd className="mt-0.5">
+                  {client.isInternal ? (
+                    "-"
+                  ) : (
+                    <StatusBadge kind="billing" value={client.billingState} />
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted text-xs">Next meeting</dt>
+                <dd className="mt-0.5">
+                  {data.nextMeeting ? (
+                    <Link
+                      href={`/workspace/meetings/${data.nextMeeting.id}`}
+                      className="hover:underline"
+                    >
+                      {fmtDateTime(data.nextMeeting.startsAt)}
+                    </Link>
+                  ) : (
+                    "None booked"
+                  )}
+                </dd>
+              </div>
+            </dl>
+          </div>
         </div>
         {ctx.can("runs.execute") && (
           <div className="flex shrink-0 items-start gap-2">

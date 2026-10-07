@@ -103,7 +103,10 @@ export function AskBox({
               {answer.sources.map((s, i) => (
                 <span key={s.href + s.label}>
                   {i > 0 && " · "}
-                  <Link href={s.href} className="text-brand-700 hover:underline">
+                  <Link
+                    href={s.href}
+                    className="text-brand-700 decoration-brand-300 underline underline-offset-[3px] hover:decoration-current"
+                  >
                     {s.label}
                   </Link>
                 </span>

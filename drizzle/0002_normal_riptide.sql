@@ -1,0 +1,1 @@
+ALTER TABLE "clients" ADD COLUMN "logo_document_id" uuid;

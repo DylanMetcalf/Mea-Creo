@@ -15,6 +15,13 @@
       "when": 1790871698397,
       "tag": "0001_blushing_golden_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791354980170,
+      "tag": "0002_normal_riptide",
+      "breakpoints": true
     }
   ]
 }

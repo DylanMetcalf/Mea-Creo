@@ -64,6 +64,8 @@ export const clients = pgTable(
     /** Cached sum of active client services. Source of truth is client_services. */
     monthlyValueMinor: moneyMinor("monthly_value_minor").notNull().default(0),
     brandVoice: text("brand_voice"),
+    /** The client's logo (a document in their files), used across the product and documents. */
+    logoDocumentId: uuid("logo_document_id"),
     /** Per-client AI spend ceiling in USD micro-units per month (null = global default). */
     aiMonthlyBudgetMicroUsd: moneyMinor("ai_monthly_budget_micro_usd"),
     /** Emergency control: when true, no automation or agent runs for this client. */

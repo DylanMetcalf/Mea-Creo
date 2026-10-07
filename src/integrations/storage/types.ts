@@ -18,6 +18,8 @@ export interface StorageProvider extends IntegrationAdapter {
   putObject(key: string, body: Uint8Array, contentType: string): Promise<StoredObject>;
   headObject(key: string): Promise<StoredObject | null>;
   deleteObject(key: string): Promise<void>;
+  /** Reads an object server-side (logos for documents, small files). Null if missing. */
+  getObject(key: string): Promise<{ body: Uint8Array; contentType: string } | null>;
   getSignedDownloadUrl(key: string, expiresInSeconds: number, filename?: string): Promise<string>;
   getSignedUploadUrl(key: string, contentType: string, expiresInSeconds: number): Promise<string>;
 }

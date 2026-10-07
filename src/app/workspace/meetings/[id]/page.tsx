@@ -73,7 +73,7 @@ export default async function MeetingPage({ params }: PageProps<"/workspace/meet
                 {" · "}
                 <Link
                   href={`/workspace/leads/${lead.id}`}
-                  className="text-brand-700 hover:underline"
+                  className="text-brand-700 decoration-brand-300 underline underline-offset-[3px] hover:decoration-current"
                 >
                   {lead.company}
                 </Link>
@@ -84,7 +84,7 @@ export default async function MeetingPage({ params }: PageProps<"/workspace/meet
                 {" · "}
                 <Link
                   href={`/workspace/clients/${org.id}`}
-                  className="text-brand-700 hover:underline"
+                  className="text-brand-700 decoration-brand-300 underline underline-offset-[3px] hover:decoration-current"
                 >
                   {org.name}
                 </Link>

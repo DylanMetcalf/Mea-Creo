@@ -53,6 +53,9 @@ test("clients cannot open another organisation's approvals", async ({ browser })
 });
 
 test("contact form creates an enquiry", async ({ page }) => {
+  // A fresh address per run, so the form's rate limit doesn't trip on repeated test runs.
+  const ip = `10.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`;
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": ip });
   await page.goto("/contact");
   await page.fill('input[name="name"]', "E2E Person");
   await page.fill('input[name="email"]', "e2e@example.com");

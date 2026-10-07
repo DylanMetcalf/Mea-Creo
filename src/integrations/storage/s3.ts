@@ -89,6 +89,16 @@ export class S3StorageProvider implements StorageProvider {
     };
   }
 
+  async getObject(key: string) {
+    const response = await this.client.fetch(this.objectUrl(key));
+    if (response.status === 404) return null;
+    if (!response.ok) throw new Error(`GET failed with HTTP ${response.status}`);
+    return {
+      body: new Uint8Array(await response.arrayBuffer()),
+      contentType: response.headers.get("content-type") ?? "application/octet-stream",
+    };
+  }
+
   async deleteObject(key: string) {
     const response = await this.client.fetch(this.objectUrl(key), { method: "DELETE" });
     if (!response.ok && response.status !== 404)
