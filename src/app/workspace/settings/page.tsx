@@ -19,6 +19,7 @@ import {
   PageHeader,
 } from "@/components/ui/primitives";
 import { Tabs } from "@/components/ui/tabs";
+import { LEGAL_DOCS } from "@/content/legal";
 import { getDb } from "@/db";
 import {
   activityLog,
@@ -55,6 +56,7 @@ import {
   saveBillingAction,
   saveBookingAction,
   saveCompanyAction,
+  saveLegalReviewAction,
   saveEmergencyAction,
   saveTargetsAction,
   updateStaffAction,
@@ -147,56 +149,98 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
   switch (tab) {
     case "company": {
       const c = await getPlatformSetting(db, "company");
+      const legal = await getPlatformSetting(db, "legal");
       body = (
-        <Card>
-          <CardHeader
-            title="Company details"
-            description="Used on invoices, proposals, emails and the website's structured data. Verify them before launch."
-          />
-          <CardBody>
-            {!c.detailsVerified && (
-              <div className="mb-4">
-                <Callout tone="warning" title="Not verified yet">
-                  These were copied from the old website. Confirm each one, then tick
-                  &quot;verified&quot;.
-                </Callout>
-              </div>
-            )}
-            <ActionForm
-              action={saveCompanyAction}
-              className="grid grid-cols-1 gap-4 md:grid-cols-2"
-            >
-              <TextField name="legalName" label="Legal name" defaultValue={c.legalName} />
-              <TextField name="tradingName" label="Trading name" defaultValue={c.tradingName} />
-              <TextField name="email" label="Email" defaultValue={c.email} />
-              <TextField name="phone" label="Phone" defaultValue={c.phone} />
-              <TextField name="locality" label="Town/city" defaultValue={c.locality} />
-              <TextField name="region" label="Province" defaultValue={c.region} />
-              <TextField name="country" label="Country" defaultValue={c.country} />
-              <TextField
-                name="registrationNumber"
-                label="Company registration number"
-                defaultValue={c.registrationNumber ?? ""}
-              />
-              <TextField name="vatNumber" label="VAT number" defaultValue={c.vatNumber ?? ""} />
-              <TextField name="linkedinUrl" label="LinkedIn" defaultValue={c.linkedinUrl ?? ""} />
-              <TextField
-                name="instagramUrl"
-                label="Instagram"
-                defaultValue={c.instagramUrl ?? ""}
-              />
-              <TextField name="facebookUrl" label="Facebook" defaultValue={c.facebookUrl ?? ""} />
-              <div className="md:col-span-2">
-                <CheckboxField
-                  name="detailsVerified"
-                  label="I've checked these details and they're correct"
-                  defaultChecked={c.detailsVerified}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader
+              title="Company details"
+              description="Used on invoices, proposals, emails and the website's structured data. Verify them before launch."
+            />
+            <CardBody>
+              {!c.detailsVerified && (
+                <div className="mb-4">
+                  <Callout tone="warning" title="Not verified yet">
+                    These were copied from the old website. Confirm each one, then tick
+                    &quot;verified&quot;.
+                  </Callout>
+                </div>
+              )}
+              <ActionForm
+                action={saveCompanyAction}
+                className="grid grid-cols-1 gap-4 md:grid-cols-2"
+              >
+                <TextField name="legalName" label="Legal name" defaultValue={c.legalName} />
+                <TextField name="tradingName" label="Trading name" defaultValue={c.tradingName} />
+                <TextField name="email" label="Email" defaultValue={c.email} />
+                <TextField name="phone" label="Phone" defaultValue={c.phone} />
+                <TextField
+                  name="streetAddress"
+                  label="Street address"
+                  defaultValue={c.streetAddress ?? ""}
                 />
-              </div>
-              {canManage && <SubmitButton>Save</SubmitButton>}
-            </ActionForm>
-          </CardBody>
-        </Card>
+                <TextField name="locality" label="Town/city" defaultValue={c.locality} />
+                <TextField
+                  name="postalCode"
+                  label="Postal code"
+                  defaultValue={c.postalCode ?? ""}
+                />
+                <TextField name="region" label="Province" defaultValue={c.region} />
+                <TextField name="country" label="Country" defaultValue={c.country} />
+                <TextField
+                  name="registrationNumber"
+                  label="Company registration number"
+                  defaultValue={c.registrationNumber ?? ""}
+                />
+                <TextField name="vatNumber" label="VAT number" defaultValue={c.vatNumber ?? ""} />
+                <TextField name="linkedinUrl" label="LinkedIn" defaultValue={c.linkedinUrl ?? ""} />
+                <TextField
+                  name="instagramUrl"
+                  label="Instagram"
+                  defaultValue={c.instagramUrl ?? ""}
+                />
+                <TextField name="facebookUrl" label="Facebook" defaultValue={c.facebookUrl ?? ""} />
+                <div className="md:col-span-2">
+                  <CheckboxField
+                    name="detailsVerified"
+                    label="I've checked these details and they're correct"
+                    defaultChecked={c.detailsVerified}
+                  />
+                </div>
+                {canManage && <SubmitButton>Save</SubmitButton>}
+              </ActionForm>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader
+              title="Legal pages"
+              description="Each page shows a draft notice until you confirm its current version was reviewed. Only tick a page after you (or your attorney) have checked this exact version."
+            />
+            <CardBody>
+              <ActionForm action={saveLegalReviewAction} className="space-y-3">
+                {LEGAL_DOCS.map((d) => (
+                  <CheckboxField
+                    key={d.slug}
+                    name={d.slug}
+                    label={`${d.title} (updated ${d.updated})`}
+                    hint={
+                      <a
+                        href={`/legal/${d.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline"
+                      >
+                        Read it
+                      </a>
+                    }
+                    defaultChecked={legal.reviewed[d.slug]}
+                  />
+                ))}
+                {ctx.role === "founder" && <SubmitButton size="sm">Save</SubmitButton>}
+              </ActionForm>
+            </CardBody>
+          </Card>
+        </div>
       );
       break;
     }

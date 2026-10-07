@@ -29,7 +29,7 @@ const variants: Record<ButtonVariant, string> = {
   danger:
     "bg-danger-700 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.15)] hover:bg-[#981f17] hover:-translate-y-px",
   inverse:
-    "bg-white text-brand-900 font-semibold shadow-[0_10px_30px_-12px_rgb(0_0_0/0.5)] hover:-translate-y-0.5 hover:bg-brand-50",
+    "bg-white text-[#0f241b] font-semibold shadow-[0_10px_30px_-12px_rgb(0_0_0/0.5)] hover:-translate-y-0.5 hover:bg-[#edf6f0]",
   glass:
     "bg-white/8 text-white border border-white/18 backdrop-blur hover:bg-white/14 hover:border-white/30",
 };

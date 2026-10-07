@@ -1,4 +1,5 @@
 import { and, count, eq, inArray, isNull } from "drizzle-orm";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Bell, LogOut, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -154,6 +155,7 @@ export default async function WorkspaceLayout({ children }: LayoutProps<"/worksp
                 ))}
               </div>
             </details>
+            <ThemeToggle compact />
             <Link
               href="/workspace/notifications"
               className="text-ink-soft hover:bg-surface relative rounded-lg p-2 transition-colors"

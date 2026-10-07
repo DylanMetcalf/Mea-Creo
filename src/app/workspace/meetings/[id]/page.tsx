@@ -206,7 +206,7 @@ export default async function MeetingPage({ params }: PageProps<"/workspace/meet
                     {m.notes && (
                       <button
                         formAction={processNotesAction.bind(null, m.id)}
-                        className="bg-brand-700 hover:bg-brand-800 inline-flex h-10 items-center gap-1.5 rounded-lg px-4 text-sm font-medium text-white"
+                        className="bg-signal hover:shadow-glow inline-flex h-10 items-center gap-1.5 rounded-lg px-4 text-sm font-medium text-white"
                       >
                         <Sparkles className="size-4" aria-hidden /> Process notes
                       </button>

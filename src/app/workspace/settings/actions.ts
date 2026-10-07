@@ -54,7 +54,9 @@ export async function saveCompanyAction(_p: ActionState, fd: FormData): Promise<
         tradingName: z.string().trim().min(2).max(120),
         email: z.email(),
         phone: z.string().trim().max(40),
+        streetAddress: optionalText(160),
         locality: z.string().trim().max(80),
+        postalCode: optionalText(12),
         region: z.string().trim().max(80),
         country: z.string().trim().max(80),
         registrationNumber: optionalText(40),
@@ -345,5 +347,25 @@ export async function saveBankDetailsAction(_p: ActionState, fd: FormData): Prom
     });
     refresh();
     return { ok: true, message: "Banking details saved (encrypted)." };
+  }, fd);
+}
+
+/** Founder confirms which legal pages were reviewed. Never set on someone's behalf. */
+export async function saveLegalReviewAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const ctx = await requireStaff("settings.manage");
+    if (ctx.role !== "founder")
+      throw new AppError("FORBIDDEN", {
+        userMessage: "Only the founder can confirm legal review.",
+      });
+    await save("legal", {
+      reviewed: {
+        popia: fd.get("popia") === "on",
+        privacy: fd.get("privacy") === "on",
+        terms: fd.get("terms") === "on",
+        cookies: fd.get("cookies") === "on",
+      },
+    });
+    return { ok: true, message: "Saved. Pages you ticked no longer show the draft notice." };
   }, fd);
 }

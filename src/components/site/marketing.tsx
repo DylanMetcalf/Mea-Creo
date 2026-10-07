@@ -200,7 +200,7 @@ export function FaqList({ items }: { items: { question: string; answer: string }
             {item.question}
             <span
               aria-hidden
-              className="border-border text-brand-600 group-open:bg-brand-700 flex size-7 shrink-0 items-center justify-center rounded-full border text-lg leading-none transition-all duration-300 group-open:rotate-45 group-open:border-transparent group-open:text-white"
+              className="border-border text-brand-600 group-open:bg-accent flex size-7 shrink-0 items-center justify-center rounded-full border text-lg leading-none transition-all duration-300 group-open:rotate-45 group-open:border-transparent group-open:text-white"
             >
               +
             </span>

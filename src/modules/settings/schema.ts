@@ -110,6 +110,15 @@ export const settingsSchemas = {
     senderName: z.string(),
     senderTitle: z.string(),
   }),
+  /** Which legal pages the director has confirmed were reviewed (removes the draft notice). */
+  legal: z.object({
+    reviewed: z.object({
+      popia: z.boolean(),
+      privacy: z.boolean(),
+      terms: z.boolean(),
+      cookies: z.boolean(),
+    }),
+  }),
   setup: z.object({ completedSteps: z.array(z.string()) }),
 } as const;
 
@@ -239,5 +248,6 @@ export const settingsDefaults: { [K in SettingsKey]: Settings<K> } = {
     ],
   },
   outreach: { maxPerDay: 15, senderName: "Dylan Metcalf", senderTitle: "Founder, Mea Creo" },
+  legal: { reviewed: { popia: false, privacy: false, terms: false, cookies: false } },
   setup: { completedSteps: [] },
 };

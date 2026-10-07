@@ -43,7 +43,7 @@ export default async function ClientsPage({ searchParams }: PageProps<"/workspac
           <Link
             key={value}
             href={value ? `/workspace/clients?health=${value}` : "/workspace/clients"}
-            className={`rounded-full px-3 py-1 text-sm ${health === value || (!health && !value) ? "bg-brand-700 text-white" : "bg-surface text-ink-soft ring-border hover:bg-surface-2 ring-1"}`}
+            className={`rounded-full px-3 py-1 text-sm ${health === value || (!health && !value) ? "bg-accent text-white" : "bg-surface text-ink-soft ring-border hover:bg-surface-2 ring-1"}`}
           >
             {label}
           </Link>

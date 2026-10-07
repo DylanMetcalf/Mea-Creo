@@ -44,7 +44,7 @@ export default async function PortalMessages() {
           {rows.map(({ m, author }) => (
             <li key={m.id} className={`flex ${m.fromClient ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${m.fromClient ? "bg-brand-700 text-white" : "bg-surface-2 text-ink"}`}
+                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${m.fromClient ? "bg-accent text-white" : "bg-surface-2 text-ink"}`}
               >
                 {m.kind === "support" && (
                   <p className="mb-1 text-[0.7rem] font-semibold uppercase opacity-80">

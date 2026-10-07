@@ -31,8 +31,12 @@ import {
 type Lead = typeof leads.$inferSelect;
 type Communication = typeof communications.$inferSelect;
 
-/** Written channels count as electronic communication for direct marketing (POPIA s69). */
-const ELECTRONIC: Channel[] = ["email", "whatsapp", "linkedin", "contact_form", "other"];
+/**
+ * Channels treated as electronic communication for direct marketing (POPIA s69). Phone
+ * calls are included: the Information Regulator treats direct-marketing calls this way,
+ * and it is the safer reading either way.
+ */
+const ELECTRONIC: Channel[] = ["email", "whatsapp", "linkedin", "contact_form", "phone", "other"];
 
 export interface OutreachCheck {
   /** Drafting and sending are both blocked. */

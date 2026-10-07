@@ -4,9 +4,8 @@ import { cn } from "@/components/ui/cn";
 
 /**
  * Mea Creo logo: the hand-drawn "M" signature mark with a Manrope wordmark.
- * The mark is the original monogram, cut out to transparent ink and white versions
- * (public/brand/mark-*.png) so it sits cleanly on any surface.
- * TODO(owner): supply the original vector logo so it can replace the PNG.
+ * Marks and full lockups come from the director's master logo files (public/brand/):
+ * mark-ink / mark-white for UI, lockup-ink / lockup-white for documents and emails.
  */
 export function Logo({
   href = "/",
@@ -24,8 +23,9 @@ export function Logo({
   wordmarkFrom?: "sm";
   className?: string;
 }) {
-  const h = { sm: 24, md: 30, lg: 38 }[size];
-  const w = Math.round((h * 238) / 146);
+  const h = { sm: 26, md: 32, lg: 40 }[size];
+  const w = Math.round((h * 496) / 301);
+  const markClass = "transition-transform duration-300 ease-out group-hover/logo:-rotate-3";
   return (
     <Link
       href={href}
@@ -35,15 +35,37 @@ export function Logo({
       )}
       aria-label="Mea Creo home"
     >
-      <Image
-        src={inverse ? "/brand/mark-white.png" : "/brand/mark-ink.png"}
-        alt=""
-        width={w}
-        height={h}
-        priority
-        style={{ width: w, height: h }}
-        className="transition-transform duration-300 ease-out group-hover/logo:-rotate-3"
-      />
+      {inverse ? (
+        <Image
+          src="/brand/mark-white.png"
+          alt=""
+          width={w}
+          height={h}
+          priority
+          style={{ width: w, height: h }}
+          className={markClass}
+        />
+      ) : (
+        <>
+          <Image
+            src="/brand/mark-ink.png"
+            alt=""
+            width={w}
+            height={h}
+            priority
+            style={{ width: w, height: h }}
+            className={cn(markClass, "dark:hidden")}
+          />
+          <Image
+            src="/brand/mark-white.png"
+            alt=""
+            width={w}
+            height={h}
+            style={{ width: w, height: h }}
+            className={cn(markClass, "hidden dark:block")}
+          />
+        </>
+      )}
       {!compact && (
         <span
           className={cn(

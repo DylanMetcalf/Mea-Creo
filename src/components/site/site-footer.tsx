@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Logo } from "@/components/brand/logo";
 import { siteConfig } from "@/config/site";
 
@@ -129,7 +130,11 @@ export function SiteFooter({
             © {new Date().getFullYear()} {siteConfig.legalName} · Reg.{" "}
             {siteConfig.registrationNumber}. All rights reserved.
           </p>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <ThemeToggle inverse />
+            <Link href="/legal/popia" className="hover:text-white">
+              POPIA
+            </Link>
             <Link href="/legal/privacy" className="hover:text-white">
               Privacy
             </Link>

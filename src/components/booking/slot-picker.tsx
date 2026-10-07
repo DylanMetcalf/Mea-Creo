@@ -76,7 +76,7 @@ export function SlotPicker({
             className={cn(
               "cursor-pointer rounded-lg border px-2 py-2 text-center text-sm tabular-nums",
               slot === s
-                ? "border-brand-700 bg-brand-700 text-white"
+                ? "border-accent bg-accent text-white"
                 : "border-border bg-surface hover:border-brand-300",
             )}
           >

@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* dark: applies when the visitor chose Dark, or chose System and their device is dark. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where([data-theme="system"], [data-theme="system"] *) {
+      @slot;
+    }
+  }
+}
+
 /*
  * Mea Creo design tokens: the single source of truth for colour, gradient, depth,
  * radius, type and motion. Components use these through Tailwind (bg-brand-700,
@@ -35,6 +47,9 @@
   --brand-300: #93ceac;
   --brand-100: #d9eee1;
   --brand-50: #edf6f0;
+
+  /* Solid accent fill that stays deep green in both themes (selected pills, chat bubbles). */
+  --accent-solid: #1f4a37;
 
   /* Accents */
   --signal: #7fe0b2; /* luminous mint: highlights on dark surfaces only */
@@ -101,6 +116,111 @@
   --duration: 220ms;
 }
 
+/*
+ * Dark theme. Light is the default; dark applies when the visitor chooses it, or when they
+ * choose "System" and their device is in dark mode. Only tokens change here.
+ */
+:root[data-theme="dark"] {
+  --ink: #e8efeb;
+  --ink-soft: #c5d1ca;
+  --muted: #93a39b;
+  --subtle: #6c7c75;
+  --paper: #09110e;
+  --surface: #0f1a16;
+  --surface-2: #13211c;
+  --elevated: #16251f;
+  --border: #20312a;
+  --border-strong: #2d4238;
+  --brand-950: #ecf8f1;
+  --brand-900: #d3efe0;
+  --brand-800: #b3e2c8;
+  --brand-700: #94d4b1;
+  --brand-600: #7cc79f;
+  --brand-500: #5fae86;
+  --brand-400: #4c9672;
+  --brand-300: #3a7a5b;
+  --brand-100: #173327;
+  --brand-50: #11271d;
+  --accent-solid: #2b6a4c;
+  --dusk-700: #a9c2dd;
+  --dusk-300: #4f6f8f;
+  --dusk-100: #142233;
+  --clay-600: #f0a179;
+  --clay-100: #2d1a12;
+  --night: #050b09;
+  --night-2: #0b1512;
+  --night-3: #112019;
+  --success-700: #6fd3a1;
+  --success-100: #10281d;
+  --warning-700: #f2bb6c;
+  --warning-100: #2a1f0e;
+  --danger-700: #ff8f82;
+  --danger-100: #2f1411;
+  --info-700: #93c5ec;
+  --info-100: #0f2030;
+  --gradient-text: linear-gradient(100deg, #b9f0d3 0%, #7fe0b2 45%, #9db7d3 100%);
+  --gradient-aurora:
+    radial-gradient(60% 55% at 85% 10%, rgb(59 102 132 / 0.35), transparent 70%),
+    radial-gradient(45% 50% at 12% 30%, rgb(45 100 73 / 0.35), transparent 70%),
+    radial-gradient(40% 40% at 70% 85%, rgb(226 160 92 / 0.08), transparent 70%);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.02);
+  --shadow-md: 0 14px 34px -14px rgb(0 0 0 / 0.7), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 30px 70px -24px rgb(0 0 0 / 0.8), 0 8px 20px -10px rgb(0 0 0 / 0.5);
+  --grid-line: rgb(255 255 255 / 0.04);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] {
+    --ink: #e8efeb;
+    --ink-soft: #c5d1ca;
+    --muted: #93a39b;
+    --subtle: #6c7c75;
+    --paper: #09110e;
+    --surface: #0f1a16;
+    --surface-2: #13211c;
+    --elevated: #16251f;
+    --border: #20312a;
+    --border-strong: #2d4238;
+    --brand-950: #ecf8f1;
+    --brand-900: #d3efe0;
+    --brand-800: #b3e2c8;
+    --brand-700: #94d4b1;
+    --brand-600: #7cc79f;
+    --brand-500: #5fae86;
+    --brand-400: #4c9672;
+    --brand-300: #3a7a5b;
+    --brand-100: #173327;
+    --brand-50: #11271d;
+    --accent-solid: #2b6a4c;
+    --dusk-700: #a9c2dd;
+    --dusk-300: #4f6f8f;
+    --dusk-100: #142233;
+    --clay-600: #f0a179;
+    --clay-100: #2d1a12;
+    --night: #050b09;
+    --night-2: #0b1512;
+    --night-3: #112019;
+    --success-700: #6fd3a1;
+    --success-100: #10281d;
+    --warning-700: #f2bb6c;
+    --warning-100: #2a1f0e;
+    --danger-700: #ff8f82;
+    --danger-100: #2f1411;
+    --info-700: #93c5ec;
+    --info-100: #0f2030;
+    --gradient-text: linear-gradient(100deg, #b9f0d3 0%, #7fe0b2 45%, #9db7d3 100%);
+    --gradient-aurora:
+      radial-gradient(60% 55% at 85% 10%, rgb(59 102 132 / 0.35), transparent 70%),
+      radial-gradient(45% 50% at 12% 30%, rgb(45 100 73 / 0.35), transparent 70%),
+      radial-gradient(40% 40% at 70% 85%, rgb(226 160 92 / 0.08), transparent 70%);
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.02);
+    --shadow-md: 0 14px 34px -14px rgb(0 0 0 / 0.7), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 30px 70px -24px rgb(0 0 0 / 0.8), 0 8px 20px -10px rgb(0 0 0 / 0.5);
+    --grid-line: rgb(255 255 255 / 0.04);
+    color-scheme: dark;
+  }
+}
+
 @theme inline {
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
@@ -122,6 +242,7 @@
   --color-brand-300: var(--brand-300);
   --color-brand-100: var(--brand-100);
   --color-brand-50: var(--brand-50);
+  --color-accent: var(--accent-solid);
   --color-signal: var(--signal);
   --color-dusk-700: var(--dusk-700);
   --color-dusk-300: var(--dusk-300);
@@ -207,8 +328,8 @@
 }
 @utility bg-grid-light {
   background-image:
-    linear-gradient(rgb(14 25 21 / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(14 25 21 / 0.05) 1px, transparent 1px);
+    linear-gradient(var(--grid-line, rgb(14 25 21 / 0.05)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line, rgb(14 25 21 / 0.05)) 1px, transparent 1px);
   background-size: 44px 44px;
 }
 

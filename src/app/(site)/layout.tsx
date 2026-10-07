@@ -19,7 +19,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
             name: siteConfig.legalName,
             alternateName: siteConfig.name,
             url: siteUrl,
-            logo: `${siteUrl}/brand/mea-creo-monogram.png`,
+            logo: `${siteUrl}/brand/lockup-ink.png`,
             email: company.email,
             telephone: company.phone,
             address: {

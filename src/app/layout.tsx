@@ -19,19 +19,34 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
-  icons: { icon: "/brand/mea-creo-monogram.png", apple: "/brand/mea-creo-monogram.png" },
+  icons: { icon: "/brand/favicon-64.png", apple: "/brand/apple-touch-icon.png" },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "Mea Creo", statusBarStyle: "black-translucent" },
   // Only production is indexable; dev, preview and staging must never compete with the live site.
   robots: isProduction ? { index: true, follow: true } : { index: false, follow: false },
 };
 
-export const viewport: Viewport = { themeColor: "#f1f4f0" };
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f1f4f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#09110e" },
+  ],
+};
+
+// Applies the saved theme before first paint (no flash). Light is the default.
+const THEME_SCRIPT = `try{var m=document.cookie.match(/(?:^|; )mc_theme=(light|dark|system)/);document.documentElement.dataset.theme=m?m[1]:"light"}catch(e){}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en-ZA"
+      data-theme="light"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="flex min-h-full flex-col font-sans">{children}</body>
     </html>
   );

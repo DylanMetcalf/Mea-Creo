@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { LinkButton } from "@/components/ui/button";
@@ -26,7 +27,8 @@ export function SiteHeader() {
       <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:h-20 lg:px-8">
         <Logo />
         <SiteNav items={SITE_NAV} />
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden items-center gap-2 lg:flex">
+          <ThemeToggle compact />
           <Link
             href="/login"
             className="text-ink-soft hover:text-ink rounded-md px-2 py-1 text-sm transition-colors"
@@ -52,6 +54,9 @@ export function SiteHeader() {
             <Link href="/login" className="text-muted mt-2 py-2 text-center text-sm">
               Client sign in
             </Link>
+            <div className="mt-2 flex justify-center">
+              <ThemeToggle />
+            </div>
           </div>
         </MobileMenu>
       </div>

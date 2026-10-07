@@ -1,4 +1,5 @@
 import { and, count, eq, inArray, isNull } from "drizzle-orm";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Bell, LogOut } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -90,6 +91,7 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
                 {ctx.organisationName}
               </span>
             )}
+            <ThemeToggle compact />
             <Link
               href="/portal/notifications"
               className="hover:bg-surface-2 relative rounded-md p-2"
