@@ -6,6 +6,7 @@ import { runDailyBilling } from "@/modules/billing/service";
 import { generateMeetingBriefing } from "@/modules/meetings/briefing";
 import { emitEvent } from "@/modules/notifications/service";
 import { upgradeOutdatedScores } from "@/modules/leads/scoring";
+import { ensureProspectTasks } from "@/modules/prospecting/service";
 import { getPlatformSetting } from "@/modules/settings/service";
 
 /**
@@ -46,6 +47,9 @@ export async function runDailyCycle(
       }
     }
   }
+
+  // Fresh-prospects research tasks for this week (paid client service).
+  await ensureProspectTasks(db, now);
 
   // Leads scored before the current qualification model.
   await upgradeOutdatedScores(db);

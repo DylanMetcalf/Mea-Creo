@@ -27,6 +27,7 @@ import {
   VisibilityTab,
   WorkTab,
 } from "./tabs";
+import { ProspectsTab } from "./prospects-tab";
 
 export async function generateMetadata({
   params,
@@ -67,6 +68,7 @@ export default async function ClientPage({
     { key: "services", label: "Services", count: activeServices.length },
     { key: "visibility", label: "SEO & AI visibility" },
     { key: "meetings", label: "Meetings" },
+    ...(client.isInternal ? [] : [{ key: "prospects", label: "Prospects" }]),
     { key: "documents", label: "Documents" },
     {
       key: "reports",
@@ -223,6 +225,7 @@ export default async function ClientPage({
       {tab === "services" && <ServicesTab data={data} canManage={ctx.can("services.manage")} />}
       {tab === "visibility" && <VisibilityTab data={data} />}
       {tab === "meetings" && <MeetingsTab data={data} />}
+      {tab === "prospects" && <ProspectsTab data={data} canManage={ctx.can("services.manage")} />}
       {tab === "documents" && <DocumentsTab data={data} />}
       {tab === "reports" && <ReportsTab data={data} />}
       {tab === "billing" && <BillingTab data={data} />}

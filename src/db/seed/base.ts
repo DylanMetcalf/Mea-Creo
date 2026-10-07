@@ -19,6 +19,45 @@ import { STARTER_INSIGHTS } from "./content/insights";
 export const PLATFORM_SLUG = "mea-creo";
 export const INTERNAL_CLIENT_SLUG = "mea-creo-growth";
 
+/** Insert values for a catalogue service. */
+function serviceRow(s: (typeof SERVICE_CATALOGUE)[number], index: number) {
+  return {
+    slug: s.slug,
+    name: s.name,
+    category: s.category,
+    billingType: s.billingType,
+    summary: s.summary,
+    description: s.description,
+    includedActivities: s.includedActivities,
+    deliverables: s.deliverables,
+    kpis: s.kpis,
+    requiredInputs: s.requiredInputs,
+    requiredIntegrations: s.requiredIntegrations,
+    agents: s.agents,
+    runKinds: s.runKinds,
+    automationLevel: s.automationLevel,
+    humanInvolvement: s.humanInvolvement,
+    defaultApprovalLevel: s.defaultApprovalLevel,
+    selfService: s.selfService ?? false,
+    requiresStrategy: s.requiresStrategy ?? true,
+    sortOrder: index,
+    // Only approved prices (the packages); everything else is priced by the owner.
+    prices: s.prices ?? {},
+  };
+}
+
+/**
+ * Catalogue services added after the first seed (e.g. Fresh prospects) are inserted on
+ * the next start. Existing rows, including prices the owner set, are never touched.
+ */
+async function addMissingServices(db: DbOrTx) {
+  for (const [index, s] of SERVICE_CATALOGUE.entries())
+    await db
+      .insert(services)
+      .values(serviceRow(s, index))
+      .onConflictDoNothing({ target: services.slug });
+}
+
 /**
  * Real business data, safe for every environment (including production):
  * the Mea Creo organisation, the service catalogue (no prices), packages, the
@@ -34,6 +73,7 @@ export async function seedBase(
     .where(eq(organisations.slug, PLATFORM_SLUG))
     .limit(1);
   if (existing) {
+    await addMissingServices(db);
     const [internal] = await db
       .select()
       .from(organisations)
@@ -55,29 +95,7 @@ export async function seedBase(
   for (const [index, s] of SERVICE_CATALOGUE.entries()) {
     const [row] = await db
       .insert(services)
-      .values({
-        slug: s.slug,
-        name: s.name,
-        category: s.category,
-        billingType: s.billingType,
-        summary: s.summary,
-        description: s.description,
-        includedActivities: s.includedActivities,
-        deliverables: s.deliverables,
-        kpis: s.kpis,
-        requiredInputs: s.requiredInputs,
-        requiredIntegrations: s.requiredIntegrations,
-        agents: s.agents,
-        runKinds: s.runKinds,
-        automationLevel: s.automationLevel,
-        humanInvolvement: s.humanInvolvement,
-        defaultApprovalLevel: s.defaultApprovalLevel,
-        selfService: s.selfService ?? false,
-        requiresStrategy: s.requiresStrategy ?? true,
-        sortOrder: index,
-        // Only approved prices (the packages); everything else is priced by the owner.
-        prices: s.prices ?? {},
-      })
+      .values(serviceRow(s, index))
       .returning({ id: services.id });
     serviceIds.set(s.slug, row.id);
   }

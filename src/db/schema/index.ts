@@ -7,3 +7,4 @@ export * from "./work";
 export * from "./platform";
 export * from "./website";
 export * from "./outreach";
+export * from "./prospecting";

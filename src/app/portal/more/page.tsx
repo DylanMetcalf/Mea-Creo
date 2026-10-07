@@ -3,14 +3,21 @@ import Link from "next/link";
 import { logoutAction } from "@/app/(auth)/actions";
 import { PORTAL_NAV } from "@/components/portal/nav-items";
 import { Card } from "@/components/ui/primitives";
+import { getDb } from "@/db";
 import { requireClient } from "@/modules/auth/context";
+import { getProgramme } from "@/modules/prospecting/service";
 
 export const metadata: Metadata = { title: "More" };
 
 export default async function PortalMore() {
   const ctx = await requireClient();
+  const hasProspects = Boolean(await getProgramme(await getDb(), ctx.organisationId));
   const items = [
-    ...PORTAL_NAV.filter((i) => !(i.href === "/portal/billing" && !ctx.can("portal.billing"))),
+    ...PORTAL_NAV.filter(
+      (i) =>
+        !(i.href === "/portal/billing" && !ctx.can("portal.billing")) &&
+        !(i.href === "/portal/prospects" && !hasProspects),
+    ),
     { href: "/portal/notifications", label: "Notifications", icon: null },
     { href: "/portal/settings", label: "Account & team", icon: null },
   ];

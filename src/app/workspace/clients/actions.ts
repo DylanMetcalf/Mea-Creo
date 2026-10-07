@@ -27,6 +27,15 @@ import { AppError } from "@/lib/errors";
 import { absoluteUrl } from "@/lib/urls";
 import { logActivity, userActor } from "@/modules/activity/log";
 import { setClientLogo } from "@/modules/clients/logo";
+import {
+  addProspect,
+  importProspectsCsv,
+  programmeSchema,
+  prospectSchema,
+  releaseProspects,
+  removeProspect,
+  saveProgramme,
+} from "@/modules/prospecting/service";
 import { assertStaffClientAccess, requireStaff, type StaffContext } from "@/modules/auth/context";
 import type { Permission } from "@/modules/auth/permissions";
 import { recomputeHealth } from "@/modules/clients/health";
@@ -715,4 +724,82 @@ export async function uploadClientLogoAction(
     refresh();
     return { ok: true, message: "Logo updated." };
   }, formData);
+}
+
+// ---- Fresh prospects (paid client service) ----
+
+export async function saveProspectProgrammeAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  return runAction(async () => {
+    const organisationId = str(formData, "organisationId");
+    const ctx = await staffFor(organisationId, "services.manage");
+    const parsed = parseForm(programmeSchema, formData);
+    if (!parsed.success) return parsed.state;
+    await saveProgramme(await getDb(), organisationId, parsed.data, userActor(ctx.user));
+    refresh();
+    return { ok: true, message: "Fresh prospects settings saved." };
+  }, formData);
+}
+
+export async function addProspectAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  return runAction(async () => {
+    const organisationId = str(formData, "organisationId");
+    const ctx = await staffFor(organisationId, "clients.write");
+    const parsed = parseForm(prospectSchema, formData);
+    if (!parsed.success) return parsed.state;
+    const result = await addProspect(await getDb(), organisationId, parsed.data, {
+      ...userActor(ctx.user),
+      userId: ctx.user.id,
+    });
+    if ("duplicate" in result)
+      return { ok: false, message: "This company has already been delivered to this client." };
+    refresh();
+    return { ok: true, message: "Prospect added to this week's batch." };
+  }, formData);
+}
+
+export async function importProspectsAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  return runAction(async () => {
+    const organisationId = str(formData, "organisationId");
+    const ctx = await staffFor(organisationId, "clients.write");
+    const file = formData.get("csv");
+    if (!(file instanceof File) || file.size === 0)
+      return { ok: false, fieldErrors: { csv: ["Choose a CSV file."] } };
+    if (file.size > 1024 * 1024)
+      return { ok: false, fieldErrors: { csv: ["Keep the file under 1 MB."] } };
+    const { added, skipped } = await importProspectsCsv(
+      await getDb(),
+      organisationId,
+      await file.text(),
+      { ...userActor(ctx.user), userId: ctx.user.id },
+    );
+    refresh();
+    const note = skipped.length
+      ? ` Skipped ${skipped.length}: ${skipped
+          .slice(0, 5)
+          .map((s) => `row ${s.row} (${s.reason})`)
+          .join(", ")}${skipped.length > 5 ? "…" : ""}.`
+      : "";
+    return { ok: added > 0, message: `Imported ${added}.${note}` };
+  }, formData);
+}
+
+export async function removeProspectAction(organisationId: string, id: string): Promise<void> {
+  await staffFor(organisationId, "clients.write");
+  await removeProspect(await getDb(), organisationId, id);
+  refresh();
+}
+
+export async function releaseProspectsAction(organisationId: string): Promise<void> {
+  const ctx = await staffFor(organisationId, "clients.write");
+  await releaseProspects(await getDb(), organisationId, userActor(ctx.user));
+  refresh();
 }

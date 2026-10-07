@@ -12,6 +12,7 @@ import { Avatar } from "@/components/ui/primitives";
 import { getDb } from "@/db";
 import { approvals, clients, invoices, notifications, organisations } from "@/db/schema";
 import { requireClient } from "@/modules/auth/context";
+import { getProgramme } from "@/modules/prospecting/service";
 
 export const metadata: Metadata = {
   title: { default: "Client portal", template: "%s | Mea Creo" },
@@ -55,6 +56,11 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
   ]);
   const badges = { "/portal/approvals": pending?.n ?? 0, "/portal/billing": overdue?.n ?? 0 };
   const canBill = ctx.can("portal.billing");
+  const hasProspects = Boolean(await getProgramme(db, ctx.organisationId));
+  const hiddenNav = [
+    ...(canBill ? [] : ["/portal/billing"]),
+    ...(hasProspects ? [] : ["/portal/prospects"]),
+  ];
   const paused = client?.billingState === "suspended" || client?.billingState === "overdue";
 
   return (
@@ -146,7 +152,7 @@ export default async function PortalLayout({ children }: LayoutProps<"/portal">)
       )}
       <div className="mx-auto flex max-w-6xl gap-10 px-4 py-6 sm:px-6 lg:py-9">
         <aside className="sticky top-24 hidden h-fit w-52 shrink-0 lg:block">
-          <PortalNav badges={badges} hideBilling={!canBill} />
+          <PortalNav badges={badges} hidden={hiddenNav} />
         </aside>
         <main id="main" className="min-w-0 flex-1">
           {children}

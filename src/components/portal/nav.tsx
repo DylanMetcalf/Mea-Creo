@@ -19,45 +19,44 @@ function isActive(pathname: string, href: string) {
 
 export function PortalNav({
   badges,
-  hideBilling,
+  hidden,
 }: {
   badges: Record<string, number>;
-  hideBilling: boolean;
+  /** Nav hrefs this client can't use (billing without permission, services they lack). */
+  hidden: string[];
 }) {
   const pathname = usePathname();
   return (
     <nav aria-label="Portal" className="hidden lg:block">
       <ul className="space-y-0.5">
-        {PORTAL_NAV.filter((i) => !(hideBilling && i.href === "/portal/billing")).map(
-          ({ href, label, icon: Icon }) => (
-            <li key={href}>
-              <Link
-                href={href}
-                aria-current={isActive(pathname, href) ? "page" : undefined}
+        {PORTAL_NAV.filter((i) => !hidden.includes(i.href)).map(({ href, label, icon: Icon }) => (
+          <li key={href}>
+            <Link
+              href={href}
+              aria-current={isActive(pathname, href) ? "page" : undefined}
+              className={cn(
+                "flex items-center gap-3 rounded-[10px] px-3 py-2 text-[0.9rem] transition-colors",
+                isActive(pathname, href)
+                  ? "bg-surface text-brand-800 shadow-card ring-border/70 font-medium ring-1"
+                  : "text-ink-soft hover:bg-surface/60 hover:text-ink",
+              )}
+            >
+              <Icon
                 className={cn(
-                  "flex items-center gap-3 rounded-[10px] px-3 py-2 text-[0.9rem] transition-colors",
-                  isActive(pathname, href)
-                    ? "bg-surface text-brand-800 shadow-card ring-border/70 font-medium ring-1"
-                    : "text-ink-soft hover:bg-surface/60 hover:text-ink",
+                  "size-4",
+                  isActive(pathname, href) ? "text-brand-600" : "text-subtle",
                 )}
-              >
-                <Icon
-                  className={cn(
-                    "size-4",
-                    isActive(pathname, href) ? "text-brand-600" : "text-subtle",
-                  )}
-                  aria-hidden
-                />
-                <span className="flex-1">{label}</span>
-                {badges[href] ? (
-                  <span className="bg-clay-600 rounded-full px-1.5 text-[0.7rem] font-semibold text-white">
-                    {badges[href]}
-                  </span>
-                ) : null}
-              </Link>
-            </li>
-          ),
-        )}
+                aria-hidden
+              />
+              <span className="flex-1">{label}</span>
+              {badges[href] ? (
+                <span className="bg-clay-600 rounded-full px-1.5 text-[0.7rem] font-semibold text-white">
+                  {badges[href]}
+                </span>
+              ) : null}
+            </Link>
+          </li>
+        ))}
       </ul>
     </nav>
   );

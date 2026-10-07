@@ -21,6 +21,7 @@ import { emailTemplates } from "@/modules/email/templates";
 import { bookClientMeeting } from "@/modules/meetings/service";
 import { emitEvent, notifyStaff } from "@/modules/notifications/service";
 import { inviteClientUser } from "@/modules/onboarding/service";
+import { prospectStatusSchema, setProspectStatus } from "@/modules/prospecting/service";
 
 const clientActor = (ctx: Awaited<ReturnType<typeof requireClient>>) => ({
   type: "client" as const,
@@ -276,5 +277,26 @@ export async function portalLogoAction(_p: ActionState, fd: FormData): Promise<A
     });
     refresh();
     return { ok: true, message: "Logo updated. It now appears on your reports and documents." };
+  }, fd);
+}
+
+/** The client tracks what happened with a delivered prospect. */
+export async function portalProspectStatusAction(
+  _p: ActionState,
+  fd: FormData,
+): Promise<ActionState> {
+  return runAction(async () => {
+    const ctx = await requireClient("portal.access");
+    const parsed = parseForm(prospectStatusSchema, fd);
+    if (!parsed.success) return parsed.state;
+    await setProspectStatus(
+      await getDb(),
+      ctx.organisationId,
+      parsed.data.id,
+      parsed.data.status,
+      parsed.data.note,
+    );
+    refresh();
+    return { ok: true, message: "Saved." };
   }, fd);
 }
