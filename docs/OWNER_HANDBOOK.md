@@ -60,7 +60,8 @@ clients needing attention. Then:
 | Check client messages           | Clients → client → Messages        |                                                                       |
 | Tick off tasks                  | Tasks → My tasks                   |                                                                       |
 
-Once a week: **Business** (MRR, pipeline, cash, client health) and **Runs & agents** (what
+Once a week: **Business** (MRR, new and lost MRR, funnel, where leads come from,
+pipeline, cash, client health) and **Runs & agents** (what
 ran, what it cost).
 
 ---
@@ -70,14 +71,23 @@ ran, what it cost).
 1. **Enquiry arrives**: from the Visibility Report, the contact form, a booked call, Sales
    Scout or added by you (Leads → Add lead). It appears on the pipeline board.
 2. **Look at the lead**: fit, opportunity and confidence, each with reasons; their report.
-3. **Call**: book it (Calendar) or they book themselves (`/book`). Read the briefing.
-4. **Proposal**: on the lead, "Draft proposal". Prices come from your catalogue. Edit the
-   wording, check "Before sending" is clear, then **Send**. They get an email with a link.
-5. **They accept** on that page (name, email, tick to agree). The system creates their
+3. **Call**: book it (Calendar) or they book themselves (`/book`). Read the meeting brief:
+   one screen from company and contact to recommended package, estimated value, questions
+   to ask and the objective for the call.
+4. **Meeting complete**: type your notes on the meeting (start lines with "Need:", "Goal:",
+   "Concern:", "Budget:", "Next:") and press **Meeting complete**. You get a summary,
+   next-step tasks, a follow-up email waiting in Approvals, an updated lead and a
+   **proposal draft** priced from your catalogue. Nothing is sent until you approve it.
+5. **Proposal**: open the draft. It follows current situation → goals and opportunity →
+   recommended solution → scope → investment → timeline → terms → next steps. Edit, check
+   "Before sending" is clear, then **Send**. They get an email with a branded link and PDF.
+6. **They accept** on that page (name, email, tick to agree). The system creates their
    client account, services, onboarding tasks, the first invoice and a portal invitation.
-6. **They pay** online (Payfast) or by EFT (you record it on the invoice). Services become
+7. **They pay** online (Payfast) or by EFT (you record it on the invoice). Services become
    active.
-7. **Onboarding**: the client page has a checklist; the welcome call task is already there.
+8. **Onboarding**: the client page has a checklist; the welcome call task is already
+   there, plus a client-visible **Delivery plan** (first deliverables of each service) and a
+   reporting baseline from their Visibility Index.
 
 ---
 
@@ -95,6 +105,19 @@ Open **Clients → the client**. Tabs:
   your monthly review day). Edit the wording, then **Publish to client**.
 - **Billing**, **Documents**, **Messages**, **Meetings**, **Activity**, **Settings**
   (invite their staff, pause automation for this client, export their data).
+
+**Quality** (left menu): every deliverable goes Draft → Internal review → QA → Client
+review → Approved → Published. Tick the QA checklist (edit it in Settings → Quality);
+"Send to the client" puts it in their portal Approvals; if they ask for changes it comes
+back to internal review.
+
+**Prospects tab** (paid "Fresh prospects" service): set the weekly number (usually 10–20)
+and their ideal customer, add or import researched prospects with a reason and a source,
+then **Release** the batch to their portal. Each week you get a research task. Not
+available for your own workspace; agree the price with each client.
+
+**Client logos**: Add logo under the client's name. It appears in the workspace, their
+portal and on every PDF (proposals, invoices, reports).
 
 **Client health** is never a mystery score. It's the worst thing that's true right now
 (e.g. "invoice overdue", "approvals waiting more than 5 days"), listed with reasons.
@@ -122,6 +145,15 @@ Visibility Report, the Lead Opportunity Scan and content ideas. Use it weekly.
 need the client's written permission; only outcomes you mark "verified" with a source are
 shown. Starter article drafts are waiting for your review: read, correct and publish them
 yourself.
+
+---
+
+## 7a. Going live
+
+**Launch** (left menu, under Settings) is the go-live list. Automatic items read the
+server's configuration; you tick the rest. The domain switch stays locked until the Wix
+backup, assets, content, redirects, rehearsal and rollback items and the final QA journeys
+are done. Keep Wix running for 30 days after the switch.
 
 ---
 

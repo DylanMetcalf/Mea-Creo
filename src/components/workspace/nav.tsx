@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Rocket,
   ShieldCheck,
   BarChart3,
   Bot,
@@ -74,6 +75,7 @@ export const WORKSPACE_NAV: { title: string; items: NavItem[] }[] = [
     items: [
       { href: "/workspace/business", label: "Business", icon: BriefcaseBusiness },
       { href: "/workspace/settings", label: "Settings", icon: Settings },
+      { href: "/workspace/launch", label: "Launch", icon: Rocket },
       { href: "/workspace/design-system", label: "Design system", icon: Palette },
     ],
   },

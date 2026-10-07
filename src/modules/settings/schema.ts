@@ -125,6 +125,10 @@ export const settingsSchemas = {
     }),
   }),
   setup: z.object({ completedSteps: z.array(z.string()) }),
+  /** Owner-ticked launch items (Workspace → Launch): key → who ticked it and when. */
+  launch: z.object({
+    done: z.record(z.string(), z.object({ by: z.string(), at: z.string() })),
+  }),
   /** QA checklists (handoff §34). `kinds` empty means the check applies to every deliverable. */
   qa: z.object({
     checks: z.array(
@@ -268,6 +272,7 @@ export const settingsDefaults: { [K in SettingsKey]: Settings<K> } = {
   outreach: { maxPerDay: 15, senderName: "Dylan Metcalf", senderTitle: "Founder, Mea Creo" },
   legal: { reviewed: { popia: false, privacy: false, terms: false, cookies: false } },
   setup: { completedSteps: [] },
+  launch: { done: {} },
   qa: {
     checks: [
       { key: "brand", label: "Brand consistency: voice, logo, colours and fonts", kinds: [] },

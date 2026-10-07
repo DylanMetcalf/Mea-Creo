@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.0 — Operating system completion (2026-10-07)
+
+- Branded PDFs for proposals, invoices, reports and legal documents: night header band,
+  Mea Creo lockup, client logo, consistent footer. POPIA statement downloadable as PDF.
+- Meeting brief with the sixteen handoff headings; "Meeting complete" drafts the proposal;
+  proposals follow the handoff's section order with next steps.
+- Onboarding adds a delivery plan and a reporting baseline.
+- Settings: Prospecting (qualification and outreach limits), Quality (QA checklist),
+  Google Calendar connection.
+- Fresh prospects: weekly researched prospects for client workspaces, released to the
+  portal after review, with CSV export.
+- Quality pipeline from draft to published with client review through Approvals.
+- Sales dashboard on the Business page; first-touch attribution with consent.
+- Cookie consent banner; GA4 only after consent.
+- Google Calendar adapter (OAuth, REST); `vercel.json` daily cron.
+- Launch checklist with the DNS gate.
+- Light/dark theme, PWA manifest, new logo, client logos and workspace switcher,
+  portfolio share links, permission-based testimonials, updated POPIA statement.
+
 ## 0.2.0 — Premium redesign and acquisition loop (2026-10-02)
 
 - Design system rebuilt as a premium technology brand: escarpment palette, gradient

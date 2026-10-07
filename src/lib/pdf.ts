@@ -164,7 +164,8 @@ export function generatePdf(input: PdfInput): Buffer {
         y -= 10;
         break;
       case "h2":
-        ensure(44);
+        // Keep a heading with at least a few lines of what follows it.
+        ensure(96);
         y -= 28;
         rect(MARGIN, y - 1, 3, 12, SIGNAL);
         rect(MARGIN, y - 1, 3, 6, BRAND);
@@ -255,6 +256,8 @@ export function generatePdf(input: PdfInput): Buffer {
             );
         };
         y -= 4;
+        // Never leave the header row alone at the foot of a page.
+        ensure(64);
         drawRow(block.headers, true);
         for (const row of block.rows) drawRow(row, false);
         y -= 10;

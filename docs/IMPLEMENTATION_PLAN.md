@@ -77,6 +77,20 @@ Legend: ✅ done · 🟡 partly done (see notes) · ⬜ not started
 
 - [x] `/api/v1` read API (business, clients, pipeline, tasks) and lead creation, scoped API keys
 
+## Phase 11: Operating system completion ✅
+
+- [x] Branded PDFs (proposals, invoices, reports, legal) with the Mea Creo lockup and client logos
+- [x] Meeting brief (§29 headings), "Meeting complete" → proposal draft (§30), proposal sections (§31)
+- [x] Onboarding: delivery plan and reporting baseline (§32)
+- [x] Settings → Prospecting (qualification rules, outreach limits) and Settings → Quality
+- [x] Fresh prospects: a weekly prospect service per client workspace (not for Mea Creo HQ)
+- [x] QA pipeline DRAFT → PUBLISHED with configurable checklists (§34)
+- [x] Sales dashboard: funnel, new/lost MRR, win rate, leads by channel
+- [x] Cookie consent, GA4 after consent, first-touch attribution on leads
+- [x] Google Calendar adapter (OAuth, REST); daily Vercel cron
+- [x] Launch checklist with the DNS gate; client testimonials by permission only; portfolio share links
+- [ ] Owner: tick legal pages reviewed, connect Google, production env, final QA, DNS
+
 ## Open decisions (owner)
 
 1. Real prices for each service (and whether packages are offered as listed).
@@ -87,5 +101,5 @@ Legend: ✅ done · 🟡 partly done (see notes) · ⬜ not started
 
 ## Next to build
 
-See [FUTURE_ROADMAP.md](FUTURE_ROADMAP.md): Google Search Console, GA4 and Calendar
-adapters, Xero, staff 2FA.
+See [FUTURE_ROADMAP.md](FUTURE_ROADMAP.md): Google Search Console and GA4 reporting
+adapters, Xero, staff 2FA, a prospect data provider for Fresh prospects.
