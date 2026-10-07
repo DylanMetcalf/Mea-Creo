@@ -43,6 +43,13 @@
       "when": 1791357350902,
       "tag": "0005_icy_luminals",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791357841714,
+      "tag": "0006_safe_the_captain",
+      "breakpoints": true
     }
   ]
 }

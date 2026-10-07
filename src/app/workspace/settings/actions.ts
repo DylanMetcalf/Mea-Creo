@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { z } from "zod";
 import { getDb } from "@/db";
-import { APPROVAL_LEVELS, memberships, users } from "@/db/schema";
+import { APPROVAL_LEVELS, DELIVERABLE_KINDS, memberships, users } from "@/db/schema";
 import { type ActionState, checkbox, optionalText, parseForm, runAction } from "@/lib/actions";
 import { AppError } from "@/lib/errors";
 import { fromMajor } from "@/lib/money";
@@ -417,5 +417,48 @@ export async function saveOutreachAction(_p: ActionState, fd: FormData): Promise
     if (!parsed.success) return parsed.state;
     await save("outreach", parsed.data);
     return { ok: true, message: "Outreach limits saved." };
+  }, fd);
+}
+
+/**
+ * QA checklist (Settings → Quality). One check per line; an optional "[content, website]"
+ * suffix limits it to those deliverable types.
+ */
+export async function saveQaChecklistAction(_p: ActionState, fd: FormData): Promise<ActionState> {
+  return runAction(async () => {
+    const kinds = new Set<string>(DELIVERABLE_KINDS);
+    const checks = String(fd.get("checks") ?? "")
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .slice(0, 40)
+      .map((line) => {
+        const m = line.match(/^(.*?)\s*\[([^\]]*)\]\s*$/);
+        const label = (m ? m[1] : line).trim().slice(0, 160);
+        const listed = m
+          ? m[2]
+              .split(",")
+              .map((k) => k.trim().toLowerCase())
+              .filter(Boolean)
+          : [];
+        const unknown = listed.filter((k) => !kinds.has(k));
+        if (unknown.length)
+          throw new AppError("VALIDATION", {
+            userMessage: `Unknown type "${unknown[0]}". Use: ${DELIVERABLE_KINDS.join(", ")}.`,
+          });
+        return {
+          key: label
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "")
+            .slice(0, 40),
+          label,
+          kinds: listed as (typeof DELIVERABLE_KINDS)[number][],
+        };
+      });
+    if (!checks.length)
+      throw new AppError("VALIDATION", { userMessage: "Keep at least one check." });
+    await save("qa", { checks });
+    return { ok: true, message: "Checklist saved. New deliverables use it." };
   }, fd);
 }

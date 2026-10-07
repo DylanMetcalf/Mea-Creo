@@ -60,6 +60,7 @@ import {
   saveLegalReviewAction,
   saveEmergencyAction,
   saveOutreachAction,
+  saveQaChecklistAction,
   saveQualificationAction,
   saveTargetsAction,
   updateStaffAction,
@@ -81,6 +82,7 @@ const TABS = [
   ["activity", "Activity log"],
   ["business", "Targets"],
   ["prospecting", "Prospecting"],
+  ["quality", "Quality"],
   ["data", "Data"],
 ] as const;
 type Tab = (typeof TABS)[number][0];
@@ -1140,6 +1142,33 @@ export default async function SettingsPage({ searchParams }: PageProps<"/workspa
             </CardBody>
           </Card>
         </div>
+      );
+      break;
+    }
+    case "quality": {
+      const qa = await getPlatformSetting(db, "qa");
+      body = (
+        <Card>
+          <CardHeader
+            title="QA checklist"
+            description="Every deliverable is checked against these before it can go to the client. One check per line. Add [content, website] at the end to limit a check to those types."
+          />
+          <CardBody>
+            <ActionForm action={saveQaChecklistAction} className="space-y-4">
+              <TextArea
+                name="checks"
+                label="Checks"
+                rows={14}
+                defaultValue={qa.checks
+                  .map((c) => (c.kinds.length ? `${c.label} [${c.kinds.join(", ")}]` : c.label))
+                  .join("\n")}
+                hint="Types: content, website, seo, geo, aeo, social, ads, design, report, document, other."
+                disabled={!canManage}
+              />
+              {canManage && <SubmitButton>Save checklist</SubmitButton>}
+            </ActionForm>
+          </CardBody>
+        </Card>
       );
       break;
     }

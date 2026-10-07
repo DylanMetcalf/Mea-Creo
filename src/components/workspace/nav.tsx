@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ShieldCheck,
   BarChart3,
   Bot,
   BriefcaseBusiness,
@@ -43,6 +44,7 @@ export const WORKSPACE_NAV: { title: string; items: NavItem[] }[] = [
       { href: "/workspace/clients", label: "Clients", icon: Users },
       { href: "/workspace/approvals", label: "Approvals", icon: ClipboardCheck },
       { href: "/workspace/tasks", label: "Tasks", icon: CheckSquare },
+      { href: "/workspace/quality", label: "Quality", icon: ShieldCheck },
       { href: "/workspace/meetings", label: "Calendar", icon: CalendarDays },
       { href: "/workspace/reports", label: "Reports", icon: BarChart3 },
     ],

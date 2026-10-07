@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DELIVERABLE_KINDS } from "@/db/schema/quality";
 import { siteConfig } from "@/config/site";
 
 /**
@@ -124,6 +125,16 @@ export const settingsSchemas = {
     }),
   }),
   setup: z.object({ completedSteps: z.array(z.string()) }),
+  /** QA checklists (handoff §34). `kinds` empty means the check applies to every deliverable. */
+  qa: z.object({
+    checks: z.array(
+      z.object({
+        key: z.string(),
+        label: z.string(),
+        kinds: z.array(z.enum(DELIVERABLE_KINDS)),
+      }),
+    ),
+  }),
 } as const;
 
 export type SettingsKey = keyof typeof settingsSchemas;
@@ -257,4 +268,47 @@ export const settingsDefaults: { [K in SettingsKey]: Settings<K> } = {
   outreach: { maxPerDay: 15, senderName: "Dylan Metcalf", senderTitle: "Founder, Mea Creo" },
   legal: { reviewed: { popia: false, privacy: false, terms: false, cookies: false } },
   setup: { completedSteps: [] },
+  qa: {
+    checks: [
+      { key: "brand", label: "Brand consistency: voice, logo, colours and fonts", kinds: [] },
+      { key: "spelling", label: "Spelling and grammar (South African English)", kinds: [] },
+      { key: "accuracy", label: "Accuracy: facts, figures and claims checked", kinds: [] },
+      {
+        key: "visual",
+        label: "Visual quality: layout, images and mobile view",
+        kinds: ["content", "website", "social", "ads", "design", "report", "document"],
+      },
+      {
+        key: "seo",
+        label: "SEO: title, meta description, headings, internal links",
+        kinds: ["content", "website", "seo"],
+      },
+      {
+        key: "geo",
+        label: "GEO: clear entity facts AI systems can quote",
+        kinds: ["content", "website", "geo"],
+      },
+      {
+        key: "aeo",
+        label: "AEO: direct answers to the questions buyers ask",
+        kinds: ["content", "website", "aeo"],
+      },
+      {
+        key: "cta",
+        label: "Clear call to action",
+        kinds: ["content", "website", "social", "ads"],
+      },
+      {
+        key: "compliance",
+        label: "Compliance: POPIA, no guarantees or unapproved claims",
+        kinds: [],
+      },
+      { key: "requirements", label: "Meets the client's brief and requirements", kinds: [] },
+      {
+        key: "technical",
+        label: "Technical: links, forms, tracking and speed checked",
+        kinds: ["website", "seo", "ads"],
+      },
+    ],
+  },
 };

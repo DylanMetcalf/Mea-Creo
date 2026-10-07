@@ -232,6 +232,17 @@ export async function decideApproval(
   if (decision === "approved" && approval.action) {
     await executeApprovalAction(db, approval.organisationId, approval.action, actor);
   }
+  if (decision !== "approved" && approval.action?.type === "deliverable.approve") {
+    const { applyClientDecision } = await import("@/modules/quality/service");
+    await applyClientDecision(
+      db,
+      approval.organisationId,
+      String(approval.action.payload.deliverableId),
+      false,
+      actor.label ?? "Client",
+      comment,
+    );
+  }
   if (decision !== "approved") {
     await db.insert(tasks).values({
       organisationId: approval.organisationId,
@@ -347,6 +358,17 @@ export async function executeApprovalAction(
             organisationId,
           });
       }
+      break;
+    }
+    case "deliverable.approve": {
+      const { applyClientDecision } = await import("@/modules/quality/service");
+      await applyClientDecision(
+        db,
+        organisationId,
+        String(p.deliverableId),
+        true,
+        actor.label ?? "Client",
+      );
       break;
     }
     case "task.create": {
