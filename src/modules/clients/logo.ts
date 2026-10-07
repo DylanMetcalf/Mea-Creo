@@ -5,6 +5,7 @@ import type { DbOrTx } from "@/db";
 import { clients, documents } from "@/db/schema";
 import { resolveIntegration } from "@/integrations/registry";
 import { AppError } from "@/lib/errors";
+import type { PdfImage } from "@/lib/pdf";
 import { uuidv7 } from "@/lib/ids";
 import { type Actor, logActivity } from "@/modules/activity/log";
 
@@ -87,6 +88,30 @@ export async function getClientLogo(
   if (!storage.available) return null;
   try {
     return await storage.adapter.getObject(row.key);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The organisation's logo prepared for PDFs: flattened on white and encoded as JPEG (the
+ * PDF writer embeds JPEG directly). Null when there's no logo or it can't be read.
+ */
+export async function clientLogoForPdf(
+  db: DbOrTx,
+  organisationId: string | null | undefined,
+): Promise<PdfImage | null> {
+  if (!organisationId) return null;
+  const logo = await getClientLogo(db, organisationId);
+  if (!logo) return null;
+  try {
+    const sharp = (await import("sharp")).default;
+    const { data, info } = await sharp(Buffer.from(logo.body))
+      .resize({ width: 480, height: 240, fit: "inside", withoutEnlargement: true })
+      .flatten({ background: "#ffffff" })
+      .jpeg({ quality: 88 })
+      .toBuffer({ resolveWithObject: true });
+    return { jpeg: data, w: info.width, h: info.height };
   } catch {
     return null;
   }

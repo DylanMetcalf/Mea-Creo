@@ -3,6 +3,7 @@ import type { DbOrTx } from "@/db";
 import { organisations, reports } from "@/db/schema";
 import { fmtDate } from "@/lib/format";
 import { generatePdf, type PdfBlock } from "@/lib/pdf";
+import { clientLogoForPdf } from "@/modules/clients/logo";
 import { getPlatformSetting } from "@/modules/settings/service";
 
 /** Renders a report as a PDF. Callers must check access first. */
@@ -16,7 +17,10 @@ export async function reportPdf(
     .select({ name: organisations.name })
     .from(organisations)
     .where(eq(organisations.id, report.organisationId));
-  const company = await getPlatformSetting(db, "company");
+  const [company, logo] = await Promise.all([
+    getPlatformSetting(db, "company"),
+    clientLogoForPdf(db, report.organisationId),
+  ]);
   const c = report.content;
   const blocks: PdfBlock[] = [
     { type: "title", text: report.title },
@@ -61,6 +65,13 @@ export async function reportPdf(
     title: report.title,
     blocks,
     footer: `${company.tradingName} · ${company.email}`,
+    docType: "Report",
+    docMeta:
+      report.periodStart && report.periodEnd
+        ? `${fmtDate(report.periodStart)} to ${fmtDate(report.periodEnd)}`
+        : undefined,
+    clientLogo: logo,
+    clientName: org?.name,
   });
   return {
     filename: `${report.title.replace(/[^\w -]+/g, "").slice(0, 80)}.pdf`,

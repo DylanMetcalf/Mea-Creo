@@ -1,3 +1,4 @@
+import { FileDown } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/site/marketing";
@@ -32,8 +33,16 @@ export default async function LegalPage({ params }: PageProps<"/legal/[doc]">) {
       />
       <Container className="max-w-3xl">
         <h1 className="font-display text-3xl sm:text-5xl">{d.title}</h1>
-        <p className="text-muted mt-3 text-sm">
-          Last updated {new Date(d.updated).toLocaleDateString("en-ZA", { dateStyle: "long" })}
+        <p className="text-muted mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+          <span>
+            Last updated {new Date(d.updated).toLocaleDateString("en-ZA", { dateStyle: "long" })}
+          </span>
+          <a
+            href={`/legal/${d.slug}/pdf`}
+            className="text-brand-700 inline-flex items-center gap-1 font-medium underline decoration-current/30 underline-offset-2 hover:decoration-current"
+          >
+            <FileDown className="size-4" aria-hidden /> Download PDF
+          </a>
         </p>
         {!reviewed && (
           <div className="mt-6">

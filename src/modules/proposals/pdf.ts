@@ -1,6 +1,7 @@
 import type { DbOrTx } from "@/db";
 import { fmtDate } from "@/lib/format";
 import { generatePdf, type PdfBlock } from "@/lib/pdf";
+import { clientLogoForPdf } from "@/modules/clients/logo";
 import { getPlatformSetting } from "@/modules/settings/service";
 import { formatProposalMoney, getProposal, proposalTotals } from "./service";
 
@@ -12,7 +13,10 @@ export async function proposalPdf(
   const data = await getProposal(db, id);
   if (!data) return null;
   const { proposal: p, items } = data;
-  const company = await getPlatformSetting(db, "company");
+  const [company, logo] = await Promise.all([
+    getPlatformSetting(db, "company"),
+    clientLogoForPdf(db, p.organisationId),
+  ]);
   const m = (minor: number) => formatProposalMoney(minor, p.currency);
   const totals = proposalTotals(items, p.discountPercent);
   const blocks: PdfBlock[] = [
@@ -45,7 +49,7 @@ export async function proposalPdf(
       ]),
     },
     {
-      type: "kv",
+      type: "highlight",
       rows: [
         ["Setup and once-off total", m(totals.setupMinor)],
         ...(totals.monthlyDiscountMinor
@@ -80,6 +84,10 @@ export async function proposalPdf(
     title: p.title,
     blocks,
     footer: `${company.legalName} · ${company.email}`,
+    docType: "Proposal",
+    docMeta: `${p.number}${p.validUntil ? ` · valid until ${fmtDate(p.validUntil)}` : ""}`,
+    clientLogo: logo,
+    clientName: p.companyName,
   });
   return { filename: `${p.number}.pdf`, body };
 }

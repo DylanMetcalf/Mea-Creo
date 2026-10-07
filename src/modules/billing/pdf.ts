@@ -5,13 +5,14 @@ import { fmtDate } from "@/lib/format";
 import { generatePdf, type PdfBlock } from "@/lib/pdf";
 import { formatProposalMoney } from "@/modules/proposals/service";
 import { eftLines, getBankDetails } from "@/modules/banking/service";
+import { clientLogoForPdf } from "@/modules/clients/logo";
 import { getPlatformSetting } from "@/modules/settings/service";
 
 /** Invoice PDF. Callers check access first. Company and bank details come only from settings. */
 export async function invoicePdf(db: DbOrTx, id: string) {
   const [invoice] = await db.select().from(invoices).where(eq(invoices.id, id)).limit(1);
   if (!invoice) return null;
-  const [lines, [client], company, billing, bank] = await Promise.all([
+  const [lines, [client], company, billing, bank, logo] = await Promise.all([
     db
       .select()
       .from(invoiceLines)
@@ -21,10 +22,12 @@ export async function invoicePdf(db: DbOrTx, id: string) {
     getPlatformSetting(db, "company"),
     getPlatformSetting(db, "billing"),
     getBankDetails(db),
+    clientLogoForPdf(db, invoice.organisationId),
   ]);
   const m = (minor: number) => formatProposalMoney(minor, invoice.currency);
+  const docType = billing.vatRegistered ? "Tax invoice" : "Invoice";
   const blocks: PdfBlock[] = [
-    { type: "title", text: billing.vatRegistered ? "Tax invoice" : "Invoice" },
+    { type: "title", text: docType },
     {
       type: "subtitle",
       text: `${invoice.number} · issued ${fmtDate(invoice.issuedAt)} · due ${fmtDate(invoice.dueAt)}`,
@@ -58,7 +61,8 @@ export async function invoicePdf(db: DbOrTx, id: string) {
       rows: lines.map((l) => [l.description, String(l.quantity), m(l.unitMinor), m(l.amountMinor)]),
     },
     {
-      type: "kv",
+      type: "highlight",
+      emphasiseLast: true,
       rows: [
         ["Subtotal", m(invoice.subtotalMinor)],
         [
@@ -93,6 +97,10 @@ export async function invoicePdf(db: DbOrTx, id: string) {
       title: `Invoice ${invoice.number}`,
       blocks,
       footer: `${company.legalName} · ${company.email}`,
+      docType,
+      docMeta: `${invoice.number} · due ${fmtDate(invoice.dueAt)}`,
+      clientLogo: logo,
+      clientName: client?.name,
     }),
   };
 }
