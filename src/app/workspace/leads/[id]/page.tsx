@@ -1,4 +1,5 @@
 import { desc, eq } from "drizzle-orm";
+import { leadChannel } from "@/modules/leads/attribution";
 import { ExternalLink, FileText, Search } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -466,6 +467,21 @@ export default async function LeadPage({ params }: PageProps<"/workspace/leads/[
                         : null,
                     ],
                     ["Message", lead.message],
+                    ["Channel", leadChannel(lead)],
+                    [
+                      "First touch",
+                      Object.keys(lead.attribution).length
+                        ? [
+                            lead.attribution.ref && `from ${lead.attribution.ref}`,
+                            lead.attribution.utm_source &&
+                              `utm ${[lead.attribution.utm_source, lead.attribution.utm_medium, lead.attribution.utm_campaign].filter(Boolean).join(" / ")}`,
+                            lead.attribution.landing && `landed on ${lead.attribution.landing}`,
+                            lead.attribution.at,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")
+                        : null,
+                    ],
                   ]}
                 />
               </CardBody>

@@ -65,6 +65,12 @@ Configuration comes from environment variables, validated at startup by
 | `SALES_SCOUT_WEBHOOK_SECRET`                                                        | none                                | HMAC secret for inbound Sales Scout webhooks                                |
 | `SOCIAL_PROVIDER`                                                                   | `none`                              | Reserved; LinkedIn stays assisted-only                                      |
 
+## Website analytics
+
+| Variable            | Default | Purpose                                                                                                     |
+| ------------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
+| `GA_MEASUREMENT_ID` | none    | GA4 id (`G-…`). Loaded only when `FEATURE_GOOGLE_ANALYTICS=true` **and** the visitor accepts analytics cookies |
+
 ## Feature flags
 
 `FEATURE_XERO`, `FEATURE_PAYFAST`, `FEATURE_GOOGLE_ANALYTICS`, `FEATURE_GSC`,

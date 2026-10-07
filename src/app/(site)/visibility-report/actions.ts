@@ -1,5 +1,6 @@
 "use server";
 
+import { recordAttribution } from "@/modules/leads/attribution";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
 import { kickJobs } from "@/jobs/kick";
@@ -48,6 +49,7 @@ export async function requestReportAction(
     }
 
     const result = await requestVisibilityReport(db, parsed.data);
+    await recordAttribution(db, result.leadId);
     token = result.token;
     kickJobs();
   }, formData);

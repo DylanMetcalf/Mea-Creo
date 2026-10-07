@@ -143,7 +143,10 @@ async function mirrorToCalendar(
 }
 
 /** Public booking of a visibility review / strategy call. Creates or links the lead. */
-export async function bookPublicCall(db: Db, input: BookingInput): Promise<{ meetingId: string }> {
+export async function bookPublicCall(
+  db: Db,
+  input: BookingInput,
+): Promise<{ meetingId: string; leadId: string }> {
   const start = new Date(input.slot);
   const end = await assertSlotAvailable(db, "discovery", start);
   const email = input.email.toLowerCase();
@@ -252,7 +255,7 @@ export async function bookPublicCall(db: Db, input: BookingInput): Promise<{ mee
     entityType: "meeting",
     entityId: result.meetingId,
   });
-  return { meetingId: result.meetingId };
+  return { meetingId: result.meetingId, leadId: result.leadId };
 }
 
 /** A client books (or requests) a meeting from their portal. */

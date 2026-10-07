@@ -1,5 +1,6 @@
 "use server";
 
+import { recordAttribution } from "@/modules/leads/attribution";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
 import { kickJobs } from "@/jobs/kick";
@@ -30,7 +31,9 @@ export async function bookCallAction(_prev: ActionState, formData: FormData): Pr
         message: "Several bookings were made from here recently. Please email us instead.",
         values,
       };
-    ({ meetingId } = await bookPublicCall(db, parsed.data));
+    const booked = await bookPublicCall(db, parsed.data);
+    meetingId = booked.meetingId;
+    await recordAttribution(db, booked.leadId);
     kickJobs();
   }, formData);
   if (meetingId) redirect(`/book/confirmed`);

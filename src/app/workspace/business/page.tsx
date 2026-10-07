@@ -25,6 +25,7 @@ import {
 import { formatMicroUsd } from "@/integrations/ai/pricing";
 import { fmtMoney } from "@/lib/format";
 import { requireStaff } from "@/modules/auth/context";
+import { salesDashboard } from "@/modules/sales/dashboard";
 import { getPlatformSetting } from "@/modules/settings/service";
 
 export const metadata: Metadata = { title: "Business" };
@@ -113,6 +114,7 @@ export default async function BusinessPage() {
       getPlatformSetting(db, "targets"),
       getPlatformSetting(db, "billing"),
     ]);
+  const sales = await salesDashboard(db, now);
 
   const mrr = byService.reduce((s, r) => s + Number(r.total), 0);
   const external = clientRows.filter((c) => !c.isInternal && c.lifecycle !== "offboarded");
@@ -161,6 +163,68 @@ export default async function BusinessPage() {
           href="/workspace/billing?tab=open"
         />
       </div>
+      <section aria-labelledby="sales-heading" className="mb-8">
+        <h2 id="sales-heading" className="label-mono text-muted mb-3">
+          Sales · last {sales.windowDays} days
+        </h2>
+        <div className="mb-4 grid grid-cols-2 gap-4 xl:grid-cols-4">
+          <Stat label="New MRR this month" value={fmtMoney(sales.newMrr)} tone="success" />
+          <Stat
+            label="Lost MRR this month"
+            value={fmtMoney(sales.lostMrr)}
+            tone={sales.lostMrr ? "danger" : "default"}
+          />
+          <Stat
+            label="Net new MRR"
+            value={`${sales.netMrr < 0 ? "-" : ""}${fmtMoney(Math.abs(sales.netMrr))}`}
+          />
+          <Stat
+            label="Proposal win rate"
+            value={sales.winRate == null ? "n/a" : `${Math.round(sales.winRate * 100)}%`}
+            hint={`${sales.decidedProposals} decided`}
+            href="/workspace/proposals"
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+          <Card>
+            <CardHeader
+              title="Funnel"
+              description="Leads created in the window and how far each got (from meetings, sent proposals and acceptances)."
+            />
+            <CardBody>
+              <BarList
+                ariaLabel="Sales funnel"
+                data={sales.funnel.map((f, i) => ({
+                  label: f.label,
+                  value: f.value,
+                  display:
+                    i === 0 || !sales.funnel[0].value
+                      ? String(f.value)
+                      : `${f.value} · ${Math.round((f.value / sales.funnel[0].value) * 100)}%`,
+                }))}
+                emptyText="No leads in this window yet."
+              />
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader
+              title="Where leads come from"
+              description="First-touch channel (recorded only when visitors accept analytics cookies), otherwise how the lead was created."
+            />
+            <CardBody>
+              <BarList
+                ariaLabel="Leads by channel"
+                data={sales.channels.map((c) => ({
+                  label: c.label,
+                  value: c.leads,
+                  display: `${c.leads} lead${c.leads === 1 ? "" : "s"}${c.won ? ` · ${c.won} won` : ""}`,
+                }))}
+                emptyText="No leads in this window yet."
+              />
+            </CardBody>
+          </Card>
+        </div>
+      </section>
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader

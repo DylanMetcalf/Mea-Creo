@@ -1,5 +1,6 @@
 "use server";
 
+import { recordAttribution } from "@/modules/leads/attribution";
 import { z } from "zod";
 import { getDb } from "@/db";
 import { leadActivities, leads } from "@/db/schema";
@@ -50,6 +51,7 @@ export async function contactAction(_prev: ActionState, formData: FormData): Pro
         lastActivityAt: new Date(),
       })
       .returning({ id: leads.id });
+    await recordAttribution(db, lead.id);
     await db.insert(leadActivities).values({
       leadId: lead.id,
       type: "note",

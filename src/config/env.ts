@@ -80,6 +80,12 @@ export const envSchema = z
     /** Bearer secret for /api/cron/* (hosts without a long-running worker, e.g. Vercel Cron). */
     CRON_SECRET: optionalString,
 
+    /** GA4 measurement id (G-XXXXXXX). Loaded only after a visitor accepts analytics cookies. */
+    GA_MEASUREMENT_ID: optionalString.refine(
+      (v) => v === undefined || /^G-[A-Z0-9]{4,16}$/.test(v),
+      "GA_MEASUREMENT_ID looks like G-XXXXXXX",
+    ),
+
     FEATURE_XERO: bool,
     FEATURE_PAYFAST: bool,
     FEATURE_GOOGLE_ANALYTICS: bool,

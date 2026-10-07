@@ -1,7 +1,10 @@
+import { ConsentBanner } from "@/components/site/consent";
 import { JsonLd } from "@/components/site/marketing";
 import { RevealFallback } from "@/components/site/reveal";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
+import { getEnv } from "@/config/env";
+import { isEnabled } from "@/config/flags";
 import { siteConfig } from "@/config/site";
 import { settingsDefaults } from "@/modules/settings/schema";
 
@@ -9,6 +12,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const company = settingsDefaults.company;
 
 export default function SiteLayout({ children }: LayoutProps<"/">) {
+  const gaId = isEnabled("GOOGLE_ANALYTICS") ? getEnv().GA_MEASUREMENT_ID : undefined;
   return (
     <>
       <JsonLd
@@ -53,6 +57,7 @@ export default function SiteLayout({ children }: LayoutProps<"/">) {
         {children}
       </main>
       <SiteFooter company={company} />
+      <ConsentBanner gaId={gaId} />
     </>
   );
 }

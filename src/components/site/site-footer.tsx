@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CookieSettingsButton } from "./consent";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Logo } from "@/components/brand/logo";
 import { siteConfig } from "@/config/site";
@@ -144,6 +145,7 @@ export function SiteFooter({
             <Link href="/legal/cookies" className="hover:text-white">
               Cookies
             </Link>
+            <CookieSettingsButton className="hover:text-white" />
           </div>
         </div>
       </div>
