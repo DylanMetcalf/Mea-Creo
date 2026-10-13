@@ -6,6 +6,7 @@ import {
   forgotPasswordAction,
   loginAction,
   resetPasswordAction,
+  setupAction,
 } from "./actions";
 
 export function LoginForm({ next, defaultEmail }: { next?: string; defaultEmail?: string }) {
@@ -81,6 +82,41 @@ export function NewPasswordForm({
       />
       <SubmitButton className="w-full">
         {mode === "reset" ? "Set new password" : "Create my account"}
+      </SubmitButton>
+    </ActionForm>
+  );
+}
+
+export function SetupForm() {
+  return (
+    <ActionForm action={setupAction} className="space-y-4">
+      <TextField
+        name="code"
+        type="password"
+        label="Setup code"
+        hint="The SETUP_TOKEN value you added in Vercel's environment variables."
+        autoComplete="off"
+        required
+      />
+      <TextField name="name" label="Your name" autoComplete="name" required />
+      <TextField name="email" type="email" label="Email" autoComplete="email" required />
+      <TextField
+        name="password"
+        type="password"
+        label="Choose a password"
+        hint="At least 10 characters. Use a password manager."
+        autoComplete="new-password"
+        required
+      />
+      <TextField
+        name="confirm"
+        type="password"
+        label="Type it again"
+        autoComplete="new-password"
+        required
+      />
+      <SubmitButton className="w-full" pendingLabel="Setting up…">
+        Create my account and open the workspace
       </SubmitButton>
     </ActionForm>
   );

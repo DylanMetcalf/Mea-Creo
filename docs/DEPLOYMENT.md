@@ -26,25 +26,34 @@ Use the production shape in [ENVIRONMENT.md](ENVIRONMENT.md). Generate secrets w
 `openssl rand -base64 32`. Set `NEXT_PUBLIC_SITE_URL` to the final domain before the first
 build (it's used in emails and payment return URLs).
 
-## 3. Migrate and create the founder account
+## 3. Prepare the database and create the founder account
 
-From a machine with the repository and the production `DATABASE_URL`:
+**On Vercel nothing needs a terminal.**
+
+- The database is prepared on every deploy: `vercel.json` runs `pnpm db:deploy` before
+  `pnpm build`, which applies migrations and the base data (Mea Creo organisation,
+  settings, service catalogue, internal client). It never creates demo data and is safe to
+  run repeatedly. It uses `DATABASE_URL_UNPOOLED` when the host provides one (Neon does).
+- The founder account is created in the browser: set `SETUP_TOKEN` (16+ characters only you
+  know), deploy, open `/setup`, enter the code, your name, email and a password. You are
+  signed in and taken to **Launch**. The page closes for good once a founder exists; then
+  delete `SETUP_TOKEN` (the Launch page reminds you).
+
+Without Vercel (a server), the same steps from a terminal:
 
 ```bash
 pnpm install
-APP_ENV=production DATABASE_URL=… pnpm db:migrate
+APP_ENV=production DATABASE_URL=… pnpm db:deploy
 APP_ENV=production DATABASE_URL=… NEXT_PUBLIC_SITE_URL=https://www.meacreo.co.za pnpm admin:create --email dylan@meacreo.co.za --name "Dylan Metcalf"
 ```
 
-`admin:create` also seeds the base data (Mea Creo organisation, settings, service
-catalogue without prices, internal client). It prints a one-time link to set the password.
-Demo data is never created in production.
-
-Run `pnpm db:migrate` before every release that includes new files in `drizzle/`.
+`admin:create` prints a one-time link to set the password. Run `pnpm db:deploy` before
+every release that includes new files in `drizzle/`.
 
 ## 4a. Vercel
 
-1. Import the repository; framework Next.js; install `pnpm install`; build `pnpm build`.
+1. Import the repository; framework Next.js. The build command comes from `vercel.json`
+   (`pnpm db:deploy && pnpm build`).
 2. Add the environment variables (Production and Preview separately; Preview uses
    `APP_ENV=staging`, sandbox credentials and a separate database).
 3. Cron: `vercel.json` schedules `GET /api/cron/daily` at 04:00 UTC (06:00 in South

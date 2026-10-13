@@ -79,6 +79,13 @@ export const envSchema = z
     SALES_SCOUT_WEBHOOK_SECRET: optionalString,
     /** Bearer secret for /api/cron/* (hosts without a long-running worker, e.g. Vercel Cron). */
     CRON_SECRET: optionalString,
+    /**
+     * One-time setup code for /setup (creating the founder account without a terminal).
+     * At least 16 characters. The page closes for good once a founder exists.
+     */
+    SETUP_TOKEN: optionalString,
+    /** Direct (non-pooled) connection used for migrations when the host provides one (Neon). */
+    DATABASE_URL_UNPOOLED: optionalString,
 
     /** GA4 measurement id (G-XXXXXXX). Loaded only after a visitor accepts analytics cookies. */
     GA_MEASUREMENT_ID: optionalString.refine(

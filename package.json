@@ -17,6 +17,7 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/db.mts migrate",
+    "db:deploy": "tsx scripts/db.mts deploy",
     "db:seed": "tsx scripts/db.mts seed",
     "db:reset": "tsx scripts/db.mts reset",
     "db:studio": "drizzle-kit studio",

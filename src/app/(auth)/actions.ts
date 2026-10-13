@@ -7,11 +7,13 @@ import { z } from "zod";
 import { getDb } from "@/db";
 import { memberships, users } from "@/db/schema";
 import { type ActionState, parseForm, runAction } from "@/lib/actions";
+import { getEnv } from "@/config/env";
 import { absoluteUrl } from "@/lib/urls";
 import { logActivity } from "@/modules/activity/log";
 import { getSession, requestMeta } from "@/modules/auth/context";
 import { hashPassword, validatePasswordStrength, verifyPassword } from "@/modules/auth/password";
 import { clearRateLimit, hitRateLimit } from "@/modules/auth/rate-limit";
+import { createFirstFounder, setupSchema } from "@/modules/auth/setup";
 import {
   createSession,
   deleteSession,
@@ -252,4 +254,25 @@ export async function switchOrganisationAction(formData: FormData): Promise<void
     await setActiveOrganisation(await getDb(), session.sessionId, target);
   }
   redirect("/portal");
+}
+
+/** First-time setup: creates the founder account, then signs them in (see modules/auth/setup). */
+export async function setupAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  let done = false;
+  const state = await runAction(async () => {
+    const parsed = parseForm(setupSchema, formData);
+    if (!parsed.success) return parsed.state;
+    const db = await getDb();
+    const meta = await requestMeta();
+    const limit = await hitRateLimit(db, `setup:${meta.ipAddress ?? "?"}`, 5, 15 * 60);
+    if (limit.limited)
+      return { ok: false, message: "Too many attempts. Wait 15 minutes and try again." };
+    const { userId } = await createFirstFounder(db, parsed.data, getEnv().SETUP_TOKEN);
+    const { token, expiresAt } = await createSession(db, userId, meta);
+    await setSessionCookie(token, expiresAt);
+    done = true;
+    return { ok: true };
+  }, formData);
+  if (done) redirect("/workspace/launch");
+  return state;
 }

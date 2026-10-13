@@ -262,6 +262,14 @@ export async function launchChecklist(db: DbOrTx): Promise<LaunchGroup[]> {
           Number(demo?.n ?? 0) === 0,
           "Demo organisations are never seeded in production.",
         ),
+        auto(
+          "setup_token",
+          "Setup code removed",
+          !env.SETUP_TOKEN,
+          "SETUP_TOKEN is only needed to create your account. Delete it in Vercel afterwards.",
+          undefined,
+          true,
+        ),
       ],
     },
     {

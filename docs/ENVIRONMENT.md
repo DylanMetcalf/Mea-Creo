@@ -15,17 +15,19 @@ Configuration comes from environment variables, validated at startup by
 
 ## Core
 
-| Variable               | Default                 | Description                                                                             |
-| ---------------------- | ----------------------- | --------------------------------------------------------------------------------------- |
-| `APP_ENV`              | `development`           | See above                                                                               |
-| `LOG_LEVEL`            | `info`                  | `trace`…`fatal`, or `silent`                                                            |
-| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Canonical public URL: links in emails, payment return URLs, sitemap, metadata           |
-| `NEXT_PUBLIC_APP_URL`  | `http://localhost:3000` | Reserved for a separate app domain; currently everything is served from the site URL    |
-| `DATABASE_URL`         | none                    | PostgreSQL connection string. Without it (non-production) the embedded database is used |
-| `DATABASE_POOL_SIZE`   | `10`                    | Postgres connections per process                                                        |
-| `AUTH_SECRET`          | none                    | Signs local file download URLs. `openssl rand -base64 32`                               |
-| `ENCRYPTION_KEY`       | none                    | 32-byte base64 key; encrypts integration tokens at rest                                 |
-| `CRON_SECRET`          | none                    | Bearer secret for `/api/cron/daily` and `/api/cron/jobs` (hosts without a worker)       |
+| Variable                | Default                 | Description                                                                                  |
+| ----------------------- | ----------------------- | -------------------------------------------------------------------------------------------- |
+| `APP_ENV`               | `development`           | See above                                                                                    |
+| `LOG_LEVEL`             | `info`                  | `trace`…`fatal`, or `silent`                                                                 |
+| `NEXT_PUBLIC_SITE_URL`  | `http://localhost:3000` | Canonical public URL: links in emails, payment return URLs, sitemap, metadata                |
+| `NEXT_PUBLIC_APP_URL`   | `http://localhost:3000` | Reserved for a separate app domain; currently everything is served from the site URL         |
+| `DATABASE_URL`          | none                    | PostgreSQL connection string. Without it (non-production) the embedded database is used      |
+| `DATABASE_POOL_SIZE`    | `10`                    | Postgres connections per process                                                             |
+| `AUTH_SECRET`           | none                    | Signs local file download URLs. `openssl rand -base64 32`                                    |
+| `ENCRYPTION_KEY`        | none                    | 32-byte base64 key; encrypts integration tokens at rest                                      |
+| `CRON_SECRET`           | none                    | Bearer secret for `/api/cron/daily` and `/api/cron/jobs` (hosts without a worker)            |
+| `SETUP_TOKEN`           | none                    | One-time code for `/setup` (founder account in the browser); 16+ characters                  |
+| `DATABASE_URL_UNPOOLED` | none                    | Direct connection for migrations at deploy time (Neon sets it); falls back to `DATABASE_URL` |
 
 ## Development and operations
 

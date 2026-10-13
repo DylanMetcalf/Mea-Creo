@@ -28,7 +28,10 @@ changed. Never promise rankings or leads; the system won't let proposals or repo
 
 ## 2. Your first day (setup)
 
-Work through these once, in this order. Everything is in **Workspace → Settings**.
+First, create your account: open **www.your-site/setup** (on the temporary Vercel address
+before launch), enter the setup code you put in Vercel as `SETUP_TOKEN`, and choose your
+password. That page works once. Then work through **Launch** in the left menu; the steps
+below are the Settings parts of it, in this order. Everything is in **Workspace → Settings**.
 
 1. **Company**: check every detail (copied from the old website). Add registration and VAT
    numbers if you have them. Tick "verified".
