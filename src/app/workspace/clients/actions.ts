@@ -11,6 +11,7 @@ import {
   clientGoals,
   clients,
   clientServices,
+  CMS_PLATFORMS,
   competitors,
   contacts,
   FACT_CATEGORIES,
@@ -39,6 +40,7 @@ import {
 import { assertStaffClientAccess, requireStaff, type StaffContext } from "@/modules/auth/context";
 import type { Permission } from "@/modules/auth/permissions";
 import { recomputeHealth } from "@/modules/clients/health";
+import { refreshInstructions } from "@/modules/execution/service";
 import { archiveDocument, uploadDocument } from "@/modules/documents/service";
 import { sendEmail } from "@/modules/email/service";
 import { emailTemplates } from "@/modules/email/templates";
@@ -140,6 +142,7 @@ export async function updateClientAction(
         phone: optionalText(40),
         email: z.union([z.email(), z.literal("")]).optional(),
         renewalDate: optionalText(10),
+        cms: z.enum(CMS_PLATFORMS).default("unknown"),
       }),
       formData,
     );
@@ -165,6 +168,7 @@ export async function updateClientAction(
       phone: d.phone ?? null,
       email: d.email || null,
       renewalDate: d.renewalDate ?? null,
+      cms: d.cms,
     };
     await db.update(clients).set(after).where(eq(clients.organisationId, organisationId));
     await db
@@ -178,6 +182,7 @@ export async function updateClientAction(
       before: { name: before?.name, website: before?.website, industry: before?.industry },
       after: { name: after.name, website: after.website, industry: after.industry },
     });
+    if (before && before.cms !== after.cms) await refreshInstructions(db, organisationId);
     refresh();
     return { ok: true, message: "Profile saved." };
   }, formData);

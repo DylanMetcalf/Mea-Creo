@@ -52,6 +52,7 @@ app/ (routes, pages, server actions)      ← validation, auth context, redirect
 | -------------- | ------------------------------------------------------------------------------ |
 | `auth`         | Sessions, passwords, tokens (invite/reset), roles and permissions, rate limits |
 | `audits`       | Visibility Report: SSRF-safe fetch, signal parsing, rule-based findings        |
+| `execution`    | Website fixes: crawl, finished deliverables, CMS steps, approval, live verify  |
 | `leads`        | Explained qualification (fit, opportunity, commercial potential, maturity, …)  |
 | `meetings`     | Availability, booking, briefings, note processing                              |
 | `proposals`    | Draft from lead, readiness checks, send, public accept/decline, PDF            |

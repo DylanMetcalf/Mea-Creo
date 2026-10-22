@@ -91,6 +91,17 @@ Legend: ✅ done · 🟡 partly done (see notes) · ⬜ not started
 - [x] Launch checklist with the DNS gate; client testimonials by permission only; portfolio share links
 - [ ] Owner: tick legal pages reviewed, connect Google, production env, final QA, DNS
 
+## Phase 12: Execution engine ✅
+
+- [x] `fixes` table and client website platform; crawl of up to eight pages plus site files
+- [x] Rule-based finished deliverables (SEO, technical, AEO, GEO, conversion) from verified
+      facts only; missing information reported, never invented
+- [x] CMS instructions (WordPress, Shopify, Wix, Squarespace, custom); evidence, rollback,
+      history; Draft → Review → Approve → Apply → Verify with live re-check
+- [x] Workspace Fixes tab and fix page; portal Work list; monthly report activity
+- [ ] Direct CMS write integrations (WordPress REST, Shopify Admin API) behind approval
+- [ ] AI-assisted drafts for long-form page content (rules-only today)
+
 ## Open decisions (owner)
 
 1. Real prices for each service (and whether packages are offered as listed).

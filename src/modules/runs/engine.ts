@@ -9,6 +9,7 @@ import {
   competitors,
   communications,
   contentItems,
+  fixes,
   leads,
   type ReportContent,
   reports,
@@ -663,6 +664,18 @@ async function stepMonthlyReview(ctx: RunContext) {
     .from(tasks)
     .where(and(eq(tasks.organisationId, ctx.organisationId), eq(tasks.status, "waiting_client")));
 
+  const siteFixes = await ctx.db
+    .select()
+    .from(fixes)
+    .where(
+      and(
+        eq(fixes.organisationId, ctx.organisationId),
+        inArray(fixes.status, ["approved", "applied", "verified"]),
+      ),
+    );
+  const verifiedNow = siteFixes.filter((f) => f.verifiedAt && f.verifiedAt >= start);
+  const fixLabel = (f: (typeof siteFixes)[number]) => `${f.title} (${new URL(f.pageUrl).pathname})`;
+
   const [latest, previous] = recentAudits;
   const whatChanged: string[] = [];
   if (latest?.result && previous?.result) {
@@ -679,17 +692,34 @@ async function stepMonthlyReview(ctx: RunContext) {
 
   const content: ReportContent = {
     headline: "",
-    whatWeDid: done.slice(0, 10).map((t) => t.title),
+    whatWeDid: [
+      ...done.slice(0, 10).map((t) => t.title),
+      ...verifiedNow.map((f) => `Website fix verified live: ${fixLabel(f)}`),
+    ],
     whatChanged: whatChanged.length
       ? whatChanged
       : ["No measured outcome changes this period. Connect data sources to report outcomes."],
     whatWeLearned: [],
     opportunities: latest?.result?.opportunities.slice(0, 3).map((o) => o.title) ?? [],
-    whatHappensNext: openTasks.map((t) => t.title),
+    whatHappensNext: [
+      ...openTasks.map((t) => t.title),
+      ...siteFixes
+        .filter((f) => f.status !== "verified")
+        .slice(0, 6)
+        .map(
+          (f) =>
+            `Website fix (${f.status === "applied" ? "applied, awaiting verification" : "approved"}): ${fixLabel(f)}`,
+        ),
+    ],
     needsFromYou: waitingOnClient.map((t) => t.title),
     activityMetrics: [
       { label: "Tasks completed", value: String(done.length) },
       { label: "Content published", value: String(published.length) },
+      {
+        label: "Website fixes verified live",
+        value: String(verifiedNow.length),
+        source: "Re-check of the live pages",
+      },
       {
         label: "Audits run",
         value: String(recentAudits.filter((a) => a.completedAt && a.completedAt >= start).length),

@@ -50,6 +50,13 @@
       "when": 1791357841714,
       "tag": "0006_safe_the_captain",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792695564936,
+      "tag": "0007_milky_wither",
+      "breakpoints": true
     }
   ]
 }

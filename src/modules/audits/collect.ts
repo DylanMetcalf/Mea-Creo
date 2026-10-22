@@ -42,6 +42,28 @@ export async function collectSignals(
   const origin = finalUrl.origin;
   const page = extractPageSignals(home.body, home.finalUrl);
 
+  const { robotsTxt, sitemap, llmsTxt } = await collectSiteFiles(origin, fetcher);
+
+  const { internalPaths: _internalPaths, ...pageSignals } = page;
+  return {
+    ...pageSignals,
+    statusCode: home.status,
+    finalUrl: home.finalUrl,
+    https: finalUrl.protocol === "https:",
+    responseTimeMs: home.responseTimeMs,
+    htmlBytes: home.bytes,
+    robotsTxt,
+    sitemap,
+    llmsTxt,
+    pagesAnalysed: [home.finalUrl],
+  };
+}
+
+/** robots.txt, the XML sitemap and llms.txt for a site origin. */
+export async function collectSiteFiles(
+  origin: string,
+  fetcher: Fetcher = (u) => safeFetch(u),
+): Promise<Pick<AuditSignals, "robotsTxt" | "sitemap" | "llmsTxt">> {
   const [robots, llms] = await Promise.all([
     tryFetch(fetcher, `${origin}/robots.txt`),
     tryFetch(fetcher, `${origin}/llms.txt`),
@@ -65,19 +87,8 @@ export async function collectSignals(
     }
   }
 
-  const { internalPaths: _internalPaths, ...pageSignals } = page;
-  return {
-    ...pageSignals,
-    statusCode: home.status,
-    finalUrl: home.finalUrl,
-    https: finalUrl.protocol === "https:",
-    responseTimeMs: home.responseTimeMs,
-    htmlBytes: home.bytes,
-    robotsTxt,
-    sitemap,
-    llmsTxt: Boolean(
-      llms && llms.body.trim().length > 20 && !/<html/i.test(llms.body.slice(0, 500)),
-    ),
-    pagesAnalysed: [home.finalUrl],
-  };
+  const llmsTxt = Boolean(
+    llms && llms.body.trim().length > 20 && !/<html/i.test(llms.body.slice(0, 500)),
+  );
+  return { robotsTxt, sitemap, llmsTxt };
 }

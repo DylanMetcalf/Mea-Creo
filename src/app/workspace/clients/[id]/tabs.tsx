@@ -33,7 +33,8 @@ import {
 } from "@/components/ui/primitives";
 import { DueLabel, StatusBadge, statusLabel } from "@/components/ui/status";
 import { getDb } from "@/db";
-import { FACT_CATEGORIES, services } from "@/db/schema";
+import { CMS_PLATFORMS, FACT_CATEGORIES, services } from "@/db/schema";
+import { CMS_LABELS } from "@/modules/execution/cms";
 import { formatMicroUsd } from "@/integrations/ai/pricing";
 import { fmtDate, fmtDateTime, fmtMoney, fmtRelative, humanize } from "@/lib/format";
 import { CLIENT_ROLES, ROLE_LABELS } from "@/modules/auth/permissions";
@@ -565,6 +566,13 @@ export function StrategyTab({ data }: Props) {
               <input type="hidden" name="currency" value={data.client.currency} />
               <TextField name="name" label="Name" defaultValue={data.client.name} required />
               <TextField name="website" label="Website" defaultValue={data.client.website ?? ""} />
+              <SelectField
+                name="cms"
+                label="Website platform"
+                hint="Decides the step-by-step instructions on website fixes."
+                options={CMS_PLATFORMS.map((c) => ({ value: c, label: CMS_LABELS[c] }))}
+                defaultValue={data.client.cms}
+              />
               <TextField
                 name="industry"
                 label="Industry"

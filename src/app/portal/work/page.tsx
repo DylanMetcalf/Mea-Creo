@@ -7,6 +7,8 @@ import { getDb } from "@/db";
 import { OPEN_TASK_STATUSES, tasks, timelineEntries } from "@/db/schema";
 import { fmtDate, humanize } from "@/lib/format";
 import { requireClient } from "@/modules/auth/context";
+import { CLIENT_VISIBLE, listFixes } from "@/modules/execution/service";
+import { FixStatusBadge } from "@/components/execution/fix-badges";
 
 export const metadata: Metadata = { title: "Work" };
 
@@ -14,7 +16,7 @@ export default async function PortalWork() {
   const ctx = await requireClient();
   const db = await getDb();
   const org = ctx.organisationId;
-  const [open, timeline] = await Promise.all([
+  const [open, timeline, siteFixes] = await Promise.all([
     db
       .select()
       .from(tasks)
@@ -32,6 +34,7 @@ export default async function PortalWork() {
       .where(and(eq(timelineEntries.organisationId, org), eq(timelineEntries.visibility, "client")))
       .orderBy(desc(timelineEntries.occurredAt))
       .limit(60),
+    listFixes(db, org, CLIENT_VISIBLE),
   ]);
   const yours = open.filter((t) => t.status === "waiting_client");
   const ours = open.filter((t) => t.status !== "waiting_client");
@@ -81,6 +84,28 @@ export default async function PortalWork() {
           ))}
         </ul>
       </Card>
+      {siteFixes.length > 0 && (
+        <Card>
+          <CardHeader
+            title="Website fixes"
+            description="Approved changes to your website. “Verified live” means we re-checked the live page and found the change."
+          />
+          <ul className="divide-border divide-y">
+            {siteFixes.map((f) => (
+              <li key={f.id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm">
+                <span className="min-w-0">
+                  {f.title}
+                  <span className="text-muted block truncate text-xs">
+                    {new URL(f.pageUrl).pathname}
+                    {f.verifiedAt && ` · verified ${fmtDate(f.verifiedAt)}`}
+                  </span>
+                </span>
+                <FixStatusBadge value={f.status} />
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
       <Card>
         <CardHeader title="Growth timeline" />
         <ol className="before:bg-border relative space-y-4 px-5 py-4 before:absolute before:top-5 before:bottom-5 before:left-[1.6rem] before:w-px">

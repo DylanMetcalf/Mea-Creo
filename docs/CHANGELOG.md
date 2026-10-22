@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.4.0 — Execution engine (2026-10-22)
+
+- Client → Fixes: reads the live site (home page + up to seven linked pages, robots.txt,
+  sitemap, llms.txt) and drafts finished fixes: the exact title, meta description, H1,
+  Organization JSON-LD, FAQ section with FAQPage JSON-LD, Open Graph tags, tel: link,
+  canonical tag, robots.txt line, sitemap or llms.txt file.
+- Every fix records the page, the evidence (source and date), where it goes,
+  step-by-step instructions for WordPress, Shopify, Wix, Squarespace or custom sites,
+  benefit, dependencies, uncertainty, rollback and history. Fixes are labelled as a
+  confirmed issue, an improvement or a hypothesis to test.
+- Workflow Draft → Review → Approve → Apply → Verify. Approval needs `approvals.decide`;
+  approved work is locked; "Verify" re-reads the live page and only passes when the
+  approved change is actually there.
+- Content is built only from verified Brain facts and what the crawl observed; when a fix
+  would need invented content the run lists what information is missing instead.
+- Client profile: website platform field. Portal → Work lists approved, applied and
+  verified fixes. Monthly reports count fixes verified live (activity, not outcomes).
+- `db:seed`, `db:reset`, `worker` and `admin:create` run with the `react-server`
+  condition so server-only modules load outside Next.js.
+
 ## 0.3.0 — Operating system completion (2026-10-07)
 
 - Branded PDFs for proposals, invoices, reports and legal documents: night header band,

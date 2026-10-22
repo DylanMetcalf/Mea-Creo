@@ -114,6 +114,16 @@ review → Approved → Published. Tick the QA checklist (edit it in Settings �
 "Send to the client" puts it in their portal Approvals; if they ask for changes it comes
 back to internal review.
 
+**Fixes tab** (the actual SEO, AEO and GEO work): first set the client's **Website
+platform** under Strategy & Brain → Profile. Then **Read site & draft fixes**. You get
+finished changes, not advice: the exact title, the JSON-LD, the FAQ answers, the file. Each
+one shows the evidence, where it goes and click-by-click steps for their platform. Edit it,
+**Send to review**, **Approve**, apply it on their site (or send them the steps), **Mark as
+applied** with a note, then **Verify on live site**. "Verified live" only appears when the
+system re-reads the page and finds the change. Content only uses verified Brain facts; if
+something is missing, the run tells you what to add. The client sees approved fixes in
+their portal under Work.
+
 **Prospects tab** (paid "Fresh prospects" service): set the weekly number (usually 10–20)
 and their ideal customer, add or import researched prospects with a reason and a source,
 then **Release** the batch to their portal. Each week you get a research task. Not

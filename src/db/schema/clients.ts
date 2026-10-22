@@ -17,6 +17,17 @@ export type BillingState = (typeof BILLING_STATES)[number];
 export const LIFECYCLE_STAGES = ["onboarding", "active", "paused", "offboarded"] as const;
 export type LifecycleStage = (typeof LIFECYCLE_STAGES)[number];
 
+/** The client's website platform; it decides how fixes are applied. */
+export const CMS_PLATFORMS = [
+  "unknown",
+  "wordpress",
+  "shopify",
+  "wix",
+  "squarespace",
+  "custom",
+] as const;
+export type CmsPlatform = (typeof CMS_PLATFORMS)[number];
+
 export const HEALTH_STATES = ["healthy", "watch", "at_risk", "paused"] as const;
 export type HealthState = (typeof HEALTH_STATES)[number];
 
@@ -38,6 +49,7 @@ export const clients = pgTable(
     name: text("name").notNull(),
     industry: text("industry"),
     website: text("website"),
+    cms: text("cms", { enum: CMS_PLATFORMS }).notNull().default("unknown"),
     location: text("location"),
     country: text("country").notNull().default("ZA"),
     currency: currency(),
