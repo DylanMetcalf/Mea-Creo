@@ -58,6 +58,7 @@ const MAPS: Record<string, Record<string, Tone>> = {
     complete: "success",
     failed: "danger",
     blocked: "warning",
+    cancelled: "neutral",
   },
   outcome: {
     completed: "success",

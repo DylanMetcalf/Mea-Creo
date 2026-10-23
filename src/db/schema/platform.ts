@@ -17,7 +17,14 @@ import { organisations, users } from "./identity";
 // Run Engine
 // ---------------------------------------------------------------------------
 
-export const RUN_STATUSES = ["queued", "running", "complete", "failed", "blocked"] as const;
+export const RUN_STATUSES = [
+  "queued",
+  "running",
+  "complete",
+  "failed",
+  "blocked",
+  "cancelled",
+] as const;
 export type RunStatus = (typeof RUN_STATUSES)[number];
 
 export const RUN_OUTCOMES = [

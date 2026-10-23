@@ -150,3 +150,40 @@ export const testimonials = pgTable(
     index("testimonials_status_idx").on(t.status),
   ],
 );
+
+export const NEWSLETTER_TOPICS = [
+  "search_visibility",
+  "linkedin",
+  "lead_generation",
+  "social_media",
+  "photo_video",
+  "automation",
+] as const;
+export type NewsletterTopic = (typeof NEWSLETTER_TOPICS)[number];
+
+export const NEWSLETTER_STATUSES = ["subscribed", "unsubscribed"] as const;
+
+/**
+ * Newsletter subscribers. Every row records the exact consent given and when; nobody is
+ * added without ticking the consent box. Unsubscribing keeps the row (as proof of the
+ * opt-out) and its status stops all mail.
+ */
+export const newsletterSubscribers = pgTable(
+  "newsletter_subscribers",
+  {
+    id: id(),
+    email: text("email").notNull().unique(),
+    name: text("name"),
+    topics: jsonb("topics").$type<NewsletterTopic[]>().notNull().default([]),
+    status: text("status", { enum: NEWSLETTER_STATUSES }).notNull().default("subscribed"),
+    consentAt: timestamp("consent_at", { withTimezone: true }).notNull(),
+    consentText: text("consent_text").notNull(),
+    /** Where they signed up, e.g. "blog" or "blog:/blog/some-article". */
+    source: text("source"),
+    /** Secret for the one-click unsubscribe link in every email. */
+    unsubscribeToken: text("unsubscribe_token").notNull().unique(),
+    unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
+    ...timestamps(),
+  },
+  (t) => [index("newsletter_status_idx").on(t.status)],
+);

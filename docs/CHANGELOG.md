@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0 — Experience, revenue & intelligence, stage 1 (2026-10-23)
+
+- Public: Insights renamed **Blog** (`/blog`, permanent redirects from `/insights`).
+- Newsletter: sign-up on the blog and every article with explicit, recorded consent and
+  optional topics; one-click unsubscribe (`/newsletter/unsubscribe?token=`); HQ → Newsletter
+  list and CSV export of current subscribers only. No sending from HQ yet.
+- HQ blog editor: writing assistant (outline, full draft, expand notes, improve, SEO
+  title/description/links/CTA, featured-image brief) through the Content agent within the AI
+  budget. Results are always drafts; without AI only an outline template is offered.
+- Runs: **Dry run** (rolled-back transaction, no email, no paid AI, zero cost) and **Cancel**
+  (queued runs never start; running runs stop before the next step).
+- Services page: "three ways to work with us" chooser (monthly / once-off / not sure), jump
+  links, distinct layouts per area, "Ask a question" links that preselect the interest.
+- Pricing page: jump links, and a **Once-off projects** section read from published
+  catalogue data (price shown only when one is published, otherwise "Quoted").
+
 ## 0.4.1 — Production on Render + Supabase (2026-10-23)
 
 - `render.yaml` Blueprint (web service, health check, generated secrets, Supabase storage).

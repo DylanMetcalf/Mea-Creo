@@ -452,6 +452,7 @@ export async function runClientAction(formData: FormData): Promise<void> {
     organisationId,
     kind: str(formData, "kind"),
     triggeredById: ctx.user.id,
+    dryRun: str(formData, "dryRun") === "true",
   });
   kickJobs();
   redirect(`/workspace/runs/${runId}`);

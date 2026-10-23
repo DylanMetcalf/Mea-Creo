@@ -1,3 +1,4 @@
+import { isDryRun } from "@/lib/execution-mode";
 import { and, eq, gte, sql } from "drizzle-orm";
 import type { DbOrTx } from "@/db";
 import { agentRuns, clients } from "@/db/schema";
@@ -113,7 +114,8 @@ export async function runAgent(db: DbOrTx, call: AgentCall): Promise<AgentOutcom
     });
 
   const ai = resolveIntegration("ai");
-  const useAi = Boolean(call.prompt && ai.available && !ai.adapter.isMock);
+  // Dry runs never spend money: they use the rules implementation.
+  const useAi = Boolean(call.prompt && ai.available && !ai.adapter.isMock && !isDryRun());
 
   if (useAi && ai.available) {
     const aiSettings = await getPlatformSetting(db, "ai");

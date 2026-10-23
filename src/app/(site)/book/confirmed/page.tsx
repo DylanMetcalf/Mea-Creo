@@ -23,8 +23,8 @@ export default function BookedPage() {
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <LinkButton href="/visibility-report">Get your free Visibility Report</LinkButton>
-          <LinkButton href="/insights" variant="secondary">
-            Read our insights
+          <LinkButton href="/blog" variant="secondary">
+            Read the blog
           </LinkButton>
         </div>
       </Container>

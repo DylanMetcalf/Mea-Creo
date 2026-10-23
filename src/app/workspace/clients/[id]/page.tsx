@@ -193,6 +193,14 @@ export default async function ClientPage({
                 <Play className="size-4" aria-hidden /> Run Growth
               </SubmitButton>
             </form>
+            <form action={runClientAction}>
+              <input type="hidden" name="organisationId" value={id} />
+              <input type="hidden" name="kind" value="client_growth_review" />
+              <input type="hidden" name="dryRun" value="true" />
+              <SubmitButton variant="secondary" pendingLabel="Starting…">
+                Dry run
+              </SubmitButton>
+            </form>
             <details className="relative">
               <summary className="border-border-strong bg-surface hover:bg-surface-2 inline-flex h-10 cursor-pointer list-none items-center gap-1 rounded-lg border px-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
                 More runs <ChevronDown className="size-4" aria-hidden />

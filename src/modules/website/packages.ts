@@ -64,3 +64,78 @@ export function formatRand(minor: number): string {
     .toLocaleString("en-ZA")
     .replace(/\s| /g, ",")}`;
 }
+
+/** Groups of once-off work shown on the pricing page, in display order. */
+export const PROJECT_GROUPS = [
+  {
+    key: "visibility",
+    label: "Search & AI visibility",
+    categories: ["audit", "visibility"],
+    intent: "seo-aeo-geo",
+  },
+  {
+    key: "creative",
+    label: "Photography, video & design",
+    categories: ["creative"],
+    intent: "photo-video",
+  },
+  {
+    key: "website",
+    label: "Websites & landing pages",
+    categories: ["website"],
+    intent: "websites",
+  },
+  {
+    key: "automation",
+    label: "AI, automation & apps",
+    categories: ["automation", "consulting"],
+    intent: "automation",
+  },
+] as const;
+
+export interface PublicProject {
+  slug: string;
+  name: string;
+  summary: string;
+  /** Published once-off price in ZAR minor units; null means it's quoted per project. */
+  priceMinor: number | null;
+  group: (typeof PROJECT_GROUPS)[number]["key"];
+  intent: string;
+}
+
+/**
+ * Once-off and quote-only services that are active and set to show on the website. Prices
+ * come only from the catalogue; with no published price the service shows as quoted.
+ */
+export async function getPublicProjects(db: DbOrTx): Promise<PublicProject[] | null> {
+  const billing = await getPlatformSetting(db, "billing");
+  if (!billing.showPricesPublicly) return null;
+  const rows = await db
+    .select()
+    .from(services)
+    .where(
+      and(
+        eq(services.status, "active"),
+        eq(services.showOnWebsite, true),
+        inArray(services.billingType, ["once_off", "on_request"]),
+      ),
+    )
+    .orderBy(services.sortOrder, services.name);
+  return rows.flatMap((s) => {
+    const group = PROJECT_GROUPS.find((g) =>
+      (g.categories as readonly string[]).includes(s.category),
+    );
+    if (!group || s.slug.startsWith("package-")) return [];
+    const price = s.billingType === "once_off" ? (s.prices.ZAR?.oneOffMinor ?? null) : null;
+    return [
+      {
+        slug: s.slug,
+        name: s.name,
+        summary: s.summary,
+        priceMinor: price && price > 0 ? price : null,
+        group: group.key,
+        intent: group.intent,
+      },
+    ];
+  });
+}

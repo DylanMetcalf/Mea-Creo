@@ -4,7 +4,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AutoRefresh } from "@/components/ui/auto-refresh";
-import { Callout, Card, CardBody, CardHeader } from "@/components/ui/primitives";
+import { SubmitButton } from "@/components/ui/form";
+import { Badge, Callout, Card, CardBody, CardHeader } from "@/components/ui/primitives";
 import { StatusBadge, statusLabel } from "@/components/ui/status";
 import { getDb } from "@/db";
 import { agentRuns, organisations, RUN_OUTCOMES, runs } from "@/db/schema";
@@ -13,6 +14,7 @@ import { kickJobs } from "@/jobs/kick";
 import { fmtDateTime } from "@/lib/format";
 import { assertStaffClientAccess, requireStaff } from "@/modules/auth/context";
 import { RUN_KINDS } from "@/modules/runs/kinds";
+import { cancelRunAction } from "../actions";
 
 export const metadata: Metadata = { title: "Run" };
 
@@ -59,6 +61,14 @@ export default async function RunPage({ params }: PageProps<"/workspace/runs/[id
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-2xl font-semibold tracking-tight">{kind?.label ?? r.kind}</h1>
           <StatusBadge kind="run" value={r.status} />
+          {r.input?.dryRun === true && <Badge tone="info">Dry run</Badge>}
+          {pending && ctx.can("runs.execute") && (
+            <form action={cancelRunAction.bind(null, r.id)} className="ml-auto">
+              <SubmitButton variant="secondary" size="sm" pendingLabel="Stopping…">
+                Cancel run
+              </SubmitButton>
+            </form>
+          )}
         </div>
         <p className="text-muted mt-1 text-sm">
           <Link
@@ -83,8 +93,17 @@ export default async function RunPage({ params }: PageProps<"/workspace/runs/[id
         </Card>
       ) : (
         <div className="space-y-6">
+          {r.input?.dryRun === true && (
+            <Callout tone="info" title="This was a dry run">
+              It shows what the run would do. Nothing was saved, no email was sent and no paid AI
+              was used. Run it for real from the client page.
+            </Callout>
+          )}
           {r.error && (
-            <Callout tone="danger" title="The run stopped">
+            <Callout
+              tone={r.status === "cancelled" ? "info" : "danger"}
+              title={r.status === "cancelled" ? "Cancelled" : "The run stopped"}
+            >
               {r.error}
             </Callout>
           )}

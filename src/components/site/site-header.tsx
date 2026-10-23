@@ -10,7 +10,7 @@ export const SITE_NAV = [
   { href: "/how-it-works", label: "How it works" },
   { href: "/pricing", label: "Pricing" },
   { href: "/work", label: "Work" },
-  { href: "/insights", label: "Insights" },
+  { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];

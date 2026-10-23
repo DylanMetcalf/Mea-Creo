@@ -19,6 +19,7 @@ export default function robots(): MetadataRoute.Robots {
               "/visibility-report/",
               "/invite",
               "/reset-password",
+              "/newsletter/",
             ],
           },
         ]

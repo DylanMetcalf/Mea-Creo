@@ -193,7 +193,7 @@ export const DEMO_FIXTURES: Record<string, FixtureSite> = {
       },
       links: [
         "/about|About",
-        "/insights|Insights",
+        "/blog|Insights",
         "/contact|Talk to us",
         "https://www.linkedin.com/company/ridgeback-demo|LinkedIn",
       ],
@@ -244,7 +244,7 @@ export const DEMO_FIXTURES: Record<string, FixtureSite> = {
       },
       links: [
         "/about|About",
-        "/insights|Insights",
+        "/blog|Insights",
         "/contact|Request a quote",
         "tel:+27310000000|Call",
         "https://www.linkedin.com/company/harbourline-demo|LinkedIn",

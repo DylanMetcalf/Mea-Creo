@@ -15,7 +15,9 @@ import {
 } from "@/db/schema";
 import { humanize } from "@/lib/format";
 import { requireStaff } from "@/modules/auth/context";
+import { aiAvailable } from "@/modules/content/blog-assistant";
 import { saveInsightAction } from "../actions";
+import { AssistPanel } from "./assist-panel";
 
 export const metadata: Metadata = { title: "Article" };
 
@@ -38,7 +40,7 @@ export default async function InsightEditorPage({ params }: PageProps<"/workspac
       <div className="mb-6 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">{a?.title ?? "New article"}</h1>
         {a?.status === "published" && (
-          <LinkButton href={`/insights/${a.slug}`} variant="secondary" target="_blank">
+          <LinkButton href={`/blog/${a.slug}`} variant="secondary" target="_blank">
             View live <ExternalLink className="size-3.5" aria-hidden />
           </LinkButton>
         )}
@@ -56,7 +58,7 @@ export default async function InsightEditorPage({ params }: PageProps<"/workspac
               label="Summary"
               defaultValue={a?.summary}
               rows={2}
-              hint="Shown on the Insights page and in search results."
+              hint="Shown on the blog and in search results."
             />
             <TextArea
               name="body"
@@ -130,6 +132,7 @@ export default async function InsightEditorPage({ params }: PageProps<"/workspac
           </Card>
         </div>
       </ActionForm>
+      <AssistPanel insightId={a?.id} aiConnected={aiAvailable()} defaultTopic={a?.title} />
     </>
   );
 }

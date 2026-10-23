@@ -17,6 +17,7 @@ import {
   Menu,
   MessageSquareQuote,
   type LucideIcon,
+  MailPlus,
   Newspaper,
   Palette,
   Search,
@@ -67,7 +68,8 @@ export const WORKSPACE_NAV: { title: string; items: NavItem[] }[] = [
       { href: "/workspace/runs", label: "Runs & agents", icon: Bot },
       { href: "/workspace/billing", label: "Billing", icon: CreditCard },
       { href: "/workspace/services", label: "Services & pricing", icon: Layers },
-      { href: "/workspace/insights", label: "Website content", icon: Newspaper },
+      { href: "/workspace/insights", label: "Blog & website content", icon: Newspaper },
+      { href: "/workspace/newsletter", label: "Newsletter", icon: MailPlus },
     ],
   },
   {

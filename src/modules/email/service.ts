@@ -1,3 +1,4 @@
+import { isDryRun } from "@/lib/execution-mode";
 import { eq } from "drizzle-orm";
 import type { DbOrTx } from "@/db";
 import { emailLog } from "@/db/schema";
@@ -30,6 +31,9 @@ export async function sendEmail(
   db: DbOrTx,
   input: SendEmailInput,
 ): Promise<{ status: "sent" | "failed" | "suppressed" }> {
+  // Dry runs show what would be sent; nothing leaves the system.
+  if (isDryRun()) return { status: "suppressed" };
+
   if (input.idempotencyKey) {
     const [existing] = await db
       .select({ status: emailLog.status })

@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { NewsletterPanel } from "@/components/site/newsletter-panel";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { CtaBand, Container, Eyebrow, FaqList, JsonLd } from "@/components/site/marketing";
@@ -22,15 +23,13 @@ const getArticle = cache(async (slug: string) => {
   return a ?? null;
 });
 
-export async function generateMetadata({
-  params,
-}: PageProps<"/insights/[slug]">): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps<"/blog/[slug]">): Promise<Metadata> {
   const a = await getArticle((await params).slug);
   if (!a) return {};
   return {
     title: a.seoTitle ?? a.title,
     description: a.seoDescription ?? a.summary,
-    alternates: { canonical: `/insights/${a.slug}` },
+    alternates: { canonical: `/blog/${a.slug}` },
     openGraph: {
       type: "article",
       title: a.title,
@@ -41,7 +40,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function ArticlePage({ params }: PageProps<"/insights/[slug]">) {
+export default async function ArticlePage({ params }: PageProps<"/blog/[slug]">) {
   const a = await getArticle((await params).slug);
   if (!a) notFound();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -58,7 +57,7 @@ export default async function ArticlePage({ params }: PageProps<"/insights/[slug
             dateModified: a.updatedAt.toISOString(),
             author: { "@type": "Person", name: a.authorName },
             publisher: { "@id": `${siteUrl}/#organization` },
-            mainEntityOfPage: `${siteUrl}/insights/${a.slug}`,
+            mainEntityOfPage: `${siteUrl}/blog/${a.slug}`,
           },
           ...(a.faq.length
             ? [
@@ -78,8 +77,8 @@ export default async function ArticlePage({ params }: PageProps<"/insights/[slug
       <article className="py-14 sm:py-20">
         <Container className="max-w-3xl">
           <nav aria-label="Breadcrumb" className="text-muted text-sm">
-            <Link href="/insights" className="hover:text-ink">
-              Insights
+            <Link href="/blog" className="hover:text-ink">
+              Blog
             </Link>
           </nav>
           <Eyebrow>{INSIGHT_CATEGORY_LABELS[a.category]}</Eyebrow>
@@ -97,6 +96,7 @@ export default async function ArticlePage({ params }: PageProps<"/insights/[slug
               <FaqList items={a.faq} />
             </section>
           )}
+          <NewsletterPanel source={`blog:/blog/${a.slug}`} />
         </Container>
       </article>
       <CtaBand />

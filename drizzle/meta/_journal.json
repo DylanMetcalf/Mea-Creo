@@ -57,6 +57,13 @@
       "when": 1792695564936,
       "tag": "0007_milky_wither",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792776254206,
+      "tag": "0008_premium_shatterstar",
+      "breakpoints": true
     }
   ]
 }

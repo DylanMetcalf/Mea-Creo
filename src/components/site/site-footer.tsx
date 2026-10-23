@@ -22,7 +22,7 @@ const columns = [
     links: [
       ["/how-it-works", "How it works"],
       ["/work", "Work & results"],
-      ["/insights", "Insights"],
+      ["/blog", "Blog"],
       ["/about", "About"],
       ["/contact", "Contact"],
     ],

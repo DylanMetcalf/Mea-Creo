@@ -5,7 +5,10 @@ import { z } from "zod";
 import { getDb } from "@/db";
 import { kickJobs } from "@/jobs/kick";
 import { logActivity, userActor } from "@/modules/activity/log";
-import { requireStaff } from "@/modules/auth/context";
+import { eq } from "drizzle-orm";
+import { runs } from "@/db/schema";
+import { assertStaffClientAccess, requireStaff } from "@/modules/auth/context";
+import { cancelRun } from "@/modules/runs/engine";
 import {
   getPlatformSetting,
   setSetting,
@@ -37,5 +40,23 @@ export async function toggleAgentAction(agentId: string): Promise<void> {
 export async function processQueueAction(): Promise<void> {
   await requireStaff("runs.execute");
   kickJobs();
+  refresh();
+}
+
+/** Stops a queued or running run. Work already finished stays recorded. */
+export async function cancelRunAction(runId: string): Promise<void> {
+  const ctx = await requireStaff("runs.execute");
+  const db = await getDb();
+  const [run] = await db.select().from(runs).where(eq(runs.id, runId)).limit(1);
+  if (!run) return;
+  await assertStaffClientAccess(ctx, run.organisationId);
+  if (await cancelRun(db, runId, run.organisationId))
+    await logActivity(db, userActor(ctx.user), {
+      organisationId: run.organisationId,
+      action: "run.cancelled",
+      summary: "Cancelled a run",
+      entityType: "run",
+      entityId: runId,
+    });
   refresh();
 }

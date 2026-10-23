@@ -102,6 +102,27 @@ Legend: ✅ done · 🟡 partly done (see notes) · ⬜ not started
 - [ ] Direct CMS write integrations (WordPress REST, Shopify Admin API) behind approval
 - [ ] AI-assisted drafts for long-form page content (rules-only today)
 
+## Phase 13: Experience, revenue & intelligence (in progress)
+
+Continuation record (2026-10-23). Production: Render `mea-creo` (srv-dbdo8pd9fdbs73bqjok0,
+Frankfurt, APP_ENV=staging until DNS cutover) + Supabase `udzxayyxtqkjeuogoutu` (eu-west-1,
+Free plan, app role `mea_app`, RLS on every public table). Branch
+`claude/adoring-ptolemy-hloaac` auto-deploys.
+
+- [x] Blog rename + redirects; newsletter with consent, unsubscribe, HQ list/CSV
+- [x] AI blog assistant (drafts only; honest no-AI fallback)
+- [x] Run dry-run and cancellation
+- [x] Services page restructure; once-off projects on pricing from published data
+- [x] Pricing verified against production records: Foundation R7,500 once-off,
+      Visibility R8,500, Growth R12,500, Scale R18,500 per month, Custom on request
+- [ ] Owner decision: should Visibility include a small, scoped amount of social content?
+- [ ] Owner: publish once-off prices per service (HQ → Services & pricing) where wanted
+- [ ] Portfolio: real projects to add (none published; no concept work added without assets)
+- [ ] Newsletter sending (needs Resend) and campaign composer
+- [ ] Outreach drafts in Outlook (no Outlook connector available; outreach stays in HQ)
+- [ ] Pipeline stage set per the directive (current stages kept; map before changing)
+- [ ] Agent consolidation (14 registered agents; map to the six roles before merging)
+
 ## Open decisions (owner)
 
 1. Real prices for each service (and whether packages are offered as listed).

@@ -17,6 +17,7 @@ import { type ActionState, optionalText, parseForm, runAction } from "@/lib/acti
 import { slugify } from "@/lib/ids";
 import { logActivity, userActor } from "@/modules/activity/log";
 import { requireStaff } from "@/modules/auth/context";
+import { ASSIST_MODES, CREATES_ARTICLE, runBlogAssistant } from "@/modules/content/blog-assistant";
 
 const insightSchema = z.object({
   title: z.string().trim().min(5).max(160),
@@ -176,5 +177,84 @@ export async function saveCaseStudyAction(
     return { ok: true, message: "Saved. Outcomes show publicly only when marked verified." };
   }, formData);
   if (createdId) redirect(`/workspace/insights/work/${createdId}`);
+  return state;
+}
+
+const assistSchema = z.object({
+  mode: z.enum(ASSIST_MODES),
+  topic: z.string().trim().min(3, "Say what the article is about.").max(200),
+  audience: optionalText(200),
+  purpose: optionalText(300),
+  tone: optionalText(100),
+  length: z.enum(["short", "medium", "long"]).default("medium"),
+  cta: optionalText(200),
+  notes: optionalText(8000),
+  category: z.enum(INSIGHT_CATEGORIES).default("marketing"),
+  insightId: optionalText(40),
+});
+
+/**
+ * The AI blog assistant. Outline, draft and expand create a new DRAFT article and open it;
+ * the other modes return suggestions to copy into the editor. Nothing is ever published here.
+ */
+export async function blogAssistAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  let openId: string | null = null;
+  const state = await runAction(async () => {
+    const ctx = await requireStaff("content.write");
+    const parsed = parseForm(assistSchema, formData);
+    if (!parsed.success) return parsed.state;
+    const d = parsed.data;
+    const db = await getDb();
+    let existing: string | undefined;
+    if (d.insightId) {
+      const [row] = await db.select().from(insights).where(eq(insights.id, d.insightId)).limit(1);
+      existing = row ? `# ${row.title}\n\n${row.body}` : undefined;
+    }
+    if (!CREATES_ARTICLE.includes(d.mode) && !existing)
+      return { ok: false, message: "Save the article first, then ask for suggestions on it." };
+    let result;
+    try {
+      result = await runBlogAssistant(db, { ...d, existing });
+    } catch (error) {
+      if (error instanceof Error && error.message === "AI_UNAVAILABLE")
+        return {
+          ok: false,
+          message:
+            "AI isn't connected (Settings → Integrations, or AI_PROVIDER on the host), so only the outline template is available.",
+        };
+      throw error;
+    }
+    if (!CREATES_ARTICLE.includes(d.mode))
+      return {
+        ok: true,
+        message: result.source === "ai" ? "Suggestions ready. Review before using them." : "Done.",
+        data: { output: result.body },
+      };
+    const title = (result.title || d.topic).slice(0, 160);
+    const [row] = await db
+      .insert(insights)
+      .values({
+        title,
+        slug: `${slugify(title).slice(0, 80)}-${Date.now().toString(36)}`,
+        summary: result.summary || "[Write a one-sentence summary before publishing.]",
+        body: result.body,
+        category: d.category,
+        authorName: ctx.user.name ?? "Mea Creo",
+        status: "draft",
+        readingMinutes: Math.max(1, Math.round(result.body.split(/\s+/).length / 220)),
+      })
+      .returning({ id: insights.id });
+    await logActivity(db, userActor(ctx.user), {
+      action: "insight.ai_drafted",
+      summary: `${result.source === "ai" ? "AI drafted" : "Outline template created"}: "${title}" (draft, not published)`,
+      entityType: "insight",
+      entityId: row.id,
+    });
+    openId = row.id;
+  }, formData);
+  if (openId) redirect(`/workspace/insights/${openId}`);
   return state;
 }

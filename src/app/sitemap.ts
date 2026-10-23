@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/how-it-works",
     "/visibility-report",
     "/work",
-    "/insights",
+    "/blog",
     "/about",
     "/contact",
     "/book",
@@ -38,7 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     })),
     ...articles.map((a) => ({
-      url: `${base}/insights/${a.slug}`,
+      url: `${base}/blog/${a.slug}`,
       lastModified: a.updatedAt,
       priority: 0.6,
     })),

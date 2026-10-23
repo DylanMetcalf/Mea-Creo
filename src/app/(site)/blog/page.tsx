@@ -1,20 +1,21 @@
 import { desc, eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { NewsletterPanel } from "@/components/site/newsletter-panel";
 import { CtaBand, Container, DisplayHeading, Eyebrow } from "@/components/site/marketing";
 import { getDb } from "@/db";
 import { INSIGHT_CATEGORY_LABELS, insights } from "@/db/schema";
 import { fmtDate } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "Insights",
+  title: "Blog: SEO, AI search, LinkedIn and growth",
   description:
     "Practical writing on SEO, AI search visibility, lead generation and automation for B2B and professional service businesses.",
-  alternates: { canonical: "/insights" },
+  alternates: { canonical: "/blog" },
 };
 export const dynamic = "force-dynamic";
 
-export default async function InsightsPage() {
+export default async function BlogPage() {
   const rows = await (
     await getDb()
   )
@@ -30,7 +31,7 @@ export default async function InsightsPage() {
           className="bg-aurora pointer-events-none absolute inset-0 -z-10 opacity-55"
         />
         <Container>
-          <Eyebrow>Insights</Eyebrow>
+          <Eyebrow>Blog</Eyebrow>
           <DisplayHeading as="h1" className="mt-3 max-w-3xl sm:text-5xl">
             Clear thinking on being found, trusted and chosen.
           </DisplayHeading>
@@ -43,7 +44,7 @@ export default async function InsightsPage() {
               {rows.map((a) => (
                 <li key={a.id}>
                   <Link
-                    href={`/insights/${a.slug}`}
+                    href={`/blog/${a.slug}`}
                     className="group rounded-card border-border bg-surface hover:border-brand-300 flex h-full flex-col border p-6"
                   >
                     <p className="text-brand-600 text-xs font-semibold tracking-wide uppercase">
@@ -61,6 +62,7 @@ export default async function InsightsPage() {
               ))}
             </ul>
           )}
+          <NewsletterPanel source="blog" className="mt-16" />
         </Container>
       </section>
       <CtaBand />

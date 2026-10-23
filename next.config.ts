@@ -41,7 +41,12 @@ const nextConfig: NextConfig = {
   experimental: { authInterrupts: true, serverActions: { bodySizeLimit: "26mb" } },
   serverExternalPackages: ["@electric-sql/pglite"],
   async redirects() {
-    return WIX_REDIRECTS.map(([source, destination]) => ({ source, destination, permanent: true }));
+    return [
+      ...WIX_REDIRECTS.map(([source, destination]) => ({ source, destination, permanent: true })),
+      // The article section was renamed from Insights to Blog; keep old links working.
+      { source: "/insights", destination: "/blog", permanent: true },
+      { source: "/insights/:slug", destination: "/blog/:slug", permanent: true },
+    ];
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];

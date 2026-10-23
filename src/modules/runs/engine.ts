@@ -26,6 +26,7 @@ import { resolveIntegration } from "@/integrations/registry";
 import { enqueue } from "@/jobs/queue";
 import { AppError } from "@/lib/errors";
 import { randomToken } from "@/lib/ids";
+import { withDryRun } from "@/lib/execution-mode";
 import { logger } from "@/lib/logger";
 import { logActivity, SYSTEM } from "@/modules/activity/log";
 import type { Fetcher } from "@/modules/audits/collect";
@@ -39,8 +40,37 @@ import { emitEvent } from "@/modules/notifications/service";
 import { getPlatformSetting } from "@/modules/settings/service";
 import { isRunKind, RUN_KINDS, type RunKind } from "./kinds";
 
+/** Thrown to abandon a run that was cancelled, or to roll back a dry run. */
+class RunStop extends Error {
+  constructor(readonly reason: "cancelled" | "dry_run") {
+    super(reason);
+  }
+}
+
+/** Cancels a queued or running run. A running run stops before its next step. */
+export async function cancelRun(
+  db: DbOrTx,
+  runId: string,
+  organisationId: string,
+): Promise<boolean> {
+  const [row] = await db
+    .update(runs)
+    .set({ status: "cancelled", finishedAt: new Date(), error: "Cancelled by a person." })
+    .where(
+      and(
+        eq(runs.id, runId),
+        eq(runs.organisationId, organisationId),
+        inArray(runs.status, ["queued", "running"]),
+      ),
+    )
+    .returning({ id: runs.id });
+  return Boolean(row);
+}
+
 interface RunContext {
   db: Db;
+  /** Checked between steps; throws RunStop when the run has been cancelled. */
+  checkpoint: () => Promise<void>;
   runId: string;
   organisationId: string;
   client: typeof clients.$inferSelect;
@@ -58,6 +88,8 @@ export async function createRun(
     kind: string;
     triggeredById?: string;
     trigger?: "manual" | "schedule" | "workflow";
+    /** Shows what the run would do without saving, sending or spending anything. */
+    dryRun?: boolean;
   },
 ): Promise<string> {
   if (!isRunKind(input.kind))
@@ -69,6 +101,7 @@ export async function createRun(
       kind: input.kind,
       triggeredById: input.triggeredById,
       trigger: input.trigger ?? "manual",
+      input: input.dryRun ? { dryRun: true } : {},
     })
     .returning({ id: runs.id });
   await enqueue(db, "run.execute", { runId: run.id }, { maxAttempts: 1 });
@@ -865,10 +898,12 @@ async function stepGrowth(ctx: RunContext) {
     ] as const
   ).filter((k) => kinds.has(k));
   for (const kind of ordered) {
+    await ctx.checkpoint();
     const before = ctx.items.length;
     try {
       await STEPS[kind](ctx);
     } catch (error) {
+      if (error instanceof RunStop) throw error;
       add(
         ctx,
         "blocked",
@@ -908,7 +943,8 @@ export async function executeRun(
   options: { fetcher?: Fetcher } = {},
 ): Promise<void> {
   const [run] = await db.select().from(runs).where(eq(runs.id, runId)).limit(1);
-  if (!run || run.status === "complete") return;
+  if (!run || run.status !== "queued") return;
+  const dryRun = run.input?.dryRun === true;
   const [client] = await db
     .select()
     .from(clients)
@@ -921,7 +957,12 @@ export async function executeRun(
       .where(eq(runs.id, runId));
     return;
   }
-  await db.update(runs).set({ status: "running", startedAt: new Date() }).where(eq(runs.id, runId));
+  const [started] = await db
+    .update(runs)
+    .set({ status: "running", startedAt: new Date() })
+    .where(and(eq(runs.id, runId), eq(runs.status, "queued")))
+    .returning({ id: runs.id });
+  if (!started) return; // cancelled, or picked up by another worker
   const active = await db
     .select({ slug: services.slug })
     .from(clientServices)
@@ -941,19 +982,70 @@ export async function executeRun(
     items: [],
     fetcher: options.fetcher,
     triggeredById: run.triggeredById,
+    checkpoint: async () => {
+      if (dryRun) return; // a dry run saves nothing, so there's nothing to stop part-way
+      const [now] = await db
+        .select({ status: runs.status })
+        .from(runs)
+        .where(eq(runs.id, runId))
+        .limit(1);
+      if (now?.status === "cancelled") throw new RunStop("cancelled");
+    },
   };
 
   const kind = run.kind as RunKind;
   try {
     const { agentBlockReason } = await import("@/agents/runtime");
     const blocked = await agentBlockReason(db, "orchestrator", run.organisationId);
-    if (blocked) {
-      add(ctx, "blocked", "Run not started", blocked, { agent: "orchestrator" });
-    } else if (kind === "client_growth_review") {
-      await stepGrowth(ctx);
-    } else {
-      await STEPS[kind](ctx);
+    const steps = async () => {
+      if (blocked) {
+        add(ctx, "blocked", "Run not started", blocked, { agent: "orchestrator" });
+      } else if (kind === "client_growth_review") {
+        await stepGrowth(ctx);
+      } else {
+        await STEPS[kind](ctx);
+      }
+    };
+    if (dryRun) {
+      // Everything the steps write happens in a transaction that is always rolled back;
+      // email and paid AI calls are switched off for the duration.
+      try {
+        await withDryRun(() =>
+          db.transaction(async (tx) => {
+            ctx.db = tx as unknown as Db;
+            await steps();
+            throw new RunStop("dry_run");
+          }),
+        );
+      } catch (error) {
+        if (!(error instanceof RunStop)) throw error;
+      }
+      ctx.db = db;
+      for (const item of ctx.items) item.link = undefined;
+      await db
+        .update(runs)
+        .set({
+          status: "complete",
+          items: ctx.items,
+          summary: {
+            headline: `Dry run: ${ctx.items.length} step(s) would run. Nothing was saved, sent or charged.`,
+            counts: ctx.items.reduce((c, i) => ({ ...c, [i.outcome]: c[i.outcome] + 1 }), {
+              completed: 0,
+              requires_approval: 0,
+              recommended: 0,
+              blocked: 0,
+              no_action: 0,
+            } as Record<RunOutcome, number>),
+            findings: ctx.items.length,
+          },
+          finishedAt: new Date(),
+          costMicroUsd: 0,
+        })
+        .where(and(eq(runs.id, runId), eq(runs.status, "running")));
+      return;
     }
+    await steps();
+    await ctx.checkpoint();
     const counts = {
       completed: 0,
       requires_approval: 0,
@@ -979,7 +1071,7 @@ export async function executeRun(
         finishedAt: new Date(),
         costMicroUsd: Number(cost?.total ?? 0),
       })
-      .where(eq(runs.id, runId));
+      .where(and(eq(runs.id, runId), eq(runs.status, "running")));
     if (kind === "client_growth_review" && counts.blocked !== ctx.items.length) {
       await db.insert(timelineEntries).values({
         organisationId: run.organisationId,
@@ -1002,6 +1094,11 @@ export async function executeRun(
     );
     await emitEvent(db, "run.completed", run.organisationId, { runId, kind });
   } catch (error) {
+    if (error instanceof RunStop) {
+      // Cancelled part-way: keep what was done so far, leave the status as cancelled.
+      await db.update(runs).set({ items: ctx.items }).where(eq(runs.id, runId));
+      return;
+    }
     logger.error(
       { runId, err: error instanceof Error ? error.stack : String(error) },
       "run failed",
@@ -1014,6 +1111,6 @@ export async function executeRun(
         items: ctx.items,
         finishedAt: new Date(),
       })
-      .where(eq(runs.id, runId));
+      .where(and(eq(runs.id, runId), eq(runs.status, "running")));
   }
 }
