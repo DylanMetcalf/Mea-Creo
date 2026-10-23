@@ -23,9 +23,9 @@ export default async function SetupPage() {
       </p>
       {status === "not_configured" ? (
         <Callout tone="warning" title="Setup isn't switched on yet">
-          In Vercel, open Settings → Environment Variables and add <code>SETUP_TOKEN</code> with a
-          code of at least {SETUP_TOKEN_MIN_LENGTH} characters that only you know. Redeploy, then
-          come back to this page.
+          In your host&apos;s environment variables (Render: the service → Environment) add{" "}
+          <code>SETUP_TOKEN</code> with a code of at least {SETUP_TOKEN_MIN_LENGTH} characters that
+          only you know. Save (Render redeploys), then come back to this page.
         </Callout>
       ) : (
         <SetupForm />

@@ -3,11 +3,13 @@
  *   pnpm db:migrate   apply migrations
  *   pnpm db:seed      apply migrations, then seed base data (+ demo data outside production)
  *   pnpm db:reset     DEVELOPMENT ONLY: delete the embedded database and start again
- *   pnpm db:deploy    at deploy time (Vercel build): migrations + base data, never demo data
+ *   pnpm db:deploy    at deploy time (Render/Vercel build): migrations + base data, never demo
+ *                     data, and row level security switched on for every public table
  */
 import { rm } from "node:fs/promises";
 import path from "node:path";
 import { createDb, runMigrations } from "@/db";
+import { lockDownPublicTables } from "@/db/rls";
 import { ensureSeeded } from "@/db/seed/ensure";
 
 const command = process.argv[2];
@@ -22,7 +24,7 @@ if (command === "reset") {
 }
 
 if (command === "deploy") {
-  // Runs before every Vercel build, so the database is always ready for the new code.
+  // Runs before every build on the host, so the database is always ready for the new code.
   const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
   if (!url) {
     if (process.env.APP_ENV === "production") {
@@ -36,6 +38,11 @@ if (command === "deploy") {
   const deploy = createDb({ url });
   await runMigrations(deploy);
   await seedBase(deploy.db);
+  // Supabase publishes the public schema through its Data API. The app connects as the table
+  // owner (which bypasses RLS), so enabling RLS with no policies closes that API to the
+  // anon/authenticated roles without changing anything the app does. Harmless elsewhere.
+  const locked = await lockDownPublicTables(deploy.db);
+  if (locked) console.log(`Row level security enabled on ${locked} table(s).`);
   console.log("Database ready: migrations applied, base data in place.");
   await deploy.close();
   process.exit(0);

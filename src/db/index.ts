@@ -33,11 +33,23 @@ interface DbHandle {
  *   WebAssembly, stored in `.data/pglite` (or in memory with `PGLITE_DIR=memory://`).
  *   This lets the whole application, including the demo, run with zero infrastructure.
  */
+/** True for transaction-mode poolers: Supabase's port 6543 or an explicit pgbouncer=true. */
+export function usesTransactionPooler(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.port === "6543" || parsed.searchParams.get("pgbouncer") === "true";
+  } catch {
+    return false;
+  }
+}
+
 export function createDb(options: { url?: string; pgliteDir?: string } = {}): DbHandle {
   const url = options.url ?? process.env.DATABASE_URL;
   if (url) {
     const client = postgres(url, {
       max: Number(process.env.DATABASE_POOL_SIZE ?? 10),
+      // Transaction-mode poolers (Supabase on port 6543, PgBouncer) can't hold prepared statements.
+      prepare: !usesTransactionPooler(url),
       onnotice: () => {},
     });
     const db = drizzlePostgres({ client, schema }) as unknown as Db;

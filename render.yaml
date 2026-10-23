@@ -1,0 +1,71 @@
+# Render Blueprint: one Node web service. Database and private file storage are Supabase.
+# Values marked `sync: false` are entered in the Render dashboard, never committed.
+services:
+  - type: web
+    name: mea-creo
+    runtime: node
+    # Closest Render region to the Supabase project (eu-west-1, Ireland). Can't be changed later.
+    region: frankfurt
+    # Smallest always-on instance (512 MB). The free plan sleeps and is not for production.
+    plan: 0.5c-512mb
+    branch: claude/adoring-ptolemy-hloaac
+    autoDeployTrigger: commit
+    # Migrations + base data run before every build; a failed migration stops the deploy.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm db:deploy && pnpm build
+    startCommand: pnpm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
+        value: "0"
+      - key: APP_ENV
+        value: production
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://www.meacreo.co.za
+      # Supabase → Connect → Session pooler (IPv4, port 5432), with ?sslmode=require.
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_POOL_SIZE
+        value: "5"
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: CRON_SECRET
+        generateValue: true
+      # One-time code for /setup; delete it after the founder account exists.
+      - key: SETUP_TOKEN
+        sync: false
+      # "none" until Resend is verified: enquiries still save and notify in the workspace;
+      # emails are logged as not sent. Then set resend + RESEND_API_KEY.
+      - key: EMAIL_PROVIDER
+        value: none
+      - key: EMAIL_FROM
+        value: Mea Creo <no-reply@meacreo.co.za>
+      - key: RESEND_API_KEY
+        sync: false
+      # Supabase Storage through its S3 endpoint; bucket mea-creo-private is private.
+      - key: STORAGE_PROVIDER
+        value: s3
+      - key: S3_ENDPOINT
+        value: https://udzxayyxtqkjeuogoutu.storage.supabase.co/storage/v1/s3
+      - key: S3_REGION
+        value: eu-west-1
+      - key: S3_BUCKET
+        value: mea-creo-private
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      # Not used at launch. Switch on per integration once its credentials exist.
+      - key: AI_PROVIDER
+        value: none
+      - key: PAYMENT_PROVIDER
+        value: none
+      - key: CALENDAR_PROVIDER
+        value: none
+      - key: ANALYTICS_PROVIDER
+        value: none
+      - key: SEARCH_PROVIDER
+        value: none

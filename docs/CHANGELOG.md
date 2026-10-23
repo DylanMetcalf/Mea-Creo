@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.1 — Production on Render + Supabase (2026-10-23)
+
+- `render.yaml` Blueprint (web service, health check, generated secrets, Supabase storage).
+- `db:deploy` enables row level security on every public table (closes Supabase's Data API).
+- Postgres client disables prepared statements on transaction poolers (port 6543).
+- New enquiries email the founder/managers (reply-to the enquirer); contact-form
+  enquirers get a confirmation email. Idempotent per lead and recipient.
+- Fix: workflow events now run right after each request (they previously needed the
+  worker or `/api/cron/jobs`), and are claimed with `FOR UPDATE SKIP LOCKED`.
+- Daily cycle via a scheduled GitHub Actions workflow; host-neutral setup wording.
+
 ## 0.4.0 — Execution engine (2026-10-22)
 
 - Client → Fixes: reads the live site (home page + up to seven linked pages, robots.txt,

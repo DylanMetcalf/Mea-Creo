@@ -188,6 +188,12 @@ export const emailTemplates = {
       ],
       { label: "Read report", url: p.url },
     ),
+  enquiryReceived: (p: { name: string }) =>
+    build("We've received your enquiry", [
+      `Hi ${p.name},`,
+      "Thanks for getting in touch with Mea Creo. Your message has reached us and Dylan will reply within one working day.",
+      "If it's urgent, reply to this email.",
+    ]),
   staffNotification: (p: { title: string; body: string; url: string }) =>
     build(p.title, [p.body], { label: "Open workspace", url: p.url }),
 };

@@ -4,6 +4,12 @@ The domain is registered at **Domains.co.za**. The current website runs on **Wix
 plan moves the website without risking email or the existing site. **Nothing here has been
 done automatically: every step is yours to take, in order.**
 
+> **Checked 23 October 2026 (public DNS):** the nameservers are **Wix**
+> (`ns8.wixdns.net`, `ns9.wixdns.net`), so DNS records are edited in Wix (Domains → the
+> domain → Manage DNS Records), not at Domains.co.za. Current records: root `A`
+> 185.230.63.171/.107/.186 (Wix), `www` `CNAME` cdn3.wixdns.net, `MX` 10 mx1.tld-mx.com,
+> `TXT` google-site-verification. There is no SPF or DMARC record yet.
+
 > The golden rules: don't touch email (MX) records; don't cancel or unpublish Wix until the
 > new site has run cleanly for 30 days; change DNS only after the new site is verified on
 > its temporary address; keep a written copy of every DNS record before changing anything.

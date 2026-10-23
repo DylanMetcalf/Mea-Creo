@@ -94,7 +94,7 @@ export function SetupForm() {
         name="code"
         type="password"
         label="Setup code"
-        hint="The SETUP_TOKEN value you added in Vercel's environment variables."
+        hint="The SETUP_TOKEN value you added to the host's environment variables."
         autoComplete="off"
         required
       />

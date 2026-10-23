@@ -48,7 +48,7 @@ export const envSchema = z
     GOOGLE_AI_API_KEY: optionalString,
     AI_MONTHLY_BUDGET_USD: z.coerce.number().nonnegative().default(50),
 
-    EMAIL_PROVIDER: z.enum(["mock", "smtp", "resend"]).default("mock"),
+    EMAIL_PROVIDER: z.enum(["none", "mock", "smtp", "resend"]).default("mock"),
     EMAIL_FROM: z.string().default("Mea Creo <no-reply@meacreo.co.za>"),
     SMTP_URL: optionalString,
     RESEND_API_KEY: optionalString,
@@ -77,7 +77,7 @@ export const envSchema = z
     SOCIAL_PROVIDER: z.enum(["none", "mock", "linkedin"]).default("none"),
 
     SALES_SCOUT_WEBHOOK_SECRET: optionalString,
-    /** Bearer secret for /api/cron/* (hosts without a long-running worker, e.g. Vercel Cron). */
+    /** Bearer secret for /api/cron/* (called daily by the GitHub Actions workflow or a host's cron). */
     CRON_SECRET: optionalString,
     /**
      * One-time setup code for /setup (creating the founder account without a terminal).

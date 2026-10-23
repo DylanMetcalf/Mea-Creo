@@ -10,6 +10,39 @@ scheduler. Two ways to host it:
 
 Prices for these services are in [COSTS.md](COSTS.md) as estimates.
 
+## Production: Render + Supabase (current plan)
+
+`render.yaml` describes the whole service; Render reads it as a Blueprint.
+
+| Piece       | Choice                                                                                            |
+| ----------- | ------------------------------------------------------------------------------------------------- |
+| Web         | Render **Web Service**, Node 22, region Frankfurt, instance `0.5c-512mb` (always on)              |
+| Build       | `corepack enable && pnpm install --frozen-lockfile && pnpm db:deploy && pnpm build`               |
+| Start       | `pnpm start` (honours Render's `PORT`); health check `/api/health`                                |
+| Branch      | `claude/adoring-ptolemy-hloaac` (the repository's only and default branch), auto-deploy           |
+| Database    | Supabase Postgres (project ref `udzxayyxtqkjeuogoutu`, eu-west-1) via the **session pooler**      |
+| Files       | Supabase Storage, private bucket `mea-creo-private`, through its S3 endpoint                      |
+| Email       | Resend (domain `meacreo.co.za` verified with DNS records)                                         |
+| Daily cycle | GitHub Actions workflow `Daily cycle` calls `/api/cron/daily` (secrets `SITE_URL`, `CRON_SECRET`) |
+| Jobs/events | Run in the web process right after each request; no worker service                                |
+
+Notes:
+
+- **Connection string:** Supabase → Connect → Session pooler (port 5432, IPv4). Render has
+  no IPv6 egress, and the direct `db.<ref>.supabase.co` host is IPv6-only. Append
+  `?sslmode=require`. The transaction pooler (6543) also works: the client turns off
+  prepared statements for it automatically.
+- **Row level security:** `db:deploy` enables RLS on every table in `public` with no
+  policies. The app connects as the table owner, so it is unaffected; Supabase's Data API
+  roles (`anon`, `authenticated`) can read and write nothing. The app does not use
+  Supabase Auth or the Data API: sign-in, sessions and permissions are the app's own,
+  checked on the server.
+- **Storage keys:** Supabase → Storage → S3 → enable the connection, create an access key.
+  The key bypasses storage policies, so it lives only in Render's environment.
+- **Rollback:** Render → the service → Events → pick the previous successful deploy →
+  Rollback. Migrations are additive, so the previous build runs on the newer schema.
+- **Logs:** Render → the service → Logs. Database: Supabase → Logs.
+
 ## 1. Create the services
 
 1. **Postgres 16** with automated daily backups and point-in-time restore. Copy the

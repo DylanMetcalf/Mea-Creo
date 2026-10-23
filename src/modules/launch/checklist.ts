@@ -254,7 +254,7 @@ export async function launchChecklist(db: DbOrTx): Promise<LaunchGroup[]> {
           "cron",
           "Daily cycle scheduled",
           Boolean(env.CRON_SECRET),
-          "CRON_SECRET set; vercel.json calls /api/cron/daily each morning.",
+          "CRON_SECRET set on the host and as a GitHub secret; the Daily cycle workflow calls /api/cron/daily each morning.",
         ),
         auto(
           "demo",
@@ -266,7 +266,7 @@ export async function launchChecklist(db: DbOrTx): Promise<LaunchGroup[]> {
           "setup_token",
           "Setup code removed",
           !env.SETUP_TOKEN,
-          "SETUP_TOKEN is only needed to create your account. Delete it in Vercel afterwards.",
+          "SETUP_TOKEN is only needed to create your account. Delete it from the host's environment variables afterwards.",
           undefined,
           true,
         ),

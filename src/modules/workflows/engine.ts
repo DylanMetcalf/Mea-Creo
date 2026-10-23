@@ -1,6 +1,17 @@
-import { asc, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import type { Db, DbOrTx } from "@/db";
-import { clients, domainEvents, leads, memberships, organisations, tasks } from "@/db/schema";
+import {
+  clients,
+  domainEvents,
+  leads,
+  memberships,
+  organisations,
+  tasks,
+  users,
+} from "@/db/schema";
+import { absoluteUrl } from "@/lib/urls";
+import { sendEmail } from "@/modules/email/service";
+import { emailTemplates } from "@/modules/email/templates";
 import { logger } from "@/lib/logger";
 import { logActivity, SYSTEM } from "@/modules/activity/log";
 import { recomputeHealth } from "@/modules/clients/health";
@@ -52,6 +63,60 @@ export const WORKFLOW_RULES: WorkflowRule[] = [
         source: "workflow",
         sourceRef: `lead:${leadId}`,
       });
+    },
+  },
+  {
+    id: "lead-email-alert",
+    name: "Email new enquiries",
+    when: "lead.created",
+    description:
+      "Emails the founder and managers about every new enquiry, and confirms receipt to people who used the contact form.",
+    then: ["Email Mea Creo", "Confirm to the enquirer"],
+    defaultMaturity: "automated",
+    handler: async (db, event) => {
+      const leadId = String(event.payload.leadId ?? "");
+      const [lead] = await db.select().from(leads).where(eq(leads.id, leadId)).limit(1);
+      if (!lead) return;
+      const platform = await getPlatformOrganisation(db);
+      const staff = await db
+        .select({ id: users.id, email: users.email })
+        .from(memberships)
+        .innerJoin(users, eq(users.id, memberships.userId))
+        .where(
+          and(
+            eq(memberships.organisationId, platform.id),
+            inArray(memberships.role, ["founder", "manager"]),
+          ),
+        );
+      const source = lead.source === "visibility_report" ? "Visibility Report request" : "Enquiry";
+      const body = [
+        `${lead.contactName ?? "Someone"} at ${lead.company}${lead.email ? ` (${lead.email})` : ""}.`,
+        lead.message ?? (lead.website ? `Website: ${lead.website}` : ""),
+      ]
+        .filter(Boolean)
+        .join(" ");
+      // Idempotency keys make retries safe: each person gets one email per lead.
+      for (const member of staff)
+        await sendEmail(db, {
+          to: { email: member.email },
+          template: "staffNotification",
+          email: emailTemplates.staffNotification({
+            title: `${source}: ${lead.company}`,
+            body,
+            url: absoluteUrl(`/workspace/leads/${lead.id}`),
+          }),
+          category: "transactional",
+          idempotencyKey: `lead-alert:${lead.id}:${member.id}`,
+          replyTo: lead.email ?? undefined,
+        });
+      if (lead.source === "contact_form" && lead.email)
+        await sendEmail(db, {
+          to: { email: lead.email, name: lead.contactName ?? undefined },
+          template: "enquiryReceived",
+          email: emailTemplates.enquiryReceived({ name: lead.contactName ?? "there" }),
+          category: "transactional",
+          idempotencyKey: `enquiry-received:${lead.id}`,
+        });
     },
   },
   {
@@ -152,15 +217,28 @@ export async function workflowMaturity(db: DbOrTx, ruleId: string): Promise<Matu
   return WORKFLOW_RULES.find((r) => r.id === ruleId)?.defaultMaturity ?? "manual";
 }
 
-/** Delivers unprocessed events to matching rules. At-least-once; handlers are idempotent. */
+/**
+ * Delivers unprocessed events to matching rules. Events are claimed atomically
+ * (FOR UPDATE SKIP LOCKED), so concurrent runners (inline after a request, the worker,
+ * the cron endpoint) never handle the same event twice. A rule's error is recorded on the
+ * event and logged; handlers stay idempotent regardless.
+ */
 export async function processDomainEvents(db: Db, limit = 100): Promise<number> {
   const emergency = await getPlatformSetting(db, "emergency");
-  const pending = await db
-    .select()
+  const claim = db
+    .select({ id: domainEvents.id })
     .from(domainEvents)
     .where(isNull(domainEvents.processedAt))
     .orderBy(asc(domainEvents.createdAt))
-    .limit(limit);
+    .limit(limit)
+    .for("update", { skipLocked: true });
+  const pending = (
+    await db
+      .update(domainEvents)
+      .set({ processedAt: new Date() })
+      .where(inArray(domainEvents.id, claim))
+      .returning()
+  ).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   for (const event of pending) {
     let error: string | null = null;
     if (!emergency.pauseAllAutomation) {
@@ -189,10 +267,7 @@ export async function processDomainEvents(db: Db, limit = 100): Promise<number> 
         }
       }
     }
-    await db
-      .update(domainEvents)
-      .set({ processedAt: new Date(), error })
-      .where(eq(domainEvents.id, event.id));
+    await db.update(domainEvents).set({ error }).where(eq(domainEvents.id, event.id));
   }
   return pending.length;
 }

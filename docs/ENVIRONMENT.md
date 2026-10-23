@@ -49,7 +49,7 @@ Configuration comes from environment variables, validated at startup by
 | `ANTHROPIC_API_KEY`                                                                 | none                                | Required when `AI_PROVIDER=anthropic`                                       |
 | `OPENAI_API_KEY` / `GOOGLE_AI_API_KEY`                                              | none                                | Reserved for future providers                                               |
 | `AI_MONTHLY_BUDGET_USD`                                                             | `50`                                | Initial budget; the live budget is edited in Settings → AI & costs          |
-| `EMAIL_PROVIDER`                                                                    | `mock`                              | `mock`, `smtp` or `resend`                                                  |
+| `EMAIL_PROVIDER`                                                                    | `mock`                              | `none` (not sent, logged), `mock`, `smtp` or `resend`                       |
 | `EMAIL_FROM`                                                                        | `Mea Creo <no-reply@meacreo.co.za>` | Sender. The domain must be verified with the provider                       |
 | `SMTP_URL` / `RESEND_API_KEY`                                                       | none                                | Per provider                                                                |
 | `STORAGE_PROVIDER`                                                                  | `local`                             | `mock`, `local` or `s3`                                                     |
