@@ -1,9 +1,17 @@
 "use client";
 
-import { ActionForm, CheckboxField, SubmitButton, TextArea, TextField } from "@/components/ui/form";
+import {
+  ActionForm,
+  CheckboxField,
+  SelectField,
+  SubmitButton,
+  TextArea,
+  TextField,
+} from "@/components/ui/form";
+import { SERVICE_INTENTS } from "@/content/service-intents";
 import { contactAction } from "./actions";
 
-export function ContactForm() {
+export function ContactForm({ interest }: { interest?: string }) {
   return (
     <ActionForm action={contactAction} className="space-y-4" resetOnSuccess>
       <div className="hidden" aria-hidden>
@@ -19,6 +27,16 @@ export function ContactForm() {
         <TextField name="phone" label="Phone (optional)" autoComplete="tel" />
       </div>
       <TextField name="website" label="Website (optional)" inputMode="url" />
+      <SelectField
+        name="interest"
+        label="What do you need help with?"
+        placeholder="Choose one (optional)"
+        options={[
+          ...SERVICE_INTENTS.map((i) => ({ value: i.slug, label: i.label })),
+          { value: "other", label: "Something else / not sure yet" },
+        ]}
+        defaultValue={interest}
+      />
       <TextArea name="message" label="How can we help?" rows={5} required />
       <CheckboxField
         name="consent"

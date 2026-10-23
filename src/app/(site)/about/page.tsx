@@ -12,9 +12,9 @@ import { siteConfig } from "@/config/site";
 import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: "About founder Dylan Metcalf",
   description:
-    "Mea Creo was founded by Dylan Metcalf to help businesses become easier to find, understand and choose, combining creativity, analytical thinking, technology and business strategy.",
+    "Mea Creo was founded by Dylan Metcalf to help businesses become easier to find, understand and choose, through creativity, data, technology and strategy.",
   alternates: { canonical: "/about" },
 };
 

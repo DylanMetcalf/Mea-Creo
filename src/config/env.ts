@@ -88,6 +88,12 @@ export const envSchema = z
     DATABASE_URL_UNPOOLED: optionalString,
 
     /** GA4 measurement id (G-XXXXXXX). Loaded only after a visitor accepts analytics cookies. */
+    /** Public Calendly booking page; when set, /book embeds it instead of the built-in form. */
+    CALENDLY_URL: optionalString.refine(
+      (v) =>
+        v === undefined || /^https:\/\/calendly\.com\/[A-Za-z0-9_-]+(\/[A-Za-z0-9_-]+)?$/.test(v),
+      "CALENDLY_URL looks like https://calendly.com/your-name/event",
+    ),
     GA_MEASUREMENT_ID: optionalString.refine(
       (v) => v === undefined || /^G-[A-Z0-9]{4,16}$/.test(v),
       "GA_MEASUREMENT_ID looks like G-XXXXXXX",

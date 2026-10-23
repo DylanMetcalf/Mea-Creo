@@ -6,6 +6,8 @@
 export interface Pillar {
   slug: "visibility" | "growth" | "content" | "technology" | "consulting" | "quality-assurance";
   name: string;
+  /** Search title, under 48 characters (the layout adds " | Mea Creo"). */
+  seoTitle: string;
   tagline: string;
   headline: string;
   intro: string;
@@ -19,6 +21,7 @@ export interface Pillar {
 export const PILLARS: Pillar[] = [
   {
     slug: "visibility",
+    seoTitle: "SEO, AEO and GEO services in South Africa",
     name: "Visibility",
     tagline: "Get found",
     headline: "Be found on Google, and understood by AI search.",
@@ -102,6 +105,7 @@ export const PILLARS: Pillar[] = [
   },
   {
     slug: "growth",
+    seoTitle: "Lead generation and LinkedIn networking",
     name: "Growth",
     tagline: "Get opportunities",
     headline: "Turn visibility into real conversations.",
@@ -172,6 +176,7 @@ export const PILLARS: Pillar[] = [
   },
   {
     slug: "technology",
+    seoTitle: "Websites, apps and AI business automation",
     name: "Technology",
     tagline: "Get systemised",
     headline: "Websites, AI and systems that do the work behind the scenes.",
@@ -246,6 +251,7 @@ export const PILLARS: Pillar[] = [
   },
   {
     slug: "content",
+    seoTitle: "Photography, video and social media management",
     name: "Content",
     tagline: "Get noticed",
     headline: "Content that makes people proud to show your business.",
@@ -298,6 +304,7 @@ export const PILLARS: Pillar[] = [
   },
   {
     slug: "consulting",
+    seoTitle: "Digital, marketing and AI strategy consulting",
     name: "Consulting",
     tagline: "Get clarity",
     headline: "Strategy for visibility, growth and AI, from someone who does the work.",
@@ -341,6 +348,7 @@ export const PILLARS: Pillar[] = [
   },
   {
     slug: "quality-assurance",
+    seoTitle: "Content quality assurance for search and AI",
     name: "Quality Assurance",
     tagline: "Get it right",
     headline: "An independent quality check before anything goes out.",

@@ -151,6 +151,21 @@ describe("execution engine rules", () => {
     expect(org.deliverable.parts[0].value).not.toContain("telephone");
   });
 
+  it('treats alt="" as decorative and reads accordion questions', () => {
+    const page = snapshotPage(
+      `<html><body><img src="/logo.png" alt=""><img src="/a.jpg"><img src="/b.jpg" alt="b.jpg">
+      <details><summary><h3>Do you work outside South Africa?</h3><span>+</span></summary></details>
+      <details><summary>How long does SEO take?+</summary></details></body></html>`,
+      "https://x.example/",
+      200,
+    );
+    expect(page.imagesMissingAlt).toEqual(["/a.jpg", "/b.jpg"]);
+    expect(page.questionHeadings).toEqual([
+      "Do you work outside South Africa?",
+      "How long does SEO take?",
+    ]);
+  });
+
   it("checks the live value against the approved text", () => {
     const page = snapshotPage(SERVICES, "https://rockwell.example/services", 200);
     expect(evaluateCheck({ type: "title_is" }, page, undefined, "Home").passed).toBe(true);

@@ -4,18 +4,21 @@ import Link from "next/link";
 import { Container, DisplayHeading, Eyebrow } from "@/components/site/marketing";
 import { getDb } from "@/db";
 import { getPlatformSetting } from "@/modules/settings/service";
+import { serviceIntent } from "@/content/service-intents";
 import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = {
-  title: "Contact",
+  title: "Contact us: enquiries and quotes",
   description: "Talk to Mea Creo about visibility, growth and automation for your business.",
   alternates: { canonical: "/contact" },
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function ContactPage() {
+export default async function ContactPage({ searchParams }: PageProps<"/contact">) {
   const c = await getPlatformSetting(await getDb(), "company");
+  const service = (await searchParams).service;
+  const interest = serviceIntent(typeof service === "string" ? service : undefined)?.slug;
   return (
     <section className="relative isolate overflow-hidden py-14 sm:py-20">
       <div
@@ -67,7 +70,7 @@ export default async function ContactPage() {
           </div>
         </div>
         <div className="rounded-card border-border bg-surface shadow-card border p-6 sm:p-8">
-          <ContactForm />
+          <ContactForm interest={interest} />
         </div>
       </Container>
     </section>

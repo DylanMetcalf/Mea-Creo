@@ -197,7 +197,7 @@ export function FaqList({ items }: { items: { question: string; answer: string }
       {items.map((item) => (
         <details key={item.question} className="group py-5">
           <summary className="text-ink hover:text-brand-700 flex cursor-pointer list-none items-center justify-between gap-4 text-[1.05rem] font-medium transition-colors [&::-webkit-details-marker]:hidden">
-            {item.question}
+            <h3 className="font-[inherit] text-[inherit]">{item.question}</h3>
             <span
               aria-hidden
               className="border-border text-brand-600 group-open:bg-accent flex size-7 shrink-0 items-center justify-center rounded-full border text-lg leading-none transition-all duration-300 group-open:rotate-45 group-open:border-transparent group-open:text-white"

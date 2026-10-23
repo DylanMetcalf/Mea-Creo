@@ -14,7 +14,7 @@ import { getPlatformSetting } from "@/modules/settings/service";
 import { getPublicPackages } from "@/modules/website/packages";
 
 export const metadata: Metadata = {
-  title: "Pricing",
+  title: "Pricing: visibility and growth packages",
   description:
     "Mea Creo packages: Foundation (once-off), Visibility, Growth and Scale monthly programmes, and custom quotations for complex requirements.",
   alternates: { canonical: "/pricing" },

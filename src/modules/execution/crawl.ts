@@ -19,7 +19,7 @@ export interface PageSnapshot {
   jsonLdTypes: string[];
   openGraph: Record<string, string>;
   imageCount: number;
-  /** Image sources without meaningful alt text (first 20). */
+  /** Image sources with no alt attribute or a file name as alt (first 20). alt="" is decorative. */
   imagesMissingAlt: string[];
   phoneLinks: number;
   socialProfiles: Record<string, string>;
@@ -51,7 +51,7 @@ export function snapshotPage(html: string, url: string, status: number): PageSna
     .querySelectorAll("img")
     .filter((img) => {
       const alt = img.getAttribute("alt");
-      return alt === undefined || alt.trim() === "" || /\.(jpe?g|png|webp|gif)$/i.test(alt.trim());
+      return alt === undefined || /\.(jpe?g|png|webp|gif)$/i.test(alt.trim());
     })
     .map((img) => img.getAttribute("src") ?? img.getAttribute("data-src") ?? "(no src)")
     .slice(0, 20);

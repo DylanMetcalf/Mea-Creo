@@ -36,6 +36,7 @@ export async function generateMetadata({
       title: a.title,
       description: a.summary,
       publishedTime: a.publishedAt?.toISOString(),
+      images: [{ url: "/brand/og-image.png", width: 1200, height: 630, alt: "Mea Creo" }],
     },
   };
 }

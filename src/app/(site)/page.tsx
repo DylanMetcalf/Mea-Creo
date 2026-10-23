@@ -1,4 +1,5 @@
 import {
+  AppWindow,
   ArrowRight,
   BadgeCheck,
   Bot,
@@ -9,10 +10,17 @@ import {
   HeartHandshake,
   LineChart,
   MessagesSquare,
+  Globe,
+  type LucideIcon,
   Search,
+  Share2,
   Sparkles,
+  Target,
   TrendingUp,
   UserRound,
+  Users,
+  Video,
+  Workflow,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -23,6 +31,7 @@ import { HeroVisual } from "@/components/site/hero-visual";
 import { TestimonialsSection } from "@/components/site/testimonials";
 import { LinkButton } from "@/components/ui/button";
 import { HOW_IT_WORKS } from "@/content/pillars";
+import { SERVICE_INTENTS, type ServiceIntentSlug } from "@/content/service-intents";
 import { getDb } from "@/db";
 import { publishedTestimonials } from "@/modules/testimonials/service";
 import { getPublicPackages } from "@/modules/website/packages";
@@ -74,6 +83,17 @@ const areas = [
     body: "An independent check that content is accurate, on-brand and search-ready.",
   },
 ];
+
+const INTENT_ICONS: Record<ServiceIntentSlug, LucideIcon> = {
+  "seo-aeo-geo": Search,
+  linkedin: Users,
+  "social-media": Share2,
+  "photo-video": Video,
+  websites: Globe,
+  apps: AppWindow,
+  automation: Workflow,
+  leads: Target,
+};
 
 const sectors = [
   "Mining",
@@ -136,7 +156,7 @@ export default async function HomePage() {
         />
         <Container className="grid grid-cols-1 items-center gap-14 lg:grid-cols-[1.25fr_1fr] lg:gap-14">
           <div>
-            <Eyebrow>Visibility · Growth · Automation</Eyebrow>
+            <Eyebrow>Visibility · Content · Websites & apps · Automation</Eyebrow>
             <h1 className="font-display text-ink mt-5 text-[2.5rem] leading-[1.03] tracking-[-0.045em] sm:text-[3.5rem] lg:text-[3.3rem] xl:text-[3.7rem]">
               Become easier to find.
               <br />
@@ -145,9 +165,9 @@ export default async function HomePage() {
               <span className="text-gradient">Easier to choose.</span>
             </h1>
             <p className="text-muted mt-7 max-w-xl text-[1.13rem] leading-relaxed">
-              Mea Creo helps businesses get found on Google and in AI search, explain clearly what
-              they do, and turn that attention into enquiries, with the systems to keep growth
-              moving.
+              Mea Creo helps businesses get found on Google and in AI search, show up well on
+              LinkedIn and social media, look the part in photography and video, and turn that
+              attention into enquiries with websites, apps and automation that keep growth moving.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <LinkButton href="/book" variant="cta" size="xl">
@@ -169,6 +189,40 @@ export default async function HomePage() {
           <HeroVisual />
         </Container>
       </section>
+
+      {/* What do you need? One door per service, each ending in a direct enquiry. */}
+      <Section tone="surface">
+        <SectionIntro eyebrow="What do you need?" title="Start with what you're looking for.">
+          Pick what matters most right now. Every service connects to the rest, so we can grow with
+          you from one need to the whole picture.
+        </SectionIntro>
+        <ul className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {SERVICE_INTENTS.map((intent) => {
+            const Icon = INTENT_ICONS[intent.slug];
+            return (
+              <li
+                key={intent.slug}
+                className="border-border bg-paper flex flex-col rounded-2xl border p-5"
+              >
+                <Icon className="text-brand-600 size-5" aria-hidden />
+                <h3 className="font-display mt-4 text-[1.2rem]">{intent.label}</h3>
+                <p className="text-muted mt-1.5 text-sm leading-relaxed">{intent.line}</p>
+                <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 pt-5 text-sm">
+                  <Link
+                    href={`/contact?service=${intent.slug}`}
+                    className="text-brand-700 inline-flex items-center gap-1 font-semibold hover:underline"
+                  >
+                    Ask about this <ArrowRight className="size-3.5" aria-hidden />
+                  </Link>
+                  <Link href={intent.href} className="text-muted hover:text-ink">
+                    <span className="sr-only">{intent.label}: </span>How it works
+                  </Link>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </Section>
 
       {/* Sectors */}
       <section aria-label="Sectors we work with" className="border-border/60 border-y py-6">

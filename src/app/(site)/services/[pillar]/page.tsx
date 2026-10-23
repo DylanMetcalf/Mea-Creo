@@ -25,10 +25,14 @@ export async function generateMetadata({
   const pillar = getPillar((await params).pillar);
   if (!pillar) return {};
   return {
-    title: `${pillar.name}: ${pillar.headline}`,
+    title: pillar.seoTitle,
     description: pillar.metaDescription,
     alternates: { canonical: `/services/${pillar.slug}` },
-    openGraph: { title: `${pillar.name} | Mea Creo`, description: pillar.metaDescription },
+    openGraph: {
+      title: `${pillar.seoTitle} | Mea Creo`,
+      description: pillar.metaDescription,
+      images: [{ url: "/brand/og-image.png", width: 1200, height: 630, alt: "Mea Creo" }],
+    },
   };
 }
 

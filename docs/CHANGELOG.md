@@ -10,6 +10,13 @@
 - Fix: workflow events now run right after each request (they previously needed the
   worker or `/api/cron/jobs`), and are claimed with `FOR UPDATE SKIP LOCKED`.
 - Daily cycle via a scheduled GitHub Actions workflow; host-neutral setup wording.
+- Home page "What do you need?" tiles for each service (SEO/AEO/GEO, LinkedIn, social media,
+  photography and video, websites, apps, AI and business optimisation, lead generation);
+  each opens the contact form with that interest preselected and recorded on the lead.
+- `/book` embeds Calendly when `CALENDLY_URL` is set.
+- SEO/GEO/AEO: Open Graph and Twitter cards with a branded share image, specific page titles
+  under 60 characters, `/llms.txt`, FAQ questions as real headings.
+- Engine accuracy: `alt=""` counts as decorative; questions followed by an icon are read.
 
 ## 0.4.0 — Execution engine (2026-10-22)
 

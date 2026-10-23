@@ -12,7 +12,7 @@ import {
 import { HOW_IT_WORKS } from "@/content/pillars";
 
 export const metadata: Metadata = {
-  title: "How it works",
+  title: "How we work: from audit to growth",
   description:
     "How Mea Creo works: discover, audit, strategise, implement, measure and improve, with your approval where it matters.",
   alternates: { canonical: "/how-it-works" },

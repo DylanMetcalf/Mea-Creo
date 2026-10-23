@@ -58,6 +58,9 @@ services:
         sync: false
       - key: S3_SECRET_ACCESS_KEY
         sync: false
+      # Public booking page; /book embeds it. Bookings sync to Google Calendar via Calendly.
+      - key: CALENDLY_URL
+        value: https://calendly.com/salesscout/mea-creo-discovery-call
       # Not used at launch. Switch on per integration once its credentials exist.
       - key: AI_PROVIDER
         value: none

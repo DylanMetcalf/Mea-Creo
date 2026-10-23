@@ -1,21 +1,24 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { CheckList, Container, DisplayHeading, Eyebrow } from "@/components/site/marketing";
+import { getEnv } from "@/config/env";
 import { getDb } from "@/db";
 import { availableSlots } from "@/modules/meetings/service";
 import { BookingForm } from "./booking-form";
 
 export const metadata: Metadata = {
-  title: "Book a visibility review call",
+  title: "Book a free discovery call",
   description:
-    "Book a 30-minute call with Mea Creo to talk through your visibility, growth and next steps.",
+    "Book a free 30-minute call with Mea Creo about SEO, AEO and GEO, LinkedIn, social media, photography and video, websites, apps or automation.",
   alternates: { canonical: "/book" },
 };
 export const dynamic = "force-dynamic";
 
 export default async function BookPage({ searchParams }: PageProps<"/book">) {
   const sp = await searchParams;
-  const slots = await availableSlots(await getDb(), "discovery");
+  const calendly = getEnv().CALENDLY_URL;
+  const slots = calendly ? null : await availableSlots(await getDb(), "discovery");
   const reportToken =
     typeof sp.report === "string" && /^[A-Za-z0-9_-]{10,64}$/.test(sp.report)
       ? sp.report
@@ -27,16 +30,16 @@ export default async function BookPage({ searchParams }: PageProps<"/book">) {
         <div>
           <Eyebrow>Talk to Mea Creo</Eyebrow>
           <DisplayHeading as="h1" className="mt-4 sm:text-[3rem]">
-            Book a visibility review call.
+            Book a discovery call.
           </DisplayHeading>
           <p className="text-muted mt-5 text-lg">
-            {slots.durationMinutes} minutes by video call. No pitch deck, no pressure.
+            {slots?.durationMinutes ?? 30} minutes by video call. No pitch deck, no pressure.
           </p>
           <div className="mt-8">
             <CheckList
               items={[
-                "We look at how you're found today, on search and in AI answers",
-                "We talk through what's worth fixing first, and why",
+                "Tell us what you need: visibility, LinkedIn, social media, photo and video, websites, apps or automation",
+                "We look at where you are today and what's worth doing first, and why",
                 "You leave with clear next steps, whether or not we work together",
               ]}
             />
@@ -61,14 +64,38 @@ export default async function BookPage({ searchParams }: PageProps<"/book">) {
           )}
         </div>
         <div className="border-border/80 bg-surface shadow-raised min-w-0 rounded-[22px] border p-6 sm:p-8">
-          <BookingForm
-            days={slots.days.map((d) => ({
-              date: d.date,
-              slots: d.slots.map((s) => s.toISOString()),
-            }))}
-            timezone={slots.timezone}
-            reportToken={reportToken}
-          />
+          {calendly ? (
+            <>
+              <iframe
+                title="Book a call with Mea Creo (Calendly)"
+                src={`${calendly}?embed_type=Inline&embed_domain=${new URL(getEnv().NEXT_PUBLIC_SITE_URL).host}&hide_gdpr_banner=1&primary_color=2e8050`}
+                className="h-[700px] w-full rounded-xl"
+                loading="lazy"
+              />
+              <p className="text-muted mt-3 text-xs">
+                Scheduling by Calendly. Prefer to write?{" "}
+                <Link href="/contact" className="underline">
+                  Send a message
+                </Link>{" "}
+                or{" "}
+                <a href={calendly} className="underline" target="_blank" rel="noreferrer">
+                  open the booking page
+                </a>
+                .
+              </p>
+            </>
+          ) : (
+            slots && (
+              <BookingForm
+                days={slots.days.map((d) => ({
+                  date: d.date,
+                  slots: d.slots.map((s) => s.toISOString()),
+                }))}
+                timezone={slots.timezone}
+                reportToken={reportToken}
+              />
+            )
+          )}
         </div>
       </Container>
     </section>

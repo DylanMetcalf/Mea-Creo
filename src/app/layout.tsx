@@ -21,6 +21,14 @@ export const metadata: Metadata = {
   applicationName: siteConfig.name,
   icons: { icon: "/brand/favicon-64.png", apple: "/brand/apple-touch-icon.png" },
   manifest: "/manifest.webmanifest",
+  // Shared link previews (LinkedIn, WhatsApp, X). Pages override title and description.
+  openGraph: {
+    type: "website",
+    siteName: siteConfig.name,
+    locale: "en_ZA",
+    images: [{ url: "/brand/og-image.png", width: 1200, height: 630, alt: siteConfig.name }],
+  },
+  twitter: { card: "summary_large_image", images: ["/brand/og-image.png"] },
   appleWebApp: { capable: true, title: "Mea Creo", statusBarStyle: "black-translucent" },
   // Only production is indexable; dev, preview and staging must never compete with the live site.
   robots: isProduction ? { index: true, follow: true } : { index: false, follow: false },

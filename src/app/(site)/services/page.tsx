@@ -13,7 +13,7 @@ import { PILLARS } from "@/content/pillars";
 import { SERVICE_CATALOGUE } from "@/modules/services/catalogue";
 
 export const metadata: Metadata = {
-  title: "Services: Visibility, Growth, Technology, Content, Consulting & QA",
+  title: "Services: SEO, content, websites, apps and AI",
   description:
     "SEO, GEO, AEO, lead generation, conversion, websites, AI systems and automation, content, consulting and quality assurance for B2B and technical businesses.",
   alternates: { canonical: "/services" },

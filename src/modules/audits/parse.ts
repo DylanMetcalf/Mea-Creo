@@ -104,15 +104,23 @@ export function extractPageSignals(html: string, pageUrl: string) {
 
   const h1 = root.querySelectorAll("h1").map(text).filter(Boolean);
   const h2 = root.querySelectorAll("h2").map(text).filter(Boolean);
-  const questionHeadings = root
-    .querySelectorAll("h2, h3, h4, summary, dt")
-    .map(text)
-    .filter((t) => t.endsWith("?") && t.length < 160);
+  const questionHeadings = [
+    ...new Set(
+      root
+        .querySelectorAll("h2, h3, h4, summary, dt")
+        .map(text)
+        // Allow trailing decoration (an accordion's "+" icon) after the question mark.
+        .map((t) => t.replace(/\?[^\p{L}\p{N}?]*$/u, "?"))
+        .filter((t) => t.endsWith("?") && t.length < 160),
+    ),
+  ];
 
   const images = root.querySelectorAll("img");
   const imagesMissingAlt = images.filter((img) => {
     const alt = img.getAttribute("alt");
-    return alt === undefined || alt.trim() === "" || /\.(jpe?g|png|webp|gif)$/i.test(alt.trim());
+    // alt="" is the correct markup for a decorative image; only a missing attribute or a
+    // file name used as alt text is a problem.
+    return alt === undefined || /\.(jpe?g|png|webp|gif)$/i.test(alt.trim());
   }).length;
 
   let internalLinks = 0;

@@ -2,6 +2,7 @@
 
 import { recordAttribution } from "@/modules/leads/attribution";
 import { z } from "zod";
+import { serviceIntent } from "@/content/service-intents";
 import { getDb } from "@/db";
 import { leadActivities, leads } from "@/db/schema";
 import { kickJobs } from "@/jobs/kick";
@@ -17,6 +18,10 @@ const contactSchema = z.object({
   website: optionalText(300),
   phone: optionalText(40),
   message: z.string().trim().min(10, "Tell us a little about what you need.").max(3000),
+  interest: z
+    .string()
+    .optional()
+    .transform((v) => (v === "other" ? "Something else" : serviceIntent(v)?.label)),
   consent: z.literal("on", { error: "Please confirm we may contact you about your enquiry." }),
 });
 
@@ -27,6 +32,7 @@ export async function contactAction(_prev: ActionState, formData: FormData): Pro
     const parsed = parseForm(contactSchema, formData);
     if (!parsed.success) return parsed.state;
     const d = parsed.data;
+    const message = d.interest ? `Interested in: ${d.interest}\n\n${d.message}` : d.message;
     const db = await getDb();
     const { ipAddress } = await requestMeta();
     const limit = await hitRateLimit(db, `contact:${ipAddress ?? "unknown"}`, 5, 3600);
@@ -45,7 +51,7 @@ export async function contactAction(_prev: ActionState, formData: FormData): Pro
         email: d.email.toLowerCase(),
         phone: d.phone ?? null,
         source: "contact_form",
-        message: d.message,
+        message,
         consentAt: new Date(),
         consentText: "Agreed on the contact form to be contacted about this enquiry.",
         lastActivityAt: new Date(),
@@ -55,12 +61,12 @@ export async function contactAction(_prev: ActionState, formData: FormData): Pro
     await db.insert(leadActivities).values({
       leadId: lead.id,
       type: "note",
-      summary: `Contact form: ${d.message.slice(0, 300)}`,
+      summary: `Contact form: ${message.slice(0, 300)}`,
     });
     await emitEvent(db, "lead.created", null, { leadId: lead.id, source: "contact_form" });
     await notifyStaff(db, {
       kind: "lead.created",
-      title: `New enquiry: ${d.company}`,
+      title: `New enquiry: ${d.company}${d.interest ? ` (${d.interest})` : ""}`,
       body: d.message.slice(0, 140),
       link: `/workspace/leads/${lead.id}`,
     });

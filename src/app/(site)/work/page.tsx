@@ -6,8 +6,9 @@ import { caseStudies } from "@/db/schema";
 import { humanize } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "Work",
-  description: "Selected Mea Creo work, published with each client's permission.",
+  title: "Our work and photography portfolio",
+  description:
+    "Selected Mea Creo work across photography, content and digital visibility, published with each client's permission.",
   alternates: { canonical: "/work" },
 };
 export const dynamic = "force-dynamic";

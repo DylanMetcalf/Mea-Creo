@@ -69,9 +69,10 @@ Configuration comes from environment variables, validated at startup by
 
 ## Website analytics
 
-| Variable            | Default | Purpose                                                                                                        |
-| ------------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
-| `GA_MEASUREMENT_ID` | none    | GA4 id (`G-…`). Loaded only when `FEATURE_GOOGLE_ANALYTICS=true` **and** the visitor accepts analytics cookies |
+| Variable            | Default | Purpose                                                                                                                                                               |
+| ------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GA_MEASUREMENT_ID` | none    | GA4 id (`G-…`). Loaded only when `FEATURE_GOOGLE_ANALYTICS=true` **and** the visitor accepts analytics cookies                                                        |
+| `CALENDLY_URL`      | none    | Public Calendly booking page. When set, `/book` embeds it instead of the built-in booking form. Bookings live in Calendly (connect Calendly to Google Calendar there) |
 
 ## Feature flags
 
